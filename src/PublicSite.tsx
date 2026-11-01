@@ -1,3 +1,4 @@
+import { assetPath } from "./assets";
 import {
   ArrowLeft,
   ArrowUpLeft,
@@ -36,7 +37,7 @@ export function PublicSite({ path }: { path: string }) {
             </p>
             <a
               className="button"
-              href={model.catalog}
+              href={assetPath(model.catalog)}
               target="_blank"
               rel="noreferrer"
             >
@@ -64,7 +65,7 @@ export function PublicSite({ path }: { path: string }) {
               <span>{v}</span>
             </div>
           ))}
-          <a className="source" href={model.catalog}>
+          <a className="source" href={assetPath(model.catalog)}>
             منبع: کاتالوگ اختصاصی همین مدل
           </a>
         </section>
@@ -239,7 +240,7 @@ export function PublicSite({ path }: { path: string }) {
                 FINECARE SERIES <span>POCT</span>
               </span>
               <img
-                src="/product-assets/wondfo/images/fs-205.webp"
+                src={assetPath("/product-assets/wondfo/images/fs-205.webp")}
                 alt="دستگاه Finecare FS-205"
               />
               <div className="floating-label">

@@ -1,3 +1,4 @@
+import { assetPath } from "./assets";
 import type React from "react";
 import { Package } from "lucide-react";
 import { products as devices } from "./devices";
@@ -12,7 +13,7 @@ export const DeviceImage = ({ model }: { model: (typeof devices)[number] }) =>
       overflow="hidden"
     >
       <image
-        href={model.image}
+        href={assetPath(model.image)}
         x="0"
         y="0"
         width={model.id === "bha3000" ? 800 : 1609}
@@ -20,7 +21,11 @@ export const DeviceImage = ({ model }: { model: (typeof devices)[number] }) =>
       />
     </svg>
   ) : (
-    <img className="device-image" src={model.image} alt={model.name} />
+    <img
+      className="device-image"
+      src={assetPath(model.image)}
+      alt={model.name}
+    />
   );
 export const Logo = () => (
   <span className="logo" role="img" aria-label="سانا" />

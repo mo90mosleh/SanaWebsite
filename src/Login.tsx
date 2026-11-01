@@ -1,3 +1,4 @@
+import { assetPath } from "./assets";
 import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import * as D from "./domain";
@@ -27,7 +28,7 @@ export function Login({
           از انتخاب کیت سازگار تا پیگیری سفارش؛ همه در یک فضای ساده و یکپارچه.
         </p>
         <img
-          src="/product-assets/wondfo/images/fs-205.webp"
+          src={assetPath("/product-assets/wondfo/images/fs-205.webp")}
           alt="دستگاه Finecare FS-205"
         />
       </div>

@@ -1,3 +1,4 @@
+import { assetPath } from "./assets";
 import React, { useState, useEffect, type FormEvent } from "react";
 import { createRoot } from "react-dom/client";
 import {
@@ -1165,7 +1166,7 @@ function App() {
                   </small>
                   <a
                     className="source"
-                    href={p.source}
+                    href={assetPath(p.source)}
                     target="_blank"
                     rel="noreferrer"
                   >
