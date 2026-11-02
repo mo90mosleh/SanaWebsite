@@ -118,7 +118,7 @@ p {
   margin-bottom: 16px;
 }
 small {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 bdi {
@@ -126,7 +126,7 @@ bdi {
 }
 .eyebrow {
   display: block;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--red);
   margin-bottom: 16px;
   font-weight: 600;
@@ -203,7 +203,7 @@ bdi {
   background: #fff7ec;
   border: 1px solid #f0e3cd;
   color: #876438;
-  font-size: 12px;
+  font-size: 14px;
   margin: 15px 0 25px;
 }
 .error,
@@ -235,7 +235,7 @@ bdi {
   color: #267b61;
 }
 .badge {
-  font-size: 10px;
+  font-size: 14px;
   padding: 4px 10px;
   border-radius: 6px;
   background: #f0f2f5;
@@ -269,7 +269,7 @@ bdi {
 label {
   display: block;
   color: #535965;
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 16px;
 }
 input,
@@ -343,13 +343,13 @@ input[type="radio"] {
 .public-brand > span:last-child {
   border-right: 1px solid #ddd;
   padding-right: 13px;
-  font-size: 10px;
+  font-size: 14px;
   color: #8a8e96;
 }
 .public-header nav {
   display: flex;
   gap: 29px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .public-header nav a {
   padding: 10px 0;
@@ -369,7 +369,7 @@ input[type="radio"] {
   right: 50%;
 }
 .small-button {
-  font-size: 12px;
+  font-size: 14px;
   padding: 9px 16px;
 }
 .public-main {
@@ -400,7 +400,7 @@ input[type="radio"] {
   line-height: 2.2;
 }
 .hero .eyebrow {
-  font-size: 11px;
+  font-size: 14px;
 }
 .dot {
   display: inline-block;
@@ -415,18 +415,18 @@ input[type="radio"] {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .hero-note {
   display: flex;
   align-items: center;
   gap: 12px;
   margin-top: 35px;
-  font-size: 11px;
+  font-size: 14px;
   color: #5a606b;
 }
 .hero-note small {
-  font-size: 10px;
+  font-size: 14px;
 }
 .small-icon {
   display: inline-flex;
@@ -476,7 +476,7 @@ input[type="radio"] {
   position: absolute;
   top: 0;
   left: 20px;
-  font-size: 10px;
+  font-size: 14px;
   letter-spacing: 2px;
   color: #8d8388;
   direction: ltr;
@@ -502,11 +502,11 @@ input[type="radio"] {
 .floating-label strong {
   display: block;
   direction: ltr;
-  font-size: 13px;
+  font-size: 14px;
 }
 .floating-label small {
   display: block;
-  font-size: 10px;
+  font-size: 14px;
 }
 .visual-index {
   position: absolute;
@@ -517,7 +517,7 @@ input[type="radio"] {
   direction: ltr;
 }
 .visual-index span {
-  font-size: 11px;
+  font-size: 14px;
   color: #b9abb0;
 }
 .trust-strip {
@@ -530,7 +530,7 @@ input[type="radio"] {
   border-bottom: 1px solid #eeeef1;
   padding: 22px 25px;
   color: #737985;
-  font-size: 11px;
+  font-size: 14px;
 }
 .trust-strip > span {
   display: flex;
@@ -565,7 +565,7 @@ input[type="radio"] {
   box-shadow: 0 10px 20px #36202a06;
 }
 .device-tile .row {
-  font-size: 9px;
+  font-size: 14px;
   color: #8a8b96;
 }
 .device-tile img {
@@ -579,11 +579,11 @@ input[type="radio"] {
   margin: 3px 0;
 }
 .device-tile p {
-  font-size: 10px;
+  font-size: 14px;
   margin-bottom: 20px;
 }
 .device-tile small {
-  font-size: 10px;
+  font-size: 14px;
 }
 .tile-link {
   border-top: 1px solid var(--border);
@@ -591,7 +591,7 @@ input[type="radio"] {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--red);
 }
 .portal-banner {
@@ -633,7 +633,7 @@ input[type="radio"] {
   margin: 0;
 }
 .steps p {
-  font-size: 11px;
+  font-size: 14px;
   margin: 2px 0;
 }
 .public-footer {
@@ -645,17 +645,17 @@ input[type="radio"] {
   gap: 20px 35px;
 }
 .public-footer p {
-  font-size: 11px;
+  font-size: 14px;
 }
 .public-footer h3 {
-  font-size: 13px;
+  font-size: 14px;
 }
 .enamad {
   padding: 25px 15px;
   border: 1px dashed #d8d9de;
   border-radius: 10px;
   color: #999da5;
-  font-size: 10px;
+  font-size: 14px;
   align-self: start;
 }
 .footer-bottom {
@@ -664,11 +664,11 @@ input[type="radio"] {
   padding-top: 20px;
   display: flex;
   justify-content: space-between;
-  font-size: 10px;
+  font-size: 14px;
   color: #999;
 }
 .footer-bottom button {
-  font-size: 10px;
+  font-size: 14px;
 }
 .prose {
   min-height: 65vh;
@@ -719,11 +719,11 @@ input[type="radio"] {
   align-items: center;
   gap: 10px;
   color: #8c909a;
-  font-size: 11px;
+  font-size: 14px;
 }
 .source {
   display: block;
-  font-size: 10px;
+  font-size: 14px;
   color: var(--red);
   margin: 12px 0;
 }
@@ -766,10 +766,10 @@ input[type="radio"] {
   margin-top: 10px;
 }
 .login-card p {
-  font-size: 12px;
+  font-size: 14px;
 }
 .login-card .row button {
-  font-size: 11px;
+  font-size: 14px;
 }
 .demo-logins {
   border-top: 1px solid var(--border);
@@ -779,7 +779,7 @@ input[type="radio"] {
   gap: 10px;
 }
 .demo-logins span {
-  font-size: 11px;
+  font-size: 14px;
   text-align: center;
   color: #8b8f98;
   margin-bottom: 5px;
@@ -814,7 +814,7 @@ input[type="radio"] {
   height: 48px;
 }
 .panel-brand > span:last-child {
-  font-size: 10px;
+  font-size: 14px;
   color: #9498a1;
   border-right: 1px solid var(--border);
   padding-right: 10px;
@@ -826,11 +826,11 @@ input[type="radio"] {
   margin: 25px 4px;
 }
 .center-name strong {
-  font-size: 11px;
+  font-size: 14px;
 }
 .center-name small {
   display: block;
-  font-size: 9px;
+  font-size: 14px;
 }
 .avatar {
   width: 37px;
@@ -858,7 +858,7 @@ input[type="radio"] {
   gap: 12px;
   align-items: center;
   color: #757b86;
-  font-size: 12px;
+  font-size: 14px;
   border-radius: 8px;
 }
 .sidebar nav a.active {
@@ -881,24 +881,24 @@ input[type="radio"] {
   color: #fff;
   padding: 0 6px;
   border-radius: 4px;
-  font-size: 10px;
+  font-size: 14px;
 }
 .sidebar-bottom {
   margin-top: auto;
   padding: 20px 10px 0;
 }
 .sidebar-bottom p {
-  font-size: 10px;
+  font-size: 14px;
   margin: 10px 0;
 }
 .sidebar-bottom a {
   display: flex;
   gap: 10px;
   align-items: center;
-  font-size: 13px;
+  font-size: 14px;
 }
 .sidebar-bottom button {
-  font-size: 11px;
+  font-size: 14px;
   margin-top: 25px;
   color: #9296a0;
 }
@@ -915,13 +915,13 @@ input[type="radio"] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11px;
+  font-size: 14px;
 }
 .panel-header > .row {
   gap: 23px;
 }
 .demo-dot {
-  font-size: 10px;
+  font-size: 14px;
   color: #838995;
 }
 .demo-dot:before {
@@ -934,13 +934,13 @@ input[type="radio"] {
   margin-left: 7px;
 }
 .role-switch {
-  font-size: 10px;
+  font-size: 14px;
 }
 .demo-bar {
   padding: 8px 36px;
   background: #fffaf0;
   color: #a18b64;
-  font-size: 9px;
+  font-size: 14px;
   border-bottom: 1px solid #f2ece0;
 }
 .panel-main {
@@ -968,14 +968,14 @@ input[type="radio"] {
   font-size: 27px;
 }
 .welcome p {
-  font-size: 12px;
+  font-size: 14px;
 }
 .welcome .eyebrow {
-  font-size: 10px;
+  font-size: 14px;
   margin-bottom: 9px;
 }
 .welcome button {
-  font-size: 11px;
+  font-size: 14px;
   padding: 9px 16px;
 }
 .welcome-art {
@@ -998,7 +998,7 @@ input[type="radio"] {
   transform: rotate(-30deg);
 }
 .welcome-art span {
-  font-size: 9px;
+  font-size: 14px;
   background: #fcf0f1;
   z-index: 1;
 }
@@ -1025,7 +1025,7 @@ input[type="radio"] {
   display: flex;
 }
 .stat p {
-  font-size: 11px;
+  font-size: 14px;
   margin: 0 0 2px;
 }
 .stat strong {
@@ -1036,7 +1036,7 @@ input[type="radio"] {
   font-size: 15px;
 }
 .panel-main .section-title .link {
-  font-size: 10px;
+  font-size: 14px;
 }
 .discount-number {
   font-size: 65px;
@@ -1047,7 +1047,7 @@ input[type="radio"] {
   font-size: 35px;
 }
 .panel-main .soft p {
-  font-size: 11px;
+  font-size: 14px;
 }
 .order-card {
   background: white;
@@ -1057,17 +1057,17 @@ input[type="radio"] {
   margin-bottom: 15px;
 }
 .order-card bdi {
-  font-size: 11px;
+  font-size: 14px;
 }
 .order-card p {
-  font-size: 10px;
+  font-size: 14px;
   margin: 4px 0;
 }
 .order-card strong {
-  font-size: 12px;
+  font-size: 14px;
 }
 .order-card .link {
-  font-size: 10px;
+  font-size: 14px;
 }
 .card .order-card {
   border: 0;
@@ -1080,11 +1080,11 @@ input[type="radio"] {
   border-top: 1px solid var(--border);
   margin-top: 20px;
   padding-top: 18px;
-  font-size: 12px;
+  font-size: 14px;
 }
 .order-detail .row {
   margin-bottom: 15px;
-  font-size: 10px;
+  font-size: 14px;
 }
 .payment-box {
   padding: 20px;
@@ -1096,7 +1096,7 @@ input[type="radio"] {
   margin: 12px 0;
 }
 .payment-box button {
-  font-size: 11px;
+  font-size: 14px;
 }
 .forecast-row {
   display: flex;
@@ -1110,10 +1110,10 @@ input[type="radio"] {
   border-bottom: 0;
 }
 .forecast-row strong {
-  font-size: 12px;
+  font-size: 14px;
 }
 .forecast-row p {
-  font-size: 10px;
+  font-size: 14px;
   margin: 3px 0;
 }
 .forecast-row small {
@@ -1126,11 +1126,11 @@ input[type="radio"] {
   padding: 20px 36px;
   margin: auto;
   color: #999fa8;
-  font-size: 10px;
+  font-size: 14px;
   border-top: 1px solid var(--border);
 }
 .panel-footer button {
-  font-size: 10px;
+  font-size: 14px;
 }
 .filters {
   display: flex;
@@ -1141,7 +1141,7 @@ input[type="radio"] {
 .filters select {
   width: 230px;
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   height: 46px;
 }
 .filters .search {
@@ -1170,10 +1170,10 @@ input[type="radio"] {
   margin-bottom: 7px;
 }
 .device p {
-  font-size: 11px;
+  font-size: 14px;
 }
 .device button {
-  font-size: 10px;
+  font-size: 14px;
   padding: 10px;
   width: 100%;
   margin-top: 13px;
@@ -1198,26 +1198,26 @@ input[type="radio"] {
   letter-spacing: 1px;
 }
 .kit-art small {
-  font-size: 8px;
+  font-size: 14px;
 }
 .supply h2 {
   font-size: 16px;
   margin: 0;
 }
 .supply p {
-  font-size: 11px;
+  font-size: 14px;
   margin: 4px 0;
 }
 .supply > small {
   display: block;
-  font-size: 9px;
+  font-size: 14px;
 }
 .supply .brand-label {
-  font-size: 9px;
+  font-size: 14px;
   color: #858b95;
 }
 .supply .badge {
-  font-size: 8px;
+  font-size: 14px;
   padding: 4px 7px;
 }
 .price-block {
@@ -1227,7 +1227,7 @@ input[type="radio"] {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  font-size: 9px;
+  font-size: 14px;
 }
 .price-block > span {
   display: flex;
@@ -1236,7 +1236,7 @@ input[type="radio"] {
   gap: 5px;
 }
 .price-block strong {
-  font-size: 11px;
+  font-size: 14px;
   font-weight: 500;
 }
 .price-block .online {
@@ -1245,7 +1245,7 @@ input[type="radio"] {
 .supply > button {
   width: 100%;
   margin-top: 18px;
-  font-size: 11px;
+  font-size: 14px;
   padding: 9px;
 }
 .stock {
@@ -1263,11 +1263,11 @@ input[type="radio"] {
   color: #a4a8b2;
 }
 .cart-line h3 {
-  font-size: 12px;
+  font-size: 14px;
   margin: 0;
 }
 .cart-line small {
-  font-size: 9px;
+  font-size: 14px;
 }
 .quantity {
   display: flex;
@@ -1285,7 +1285,7 @@ input[type="radio"] {
   color: #606774;
 }
 .quantity span {
-  font-size: 10px;
+  font-size: 14px;
 }
 .method {
   border: 1px solid var(--border);
@@ -1293,7 +1293,7 @@ input[type="radio"] {
   border-radius: 8px;
   display: flex;
   align-items: center;
-  font-size: 10px;
+  font-size: 14px;
   gap: 4px;
 }
 .method.chosen {
@@ -1309,7 +1309,7 @@ input[type="radio"] {
 }
 .message p {
   margin: 7px 0 0;
-  font-size: 12px;
+  font-size: 14px;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -1332,7 +1332,7 @@ input[type="radio"] {
   padding: 14px 20px;
   box-shadow: 0 8px 40px #0002;
   border-radius: 10px;
-  font-size: 12px;
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -1439,18 +1439,18 @@ input[type="radio"] {
     gap: 18px;
   }
   .hero .button {
-    font-size: 12px;
+    font-size: 14px;
   }
   .hero-note {
     margin-top: 25px;
   }
   .hero .eyebrow {
-    font-size: 10px;
+    font-size: 14px;
   }
 }
 @media (max-width: 760px) {
   body {
-    font-size: 13px;
+    font-size: 14px;
   }
   .public-header {
     padding: 9px 20px;
@@ -1467,12 +1467,12 @@ input[type="radio"] {
     overflow-x: auto;
     gap: 24px;
     white-space: nowrap;
-    font-size: 11px;
+    font-size: 14px;
     padding: 4px 0;
   }
   .public-header > .button {
     margin-right: auto;
-    font-size: 10px;
+    font-size: 14px;
     padding: 8px 12px;
   }
   .public-main {
@@ -1490,7 +1490,7 @@ input[type="radio"] {
     margin-top: 12px;
   }
   .hero-copy > p {
-    font-size: 13px;
+    font-size: 14px;
   }
   .hero .actions {
     margin: 20px 0;
@@ -1515,13 +1515,13 @@ input[type="radio"] {
     right: 3px;
   }
   .floating-label strong {
-    font-size: 11px;
+    font-size: 14px;
   }
   .floating-label small {
-    font-size: 8px;
+    font-size: 14px;
   }
   .visual-label {
-    font-size: 8px;
+    font-size: 14px;
   }
   .visual-index {
     bottom: 0;
@@ -1530,12 +1530,12 @@ input[type="radio"] {
     flex-wrap: wrap;
     justify-content: flex-start;
     gap: 15px 20px;
-    font-size: 9px;
+    font-size: 14px;
     padding: 20px 22px;
   }
   .trust-strip > span:first-child {
     width: 100%;
-    font-size: 11px;
+    font-size: 14px;
   }
   .section-title {
     align-items: flex-start;
@@ -1588,7 +1588,7 @@ input[type="radio"] {
     font-size: 24px;
   }
   .portal-banner p {
-    font-size: 12px;
+    font-size: 14px;
   }
   .steps {
     padding-right: 0;
@@ -1638,7 +1638,7 @@ input[type="radio"] {
     font-size: 19px;
   }
   .line {
-    font-size: 11px;
+    font-size: 14px;
   }
   .line > span {
     max-width: 60%;
@@ -1685,7 +1685,7 @@ input[type="radio"] {
   }
   .sidebar nav a {
     padding: 9px 11px;
-    font-size: 10px;
+    font-size: 14px;
     gap: 7px;
   }
   .sidebar nav svg {
@@ -1705,7 +1705,7 @@ input[type="radio"] {
   .panel-header {
     height: 57px;
     padding: 0 20px;
-    font-size: 10px;
+    font-size: 14px;
   }
   .panel-header > .row {
     gap: 13px;
@@ -1714,14 +1714,14 @@ input[type="radio"] {
     display: none;
   }
   .demo-dot {
-    font-size: 9px;
+    font-size: 14px;
   }
   .role-switch {
-    font-size: 9px;
+    font-size: 14px;
   }
   .demo-bar {
     padding: 9px 20px;
-    font-size: 8px;
+    font-size: 14px;
   }
   .panel-main {
     padding: 22px 18px 30px;
@@ -1740,7 +1740,7 @@ input[type="radio"] {
     font-size: 23px;
   }
   .welcome p {
-    font-size: 11px;
+    font-size: 14px;
   }
   .stats {
     gap: 8px;
@@ -1755,7 +1755,7 @@ input[type="radio"] {
     display: none;
   }
   .stat p {
-    font-size: 9px;
+    font-size: 14px;
   }
   .stat strong {
     font-size: 24px;
@@ -1780,16 +1780,16 @@ input[type="radio"] {
     gap: 10px;
   }
   .order-card strong {
-    font-size: 11px;
+    font-size: 14px;
   }
   .order-card p {
-    font-size: 9px;
+    font-size: 14px;
   }
   .order-card .link {
     justify-content: flex-end;
   }
   .order-card bdi {
-    font-size: 10px;
+    font-size: 14px;
   }
   .forecast-row {
     align-items: flex-start;
@@ -1799,23 +1799,23 @@ input[type="radio"] {
     max-width: 55%;
   }
   .forecast-row small {
-    font-size: 9px;
+    font-size: 14px;
   }
   .forecast-row strong {
-    font-size: 10px;
+    font-size: 14px;
   }
   .forecast-row p {
-    font-size: 9px;
+    font-size: 14px;
   }
   .forecast-row > .badge {
-    font-size: 8px;
+    font-size: 14px;
   }
   .panel-footer {
     padding: 17px 18px;
-    font-size: 9px;
+    font-size: 14px;
   }
   .panel-footer button {
-    font-size: 9px;
+    font-size: 14px;
   }
   .filters {
     flex-wrap: wrap;
@@ -1827,10 +1827,10 @@ input[type="radio"] {
   .filters select {
     flex: 1;
     width: auto;
-    font-size: 10px;
+    font-size: 14px;
   }
   .filters button {
-    font-size: 10px;
+    font-size: 14px;
     padding: 10px;
   }
   .cards {
@@ -1840,10 +1840,10 @@ input[type="radio"] {
     min-height: 130px;
   }
   .supply .price-block > span {
-    font-size: 11px;
+    font-size: 14px;
   }
   .supply .price-block strong {
-    font-size: 13px;
+    font-size: 14px;
   }
   .device img {
     height: 210px;
@@ -1872,14 +1872,14 @@ input[type="radio"] {
     margin-top: 8px;
   }
   .cart-line h3 {
-    font-size: 12px;
+    font-size: 14px;
   }
   .cart-line small {
-    font-size: 9px;
+    font-size: 14px;
   }
   .toast {
     bottom: 15px;
-    font-size: 11px;
+    font-size: 14px;
     width: max-content;
     max-width: 92%;
     padding: 12px 16px;
@@ -1892,7 +1892,7 @@ input[type="radio"] {
     max-width: 95%;
   }
   .notice {
-    font-size: 10px;
+    font-size: 14px;
   }
   .row > div {
     min-width: 0;
@@ -1956,31 +1956,31 @@ input[type="radio"] {
   .forecast-row strong,
   .forecast-row p,
   .forecast-row small {
-    font-size: 11px;
+    font-size: 14px;
   }
   .forecast-row {
     gap: 18px;
   }
   .card small {
-    font-size: 11px;
+    font-size: 14px;
   }
   .stats .stat p {
-    font-size: 10px;
+    font-size: 14px;
   }
   .order-card p {
-    font-size: 11px;
+    font-size: 14px;
   }
   .badge {
-    font-size: 11px;
+    font-size: 14px;
   }
   .panel-main .notice {
-    font-size: 11px;
+    font-size: 14px;
   }
   .sidebar nav a {
-    font-size: 11px;
+    font-size: 14px;
   }
   .panel-main .section-title .link {
-    font-size: 11px;
+    font-size: 14px;
   }
 }
 .product-editor summary {
@@ -1989,10 +1989,10 @@ input[type="radio"] {
   justify-content: space-between;
   gap: 15px;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 14px;
 }
 .product-editor summary span {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 .product-editor summary:after {
@@ -2012,18 +2012,18 @@ input[type="radio"] {
 }
 .product-editor summary bdi {
   margin-right: 8px;
-  font-size: 11px;
+  font-size: 14px;
   color: var(--muted);
 }
 @media (max-width: 760px) {
   .product-editor summary {
     flex-wrap: wrap;
-    font-size: 11px;
+    font-size: 14px;
   }
   .product-editor summary strong {
     flex-basis: 85%;
   }
   .product-editor summary span {
-    font-size: 10px;
+    font-size: 14px;
   }
 }

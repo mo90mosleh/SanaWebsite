@@ -8,6 +8,10 @@ import {
   Check,
   Activity,
   ShieldCheck,
+  Handshake,
+  BookOpen,
+  PackageCheck,
+  Headset,
 } from "lucide-react";
 import { products as devices } from "./devices";
 import { Logo, DeviceImage, Empty, BrandLogo } from "./ui";
@@ -240,15 +244,18 @@ export function PublicSite({ path }: { path: string }) {
             <HeroSlider />
           </section>
           <div className="trust-strip">
-            <span>همراهی از انتخاب تا تأمین</span>
             <span>
-              <Check size={16} /> کاتالوگ اختصاصی هر مدل
+              <Handshake size={22} />
+              همراهی از انتخاب تا تأمین
             </span>
             <span>
-              <Check size={16} /> سفارش و پیگیری یکپارچه
+              <BookOpen size={22} /> کاتالوگ اختصاصی هر مدل
             </span>
             <span>
-              <Check size={16} /> پشتیبانی در پنل مشتریان
+              <PackageCheck size={22} /> سفارش و پیگیری یکپارچه
+            </span>
+            <span>
+              <Headset size={22} /> پشتیبانی در پنل مشتریان
             </span>
           </div>
         </>

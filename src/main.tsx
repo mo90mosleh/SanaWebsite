@@ -1,3 +1,4 @@
+import { categories, categoryFor } from "./kitCategories";
 import { KitArtwork } from "./KitArtwork";
 import { DeliveryPicker } from "./DeliveryPicker";
 import {
@@ -31,6 +32,7 @@ import {
   Phone,
   Plus,
   Minus,
+  Trash2,
   ClipboardList,
   Activity,
   RefreshCw,
@@ -94,6 +96,7 @@ function App() {
   const [orderView, setOrderView] = useState("all");
   const [query, setQuery] = useState("");
   const [deviceFilter, setDeviceFilter] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
   useEffect(() => {
     const nav = () => {
       setPath(location.hash.slice(1) || "/");
@@ -164,6 +167,23 @@ function App() {
     (a, [id, q]) =>
       a + (state.products.find((p) => p.id === id)?.price || 0) * q,
     0,
+  );
+  const decrease = (id: string) =>
+    setCart((previous) => {
+      const next = { ...previous };
+      if ((next[id] || 0) <= 1) delete next[id];
+      else next[id]--;
+      return next;
+    });
+  const filteredProducts = state.products.filter(
+    (p) =>
+      (p.name + " " + p.english + " " + p.code)
+        .toLowerCase()
+        .includes(query.toLowerCase()) &&
+      (!categoryFilter || categoryFor(p.id).id === categoryFilter) &&
+      (!deviceFilter ||
+        p.models.includes(deviceFilter) ||
+        p.referenceModels?.includes(deviceFilter)),
   );
   const add = (p: D.Item) => {
     if (
@@ -914,6 +934,191 @@ function App() {
       </form>
     );
   }
+  function KitCard({ p, compact = false }: { p: D.Item; compact?: boolean }) {
+    return (
+      <article className="card supply" key={p.id}>
+        <div className="row">
+          <span className="brand-label">
+            {p.brand}
+            {p.brand === "Wondfo" ? " / Finecare" : " / CBC"}
+          </span>
+          <Badge
+            value={
+              p.verified
+                ? "قابل سفارش"
+                : p.models.length
+                  ? "معرفی‌شده سازنده"
+                  : "نیازمند تأیید"
+            }
+          />
+        </div>
+        <div className="kit-photo kit-illustration">
+          <KitArtwork product={p} />
+          <small>تصویر گرافیکی</small>
+        </div>
+        <h2>{p.name}</h2>
+        <p>
+          <bdi>
+            {p.english} {p.code && "· " + p.code}
+          </bdi>
+        </p>
+        {!compact && (
+          <>
+            <p className="muted">
+              {p.models.length ? (
+                <>
+                  <bdi>{p.models.join(" / ")}</bdi>
+                </>
+              ) : (
+                "سازگاری مستند نشده؛ قابل فروش نیست"
+              )}
+            </p>
+            <details className="product-evidence">
+              <summary>جزئیات بسته و منبع</summary>{" "}
+              <small>
+                معرفی‌شده در منوی سازنده؛ عرضه واقعی سانا تأیید نشده
+              </small>
+              <small>
+                تعداد تست در بسته: {p.tests ?? "نیازمند تأیید"} · واحد سفارش:
+                بسته
+              </small>
+              <a
+                className="source"
+                href={assetPath(p.source)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
+              </a>
+            </details>
+          </>
+        )}
+        <div className="price-block">
+          <span>
+            پایه، چک سه‌ماهه <strong>{D.money(p.price)}</strong>
+          </span>
+          <span className="online">
+            آنلاین، ۲۰٪ کمتر <strong>{D.money(D.onlinePrice(p.price))}</strong>
+          </span>
+          <small>صرفه‌جویی: {D.money(p.price - D.onlinePrice(p.price))}</small>
+        </div>
+        {(cart[p.id] || 0) > 0 && (
+          <div className="selected-total" aria-live="polite">
+            <span>جمع {(cart[p.id] || 0).toLocaleString("fa-IR")} بسته</span>
+            <strong>
+              آنلاین: {D.money(D.onlinePrice(p.price) * cart[p.id])}
+            </strong>
+            <span>چک سه‌ماهه: {D.money(p.price * cart[p.id])}</span>
+          </div>
+        )}
+        {(cart[p.id] || 0) > 0 ? (
+          <div
+            className="product-quantity"
+            aria-label={"تعداد انتخابی " + p.english}
+          >
+            <button
+              aria-label={
+                ((cart[p.id] || 0) === 1 ? "حذف " : "کاهش ") + p.english
+              }
+              onClick={() => decrease(p.id)}
+            >
+              {(cart[p.id] || 0) === 1 ? (
+                <Trash2 size={18} />
+              ) : (
+                <Minus size={18} />
+              )}
+            </button>
+            <output aria-label={"تعداد بسته " + p.english}>
+              {(cart[p.id] || 0).toLocaleString("fa-IR")}
+              <small>بسته</small>
+            </output>
+            <button
+              aria-label={"افزایش " + p.english}
+              disabled={(cart[p.id] || 0) >= p.stock}
+              onClick={() => add(p)}
+            >
+              <Plus size={18} />
+            </button>
+          </div>
+        ) : (
+          <button
+            disabled={!D.compatible(p, customer) || p.stock === 0}
+            onClick={() => add(p)}
+          >
+            <Plus size={17} />
+            افزودن به سبد
+          </button>
+        )}
+        {!compact && (
+          <div className="stock">
+            موجودی: <strong>{p.stock.toLocaleString("fa-IR")}</strong> بسته
+          </div>
+        )}
+      </article>
+    );
+  }
+  function ReplenishmentCards() {
+    const items = state.products
+      .filter((p) => D.compatible(p, customer) && p.stock > 0)
+      .map((p, index) => ({
+        p,
+        index,
+        forecast: D.forecast(state, customer, p.id),
+      }))
+      .sort(
+        (a, b) =>
+          (a.forecast ? 0 : 1) - (b.forecast ? 0 : 1) ||
+          (a.forecast && b.forecast
+            ? a.forecast.due.localeCompare(b.forecast.due)
+            : a.index - b.index),
+      )
+      .slice(0, 3);
+    return (
+      <section className="card replenishment" aria-label="پیشنهاد تأمین مجدد">
+        <div className="section-title">
+          <div>
+            <span className="eyebrow">آماده برای روزهای پیش رو</span>
+            <h2>پیشنهاد تأمین مجدد</h2>
+          </div>
+        </div>
+        <div className="grid cards">
+          {items.map(({ p, forecast }) => (
+            <div className="replenishment-item" key={p.id}>
+              {forecast ? (
+                <p className="replenishment-date">
+                  {forecast.near ? "نزدیک به موعد" : "موعد برآوردی"} ·{" "}
+                  {D.date(forecast.due)}
+                </p>
+              ) : (
+                <p className="replenishment-date">
+                  پیشنهاد متناسب با دستگاه شما
+                </p>
+              )}
+              {KitCard({ p, compact: true })}
+            </div>
+          ))}
+        </div>
+        {!items.length && (
+          <Empty>کیت سازگار و موجود برای پیشنهاد نداریم.</Empty>
+        )}
+        <p className="muted">
+          موعد تأمین براساس سابقه تحویل برآورد می‌شود؛ موجودی واقعی مرکز را
+          اندازه‌گیری نمی‌کند.
+        </p>
+        <div className="replenishment-actions">
+          <button
+            className="secondary"
+            onClick={() => go("/customer/supplies")}
+          >
+            مشاهده سایر کیت‌ها <ArrowLeft size={18} />
+          </button>
+          <button disabled={!count} onClick={() => go("/customer/cart")}>
+            نهایی‌سازی سفارش <ShoppingBag size={18} />
+          </button>
+        </div>
+      </section>
+    );
+  }
   function PanelContent() {
     if (!customer.active && !admin)
       return <Empty>حساب شما غیرفعال است. با پشتیبانی تماس بگیرید.</Empty>;
@@ -948,41 +1153,43 @@ function App() {
               <span>آماده برای فردای آزمایشگاه</span>
             </div>
           </div>
-          <div className="stats">
-            {[
-              [
-                admin ? "همه سفارش‌ها" : "سفارش‌های شما",
-                orders.length,
-                ClipboardList,
-              ],
-              [
-                "در انتظار بررسی",
-                orders.filter((o) => o.status === "pending").length,
-                Activity,
-              ],
-              [
-                admin ? "مراکز فعال" : "دستگاه‌های شما",
-                admin
-                  ? state.customers.filter((c) => c.active).length
-                  : customer.devices.length,
-                Microscope,
-              ],
-            ].map(([label, n, Icon], i) => {
-              const I = Icon as typeof Package;
-              return (
-                <div className="stat" key={i}>
-                  <span className="stat-icon">
-                    <I size={22} />
-                  </span>
-                  <div>
-                    <p>{String(label)}</p>
-                    <strong>{Number(n).toLocaleString("fa-IR")}</strong>
+          {admin && (
+            <div className="stats">
+              {[
+                [
+                  admin ? "همه سفارش‌ها" : "سفارش‌های شما",
+                  orders.length,
+                  ClipboardList,
+                ],
+                [
+                  "در انتظار بررسی",
+                  orders.filter((o) => o.status === "pending").length,
+                  Activity,
+                ],
+                [
+                  admin ? "مراکز فعال" : "دستگاه‌های شما",
+                  admin
+                    ? state.customers.filter((c) => c.active).length
+                    : customer.devices.length,
+                  Microscope,
+                ],
+              ].map(([label, n, Icon], i) => {
+                const I = Icon as typeof Package;
+                return (
+                  <div className="stat" key={i}>
+                    <span className="stat-icon">
+                      <I size={22} />
+                    </span>
+                    <div>
+                      <p>{String(label)}</p>
+                      <strong>{Number(n).toLocaleString("fa-IR")}</strong>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-          <div className="two-col">
+                );
+              })}
+            </div>
+          )}
+          <div className={admin ? "two-col" : "dashboard-orders"}>
             <section className="card">
               <div className="section-title">
                 <h2>آخرین سفارش‌ها</h2>
@@ -995,89 +1202,134 @@ function App() {
                   مشاهده همه <ArrowLeft size={15} />
                 </button>
               </div>
-              {orders.slice(0, 3).map((o) => (
-                <React.Fragment key={o.id}>{OrderCard({ o })}</React.Fragment>
-              ))}
-              {!orders.length && <Empty>هنوز سفارشی ندارید.</Empty>}
-            </section>
-            <section className="card soft">
               {admin ? (
-                <>
-                  <span className="eyebrow">پیگیری مالی</span>
-                  <h2>نمای پرداخت‌ها</h2>
-                  <div className="line">
-                    <span>جمع پرداخت موفق آنلاین</span>
-                    <strong>
-                      {D.money(
-                        orders
-                          .filter((o) => o.payment === "paid")
-                          .reduce((a, o) => a + o.total, 0),
-                      )}
-                    </strong>
-                  </div>
-                  <div className="line">
-                    <span>تعداد پرداخت موفق</span>
-                    <strong>
-                      {orders
-                        .filter((o) => o.payment === "paid")
-                        .length.toLocaleString("fa-IR")}
-                    </strong>
-                  </div>
-                  <div className="line">
-                    <span>پرداخت ناموفق</span>
-                    <strong>
-                      {orders
-                        .filter((o) => o.payment === "failed")
-                        .length.toLocaleString("fa-IR")}
-                    </strong>
-                  </div>
-                  <div className="line">
-                    <span>پرداخت نشده</span>
-                    <strong>
-                      {orders
-                        .filter((o) => o.payment === "unpaid")
-                        .length.toLocaleString("fa-IR")}
-                    </strong>
-                  </div>
-                  <p>تأیید خرید شرایطی به معنی وصول چک نیست.</p>
-                  <button className="link" onClick={() => go("/admin/orders")}>
-                    بررسی و پیگیری سفارش‌ها <ArrowLeft size={15} />
-                  </button>
-                </>
+                orders
+                  .slice(0, 3)
+                  .map((o) => (
+                    <React.Fragment key={o.id}>
+                      {OrderCard({ o })}
+                    </React.Fragment>
+                  ))
               ) : (
                 <>
-                  {" "}
-                  <span className="eyebrow">یک انتخاب به‌صرفه</span>
-                  <h2>۲۰٪ کمتر، با پرداخت آنلاین</h2>
-                  <p>
-                    قیمت پایه برای خرید با چک سه‌ماهه است. با پرداخت آنلاین،
-                    دقیقاً ۲۰٪ از مبلغ پایه کم می‌شود.
-                  </p>
-                  <div className="discount-number">
-                    ۲۰<span>٪</span>
+                  <div className="table-scroll" tabIndex={0}>
+                    <table className="recent-orders-table">
+                      <caption className="sr-only">آخرین سفارش‌های شما</caption>
+                      <thead>
+                        <tr>
+                          <th>شماره سفارش</th>
+                          <th>تاریخ</th>
+                          <th>مبلغ</th>
+                          <th>وضعیت</th>
+                          <th>پیگیری</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.slice(0, 5).map((o) => (
+                          <tr key={o.id}>
+                            <td>
+                              <bdi>{o.id}</bdi>
+                            </td>
+                            <td>{D.date(o.created)}</td>
+                            <td>{D.money(o.total)}</td>
+                            <td>
+                              <Badge value={o.status} />
+                            </td>
+                            <td>
+                              <button
+                                className="link"
+                                onClick={() =>
+                                  setSelected(selected === o.id ? "" : o.id)
+                                }
+                              >
+                                جزئیات و پیگیری
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                  <small></small>
+                  {selected &&
+                    orders.find((o) => o.id === selected) &&
+                    OrderCard({ o: orders.find((o) => o.id === selected)! })}
                 </>
               )}
+              {!orders.length && <Empty>هنوز سفارشی ندارید.</Empty>}
             </section>
+            {admin && (
+              <section className="card soft">
+                {admin ? (
+                  <>
+                    <span className="eyebrow">پیگیری مالی</span>
+                    <h2>نمای پرداخت‌ها</h2>
+                    <div className="line">
+                      <span>جمع پرداخت موفق آنلاین</span>
+                      <strong>
+                        {D.money(
+                          orders
+                            .filter((o) => o.payment === "paid")
+                            .reduce((a, o) => a + o.total, 0),
+                        )}
+                      </strong>
+                    </div>
+                    <div className="line">
+                      <span>تعداد پرداخت موفق</span>
+                      <strong>
+                        {orders
+                          .filter((o) => o.payment === "paid")
+                          .length.toLocaleString("fa-IR")}
+                      </strong>
+                    </div>
+                    <div className="line">
+                      <span>پرداخت ناموفق</span>
+                      <strong>
+                        {orders
+                          .filter((o) => o.payment === "failed")
+                          .length.toLocaleString("fa-IR")}
+                      </strong>
+                    </div>
+                    <div className="line">
+                      <span>پرداخت نشده</span>
+                      <strong>
+                        {orders
+                          .filter((o) => o.payment === "unpaid")
+                          .length.toLocaleString("fa-IR")}
+                      </strong>
+                    </div>
+                    <p>تأیید خرید شرایطی به معنی وصول چک نیست.</p>
+                    <button
+                      className="link"
+                      onClick={() => go("/admin/orders")}
+                    >
+                      بررسی و پیگیری سفارش‌ها <ArrowLeft size={15} />
+                    </button>
+                  </>
+                ) : null}
+              </section>
+            )}
           </div>
-          <section className="card">
-            <div className="section-title">
-              <h2>یادآور تأمین مجدد</h2>
-              <button
-                className="link"
-                onClick={() =>
-                  go(admin ? "/admin/forecast" : "/customer/devices")
-                }
-              >
-                جزئیات <ArrowLeft size={15} />
-              </button>
-            </div>
-            {Forecast({ c: customer, limit: 3 })}
-            <p className="muted">
-              این برآورد موجودی یا مصرف واقعی مرکز را اندازه‌گیری نمی‌کند.
-            </p>
-          </section>
+          {admin ? (
+            <section className="card">
+              <div className="section-title">
+                <h2>یادآور تأمین مجدد</h2>
+                <button
+                  className="link"
+                  onClick={() =>
+                    go(admin ? "/admin/forecast" : "/customer/devices")
+                  }
+                >
+                  جزئیات <ArrowLeft size={15} />
+                </button>
+              </div>
+              {Forecast({ c: customer, limit: 3 })}
+              <p className="muted">
+                این برآورد موجودی یا مصرف واقعی مرکز را اندازه‌گیری نمی‌کند.
+              </p>
+            </section>
+          ) : (
+            ReplenishmentCards()
+          )}
         </>
       );
     if (tab === "devices")
@@ -1164,137 +1416,51 @@ function App() {
               سبد خرید ({count})
             </button>
           </div>
-          <div className="grid cards">
-            {state.products
-              .filter(
-                (p) =>
-                  (p.name + " " + p.english + " " + p.code)
-                    .toLowerCase()
-                    .includes(query.toLowerCase()) &&
-                  (!deviceFilter ||
-                    p.models.includes(deviceFilter) ||
-                    p.referenceModels?.includes(deviceFilter)),
-              )
+          <label className="category-filter">
+            دسته‌بندی آزمایش
+            <select
+              aria-label="دسته‌بندی کیت‌ها"
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value);
+                setSupplyLimit(6);
+              }}
+            >
+              <option value="">همه دسته‌ها</option>
+              {categories
+                .filter((c) =>
+                  state.products.some((p) => categoryFor(p.id).id === c.id),
+                )
+                .map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                  </option>
+                ))}
+            </select>
+          </label>
+          <p className="muted" aria-live="polite">
+            {filteredProducts.length.toLocaleString("fa-IR")} محصول
+          </p>
+          {categories.map((category) => {
+            const items = filteredProducts
               .slice(0, supplyLimit)
-              .map((p) => (
-                <article className="card supply" key={p.id}>
-                  <div className="row">
-                    <span className="brand-label">
-                      {p.brand}
-                      {p.brand === "Wondfo" ? " / Finecare" : " / CBC"}
-                    </span>
-                    <Badge
-                      value={
-                        p.verified
-                          ? "قابل سفارش"
-                          : p.models.length
-                            ? "معرفی‌شده سازنده"
-                            : "نیازمند تأیید"
-                      }
-                    />
-                  </div>
-                  <div className="kit-photo kit-illustration">
-                    <KitArtwork product={p} />
-                    <small>تصویر گرافیکی</small>
-                  </div>
-                  <h2>{p.name}</h2>
-                  <p>
-                    <bdi>
-                      {p.english} {p.code && "· " + p.code}
-                    </bdi>
-                  </p>
-                  <p className="muted">
-                    {p.models.length ? (
-                      <>
-                        <bdi>{p.models.join(" / ")}</bdi>
-                      </>
-                    ) : (
-                      "سازگاری مستند نشده؛ قابل فروش نیست"
-                    )}
-                  </p>
-                  <details className="product-evidence">
-                    <summary>جزئیات بسته و منبع</summary>{" "}
-                    <small>
-                      معرفی‌شده در منوی سازنده؛ عرضه واقعی سانا تأیید نشده
-                    </small>
-                    <small>
-                      تعداد تست در بسته: {p.tests ?? "نیازمند تأیید"} · واحد
-                      سفارش: بسته
-                    </small>
-                    <a
-                      className="source"
-                      href={assetPath(p.source)}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
-                    </a>
-                  </details>
-                  <div className="price-block">
-                    <span>
-                      پایه، چک سه‌ماهه <strong>{D.money(p.price)}</strong>
-                    </span>
-                    <span className="online">
-                      آنلاین، ۲۰٪ کمتر{" "}
-                      <strong>{D.money(D.onlinePrice(p.price))}</strong>
-                    </span>
-                    <small>
-                      صرفه‌جویی: {D.money(p.price - D.onlinePrice(p.price))}
-                    </small>
-                  </div>
-                  {(cart[p.id] || 0) > 0 ? (
-                    <div
-                      className="product-quantity"
-                      aria-label={"تعداد انتخابی " + p.english}
-                    >
-                      <button
-                        aria-label={"کاهش " + p.english}
-                        onClick={() =>
-                          setCart({
-                            ...cart,
-                            [p.id]: Math.max(0, (cart[p.id] || 0) - 1),
-                          })
-                        }
-                      >
-                        <Minus size={18} />
-                      </button>
-                      <output aria-label={"تعداد بسته " + p.english}>
-                        {(cart[p.id] || 0).toLocaleString("fa-IR")}
-                        <small>بسته</small>
-                      </output>
-                      <button
-                        aria-label={"افزایش " + p.english}
-                        disabled={(cart[p.id] || 0) >= p.stock}
-                        onClick={() => add(p)}
-                      >
-                        <Plus size={18} />
-                      </button>
-                    </div>
-                  ) : (
-                    <button
-                      disabled={!D.compatible(p, customer) || p.stock === 0}
-                      onClick={() => add(p)}
-                    >
-                      <Plus size={17} />
-                      افزودن به سبد
-                    </button>
-                  )}
-                  <div className="stock">
-                    موجودی: <strong>{p.stock.toLocaleString("fa-IR")}</strong>{" "}
-                    بسته
-                  </div>
-                </article>
-              ))}
-          </div>
-          {state.products.filter(
-            (p) =>
-              (p.name + " " + p.english + " " + p.code)
-                .toLowerCase()
-                .includes(query.toLowerCase()) &&
-              (!deviceFilter ||
-                p.models.includes(deviceFilter) ||
-                p.referenceModels?.includes(deviceFilter)),
-          ).length > supplyLimit && (
+              .filter((p) => categoryFor(p.id).id === category.id);
+            return items.length ? (
+              <section
+                className="kit-category"
+                key={category.id}
+                aria-label={category.label}
+              >
+                <h2 className="category-heading">{category.label}</h2>
+                <div className="grid cards">
+                  {items.map((p) => (
+                    <React.Fragment key={p.id}>{KitCard({ p })}</React.Fragment>
+                  ))}
+                </div>
+              </section>
+            ) : null;
+          })}
+          {filteredProducts.length > supplyLimit && (
             <button
               className="secondary full"
               onClick={() => setSupplyLimit((n) => n + 6)}
@@ -1302,15 +1468,7 @@ function App() {
               نمایش محصولات بیشتر
             </button>
           )}
-          {!state.products.some(
-            (p) =>
-              (p.name + " " + p.english + " " + p.code)
-                .toLowerCase()
-                .includes(query.toLowerCase()) &&
-              (!deviceFilter ||
-                p.models.includes(deviceFilter) ||
-                p.referenceModels?.includes(deviceFilter)),
-          ) && <Empty>محصولی پیدا نشد.</Empty>}
+          {!filteredProducts.length && <Empty>محصولی پیدا نشد.</Empty>}
         </>
       );
     if (tab === "cart")
@@ -1325,38 +1483,83 @@ function App() {
           ) : (
             <div className="two-col">
               <div className="card">
-                {Object.entries(cart).map(([id, q]) => {
-                  const p = state.products.find((p) => p.id === id)!;
-                  return (
-                    <div className="cart-line" key={id}>
-                      <Package />
-                      <div>
-                        <h3>{p.name}</h3>
-                        <small>
-                          هر بسته {D.money(p.price)} · آنلاین{" "}
-                          {D.money(D.onlinePrice(p.price))}
-                        </small>
-                      </div>
-                      <div className="quantity">
-                        <button
-                          aria-label={"کاهش " + p.english}
-                          onClick={() =>
-                            setCart({ ...cart, [id]: Math.max(0, q - 1) })
-                          }
-                        >
-                          <Minus size={14} />
-                        </button>
-                        <span>{q} بسته</span>
-                        <button
-                          aria-label={"افزایش " + p.english}
-                          onClick={() => add(p)}
-                        >
-                          <Plus size={14} />
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
+                <div className="table-scroll" tabIndex={0}>
+                  <table className="cart-table">
+                    <caption>اقلام سبد خرید — قیمت‌ها به تومان</caption>
+                    <thead>
+                      <tr>
+                        <th>محصول</th>
+                        <th>تعداد بسته</th>
+                        <th>قیمت واحد</th>
+                        <th>جمع ردیف</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(cart)
+                        .filter(([, q]) => q > 0)
+                        .map(([id, q]) => {
+                          const p = state.products.find((p) => p.id === id)!;
+                          const unit =
+                            method === "online"
+                              ? D.onlinePrice(p.price)
+                              : p.price;
+                          return (
+                            <tr key={id}>
+                              <th scope="row">
+                                {p.name}
+                                <small>
+                                  <bdi>{p.english}</bdi>
+                                </small>
+                              </th>
+                              <td>
+                                <div className="quantity">
+                                  <button
+                                    aria-label={
+                                      (q === 1 ? "حذف " : "کاهش ") + p.english
+                                    }
+                                    onClick={() => decrease(id)}
+                                  >
+                                    {q === 1 ? (
+                                      <Trash2 size={18} />
+                                    ) : (
+                                      <Minus size={18} />
+                                    )}
+                                  </button>
+                                  <span>{q.toLocaleString("fa-IR")}</span>
+                                  <button
+                                    aria-label={"افزایش " + p.english}
+                                    disabled={q >= p.stock}
+                                    onClick={() => add(p)}
+                                  >
+                                    <Plus size={18} />
+                                  </button>
+                                </div>
+                              </td>
+                              <td data-label="قیمت واحد">{D.money(unit)}</td>
+                              <td data-label="جمع ردیف">
+                                <strong>{D.money(unit * q)}</strong>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                    </tbody>
+                    <tfoot>
+                      <tr>
+                        <th colSpan={3}>
+                          جمع{" "}
+                          {method === "online" ? "پرداخت آنلاین" : "چک سه‌ماهه"}
+                        </th>
+                        <td>
+                          <strong>
+                            {D.money(
+                              method === "online" ? D.onlinePrice(base) : base,
+                            )}
+                          </strong>
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
                 <section className="checkout-address">
                   <h3>نشانی تحویل</h3>
                   {customer.addresses?.length ? (
@@ -1789,6 +1992,7 @@ function App() {
                 )}
                 <AccountMenu
                   role={role}
+                  cartCount={count}
                   customer={customer}
                   onLogout={() => {
                     setRole("");
@@ -1847,6 +2051,7 @@ function App() {
             </nav>
             <AccountMenu
               role={role}
+              cartCount={count}
               customer={customer}
               onLogout={() => {
                 setRole("");
