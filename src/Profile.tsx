@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { MapPin, Plus, Pencil, Trash2, Check } from "lucide-react";
 import * as D from "./domain";
 import { assetPath } from "./assets";
 import { provinces } from "./locations";
-import { IranMap } from "./IranMap";
+const IranMap = lazy(() =>
+  import("./IranMap").then((m) => ({ default: m.IranMap })),
+);
 export function Profile({
   customer,
   onProfile,
@@ -293,12 +295,20 @@ export function Profile({
                 }
               />
             </label>
-            <IranMap
-              lat={editing.lat}
-              lng={editing.lng}
-              city={editing.city || editing.province}
-              onChange={(lat, lng) => setEditing({ ...editing, lat, lng })}
-            />
+            <Suspense
+              fallback={
+                <p className="map-loading" role="status">
+                  در حال آماده‌سازی نقشه…
+                </p>
+              }
+            >
+              <IranMap
+                lat={editing.lat}
+                lng={editing.lng}
+                city={editing.city || editing.province}
+                onChange={(lat, lng) => setEditing({ ...editing, lat, lng })}
+              />
+            </Suspense>
             <label className="check">
               <input
                 type="checkbox"

@@ -37,12 +37,26 @@ export const Empty = ({ children }: { children: React.ReactNode }) => (
   </div>
 );
 
-export const BrandLogo = ({ brand }: { brand: "Getein" | "Wondfo" }) => (
-  <img
-    className="manufacturer-logo"
-    src={assetPath(
-      `/product-assets/${brand.toLowerCase()}/branding/${brand.toLowerCase()}-logo.png`,
-    )}
-    alt={"لوگوی " + brand}
-  />
-);
+export const BrandLogo = ({ brand }: { brand: "Getein" | "Wondfo" }) =>
+  brand === "Getein" ? (
+    <svg
+      className="manufacturer-logo"
+      role="img"
+      aria-label="لوگوی Getein"
+      viewBox="0 0 258 59"
+      preserveAspectRatio="xMidYMid meet"
+      overflow="hidden"
+    >
+      <image
+        width="400"
+        height="59"
+        href={assetPath("/product-assets/getein/branding/getein-logo.png")}
+      />
+    </svg>
+  ) : (
+    <img
+      className="manufacturer-logo"
+      src={assetPath("/product-assets/wondfo/branding/wondfo-logo.png")}
+      alt="لوگوی Wondfo"
+    />
+  );

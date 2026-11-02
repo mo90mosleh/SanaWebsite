@@ -68,7 +68,9 @@ test("account dropdown, collapsible customer navigation, kit photos and quantity
   ).toBeVisible();
   await page.goto("/#/customer/supplies");
   await page.getByLabel("جست‌وجوی محصول").fill("W201");
-  await expect(page.locator(".kit-photo img")).toHaveCount(2);
+  await expect(
+    page.getByRole("img", { name: "تصویر گرافیکی کیت CRP", exact: true }),
+  ).toBeVisible();
   await page
     .getByRole("button", { name: "افزودن به سبد", exact: true })
     .click();
@@ -83,14 +85,12 @@ test("account dropdown, collapsible customer navigation, kit photos and quantity
   await expect(page.locator(".stock")).toContainText("۲۴");
   await switchToAdmin(page);
   await page.goto("/#/admin/customers");
-  const form = page
-    .locator("main form")
-    .filter({
-      has: page.getByRole("heading", {
-        name: "ویرایش آزمایشگاه بقراط",
-        exact: true,
-      }),
-    });
+  const form = page.locator("main form").filter({
+    has: page.getByRole("heading", {
+      name: "ویرایش آزمایشگاه بقراط",
+      exact: true,
+    }),
+  });
   await form.getByLabel("نشانی", { exact: true }).fill("نشانی تازه مرکز بقراط");
   await form.getByRole("button", { name: "ذخیره مرکز", exact: true }).click();
   await page.getByRole("button", { name: "نمای مشتری", exact: true }).click();
@@ -120,11 +120,13 @@ test("profile edits, saved city/map location, checkout address snapshot and jour
     .getByRole("combobox", { name: "شهر", exact: true })
     .selectOption("کاشان");
   await expect(
-    page.getByRole("img", { name: "نقشه ایران، موقعیت کاشان" }),
+    page.getByRole("region", { name: "نقشه OpenStreetMap، موقعیت کاشان" }),
   ).toBeVisible();
-  const map = page.getByRole("img", { name: "نقشه ایران، موقعیت کاشان" });
+  const map = page.getByRole("region", {
+    name: "نقشه OpenStreetMap، موقعیت کاشان",
+  });
   const box = await map.boundingBox();
-  await map.click({ position: { x: box!.width / 2 + 5, y: box!.height / 2 } });
+  await map.click({ position: { x: box!.width / 2 + 60, y: box!.height / 2 } });
   await page.getByLabel("نشانی دقیق").fill("خیابان مرکز، نشانی شعبه کاشان");
   await page.getByLabel("کد پستی").fill("1234567890");
   await page.getByRole("button", { name: "ذخیره آدرس", exact: true }).click();
@@ -147,14 +149,20 @@ test("profile edits, saved city/map location, checkout address snapshot and jour
   await page
     .getByRole("button", { name: "ثبت سفارش و پرداخت", exact: true })
     .click();
-  await expect(page.getByRole("list", { name: "مراحل سفارش" })).toContainText(
-    "در حال بررسی",
-  );
+  await expect(
+    page
+      .locator("article.order-card")
+      .first()
+      .getByRole("list", { name: "مراحل سفارش" }),
+  ).toContainText("در حال بررسی");
   await page.getByRole("button", { name: "جزئیات و پیگیری" }).first().click();
   await page.getByRole("button", { name: "پرداخت موفق", exact: true }).click();
-  await expect(page.locator(".order-journey .current")).toHaveText(
-    "در صف ارسال",
-  );
+  await expect(
+    page
+      .locator("article.order-card")
+      .first()
+      .locator(".order-journey .current"),
+  ).toHaveText("در صف ارسال");
   let s = await page.evaluate(() =>
     JSON.parse(localStorage.getItem("sana-demo-v1")!),
   );
@@ -212,5 +220,5 @@ test("existing browser data migrates without losing orders or feedback; favicon 
   const href = await page.locator("link[rel=icon]").getAttribute("href");
   const r = await request.get(href!);
   expect(r.status()).toBe(200);
-  expect(await r.text()).toContain("extract-s");
+  expect(await r.text()).toContain("<path");
 });

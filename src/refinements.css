@@ -870,3 +870,272 @@
   color: #a75362;
   background: #fceef0;
 }
+/* Delivery calendar and OpenStreetMap */
+.delivery-picker {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 22px;
+  margin-bottom: 24px;
+}
+.delivery-picker .section-title {
+  margin-bottom: 10px;
+  align-items: center;
+}
+.delivery-picker h3 {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 0;
+  font-size: 15px;
+}
+.delivery-picker .section-title > span {
+  font-size: 10px;
+  color: #8c939f;
+}
+.delivery-help {
+  font-size: 11px;
+  color: #858e9a;
+  line-height: 2;
+  margin-bottom: 15px;
+}
+.jalali-calendar {
+  border: 1px solid #e4e7ed;
+  border-radius: 12px;
+  padding: 13px;
+  background: #fff;
+}
+.calendar-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.calendar-heading strong {
+  font-size: 14px;
+}
+.calendar-heading button {
+  width: 32px;
+  height: 32px;
+  padding: 5px;
+  border-radius: 8px;
+}
+.calendar-heading button:hover {
+  background: #fff1f3;
+}
+.jalali-calendar table {
+  border-collapse: separate;
+  border-spacing: 3px;
+  width: 100%;
+  table-layout: fixed;
+}
+.jalali-calendar th {
+  font-size: 10px;
+  color: #9ca3af;
+  font-weight: 400;
+  height: 27px;
+  text-align: center;
+}
+.jalali-calendar td {
+  text-align: center;
+  padding: 0;
+}
+.jalali-calendar td button {
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 30px;
+  padding: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #4a5362;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 400;
+}
+.jalali-calendar td button:disabled {
+  color: #c8ccd3;
+  background: #f9fafb;
+  opacity: 1;
+  cursor: not-allowed;
+}
+.jalali-calendar td button.selected {
+  background: var(--red);
+  color: white;
+  box-shadow: 0 3px 9px #bf00151a;
+}
+.jalali-calendar td button.today {
+  border-color: #d5d9df;
+}
+.jalali-calendar td button:not(:disabled):not(.selected):hover {
+  background: #fff1f3;
+  color: var(--red);
+}
+.delivery-slots {
+  border: 0;
+  padding: 0;
+  margin: 18px 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.delivery-slots legend {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 10px;
+  color: #626d7d;
+}
+.delivery-slots label {
+  margin: 0;
+  border: 1px solid #e3e6ec;
+  border-radius: 8px;
+  padding: 10px 6px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.delivery-slots label input {
+  margin-left: 3px;
+}
+.delivery-slots label.selected {
+  border-color: #ce7f8c;
+  background: #fff5f6;
+  color: var(--red);
+}
+.delivery-selection {
+  font-size: 11px;
+  border-radius: 8px;
+  color: #7e5360;
+  background: #fff6f7;
+  padding: 12px;
+  line-height: 2.1;
+}
+.order-delivery-time {
+  padding: 13px 16px;
+  background: #fff7f8;
+  border: 1px solid #f1dfe3;
+  border-radius: 8px;
+  margin: 15px 0;
+  font-size: 12px;
+}
+.order-delivery-time p {
+  font-size: 12px;
+  margin: 7px 0;
+}
+.osm-map .leaflet-map {
+  height: 330px;
+  width: 100%;
+  z-index: 0;
+  direction: ltr;
+  cursor: crosshair;
+  background: #edf1f4;
+}
+.osm-map .leaflet-control-attribution {
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  direction: ltr;
+}
+.osm-map .leaflet-control-zoom a {
+  color: #536074;
+  font-size: 20px;
+  line-height: 30px;
+}
+.osm-map .leaflet-control a {
+  color: #39648a;
+}
+.sana-map-pin {
+  background: transparent !important;
+  border: 0 !important;
+}
+.osm-map-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: white;
+  border-top: 1px solid #e1e7ed;
+}
+.osm-map-actions button {
+  font-size: 10px;
+  padding: 7px 10px;
+}
+.osm-map-actions .link {
+  padding: 0;
+}
+.map-network-error {
+  padding: 12px 15px;
+  background: #fff8ed;
+  font-size: 11px;
+  color: #96733b;
+  line-height: 2;
+}
+.map-network-error button {
+  font-size: 10px;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.manufacturer-logo image {
+  image-rendering: auto;
+}
+@media (max-width: 760px) {
+  .jalali-calendar {
+    padding: 12px 8px;
+  }
+  .jalali-calendar td button {
+    min-height: 32px;
+    font-size: 13px;
+  }
+  .delivery-slots label {
+    font-size: 12px;
+    padding: 11px 4px;
+  }
+  .delivery-slots input {
+    width: 12px;
+    height: 12px;
+  }
+  .osm-map .leaflet-map {
+    height: 310px;
+  }
+  .osm-map .leaflet-control-attribution {
+    font-size: 9px;
+  }
+  .osm-map-actions button {
+    font-size: 10px;
+  }
+  .order-delivery-time p {
+    font-size: 11px;
+  }
+}
+.kit-photo.kit-illustration {
+  padding: 0 0 22px;
+  background: transparent;
+  border-color: #e9edf2;
+  display: block;
+  overflow: hidden;
+  min-height: 0;
+}
+.kit-artwork {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.kit-illustration > small {
+  bottom: 5px;
+}
+.map-loading {
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e2e8ee;
+  background: #f7f9fb;
+  border-radius: 12px;
+  color: #82909f;
+  font-size: 12px;
+  margin: 18px 0;
+}

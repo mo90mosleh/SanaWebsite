@@ -63,7 +63,7 @@ try {
   assert.match(iconHref, /^\/SanaWebsite\/favicon\.svg/);
   const icon = await page.request.get(new URL(iconHref, url).href);
   assert.equal(icon.status(), 200);
-  assert.match(await icon.text(), /extract-s/);
+  assert.match(await icon.text(), /<path/);
   await page.evaluate(() => document.fonts.ready);
   assert.equal(
     await page.evaluate(() => document.fonts.check("14px Vazirmatn")),

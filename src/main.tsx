@@ -1,3 +1,10 @@
+import { KitArtwork } from "./KitArtwork";
+import { DeliveryPicker } from "./DeliveryPicker";
+import {
+  firstAvailableDelivery,
+  formatDeliveryDate,
+  deliverySlotLabel,
+} from "./delivery";
 import { AccountMenu } from "./AccountMenu";
 import { Profile } from "./Profile";
 import { OrderJourney } from "./OrderJourney";
@@ -41,7 +48,6 @@ import { Login } from "./Login";
 const labels: Record<string, string> = {
   pending: "در انتظار بررسی",
   confirmed: "تأیید شده",
-  rejected: "رد شده",
   cancelled: "کنسل شده",
   unpaid: "پرداخت نشده",
   failed: "ناموفق",
@@ -69,6 +75,9 @@ function App() {
     () => localStorage.getItem("sana-sidebar-collapsed") === "true",
   );
   const [deliveryId, setDeliveryId] = useState("");
+  const [deliverySchedule, setDeliverySchedule] = useState(
+    firstAvailableDelivery,
+  );
   const [revision, setRevision] = useState(0);
   const [supplyLimit, setSupplyLimit] = useState(6);
   const [storageError, setStorageError] = useState("");
@@ -175,7 +184,15 @@ function App() {
   function place() {
     if (
       mutate((s) => {
-        D.createOrder(s, cid, cart, method, checkoutKey, delivery?.id);
+        D.createOrder(
+          s,
+          cid,
+          cart,
+          method,
+          checkoutKey,
+          delivery?.id,
+          deliverySchedule,
+        );
       })
     ) {
       setCart({});
@@ -294,10 +311,7 @@ function App() {
   }
   function OrderCard({ o }: { o: D.Order }) {
     const detail = selected === o.id;
-    const historical =
-      o.shipping === "delivered" ||
-      o.status === "cancelled" ||
-      o.status === "rejected";
+    const historical = o.shipping === "delivered" || o.status === "cancelled";
     return (
       <article className={"order-card order-stage-" + D.orderStage(o)}>
         <div className="order-summary">
@@ -312,15 +326,13 @@ function App() {
             value={
               o.status === "cancelled"
                 ? "cancelled"
-                : o.status === "rejected"
-                  ? "rejected"
-                  : D.orderStage(o) === "review"
-                    ? "در حال بررسی"
-                    : D.orderStage(o) === "queue"
-                      ? "در صف ارسال"
-                      : o.shipping === "delivered"
-                        ? "تحویل شده"
-                        : "ارسال شده"
+                : D.orderStage(o) === "review"
+                  ? "در حال بررسی"
+                  : D.orderStage(o) === "queue"
+                    ? "در صف ارسال"
+                    : o.shipping === "delivered"
+                      ? "تحویل شده"
+                      : "ارسال شده"
             }
           />
           <strong>{D.money(o.total)}</strong>
@@ -336,6 +348,15 @@ function App() {
         {detail && (
           <div className="order-detail">
             {!historical && <OrderJourney order={o} />}
+            {o.deliverySchedule && (
+              <div className="order-delivery-time">
+                <strong>زمان تحویل</strong>
+                <p>
+                  {formatDeliveryDate(o.deliverySchedule.date)}، ساعت{" "}
+                  {deliverySlotLabel(o.deliverySchedule.slot)} (به وقت تهران)
+                </p>
+              </div>
+            )}
             {o.deliveryAddress && (
               <div className="order-address">
                 <strong>نشانی تحویل</strong>
@@ -431,7 +452,7 @@ function App() {
                   نتیجه
                   <select name="decision">
                     <option value="approve">تأیید شرایطی</option>
-                    <option value="reject">رد درخواست</option>
+                    <option value="cancel">کنسل کردن سفارش</option>
                   </select>
                 </label>
                 <button>ثبت نتیجه بررسی</button>
@@ -1172,27 +1193,9 @@ function App() {
                       }
                     />
                   </div>
-                  <div className="kit-photo">
-                    {p.brand === "Wondfo" ? (
-                      <>
-                        <img
-                          src={assetPath(
-                            "/product-assets/wondfo/images/finecare-cassette.png",
-                          )}
-                          alt="کاست مرجع خانواده Finecare از کاتالوگ سازنده"
-                        />
-                        <img
-                          className="id-chip"
-                          src={assetPath(
-                            "/product-assets/wondfo/images/finecare-id-chip.png",
-                          )}
-                          alt="چیپ شناسایی کیت Finecare"
-                        />
-                        <small>تصویر مرجع خانواده Finecare</small>
-                      </>
-                    ) : (
-                      <Package size={52} />
-                    )}
+                  <div className="kit-photo kit-illustration">
+                    <KitArtwork product={p} />
+                    <small>تصویر گرافیکی</small>
                   </div>
                   <h2>{p.name}</h2>
                   <p>
@@ -1389,6 +1392,10 @@ function App() {
                 </section>
               </div>
               <div className="card">
+                <DeliveryPicker
+                  value={deliverySchedule}
+                  onChange={setDeliverySchedule}
+                />
                 <h2>روش خرید</h2>
                 <label
                   className={"method " + (method === "online" ? "chosen" : "")}
@@ -1475,7 +1482,6 @@ function App() {
               <option value="queue">در صف ارسال</option>
               <option value="sent">ارسال شده</option>
               <option value="cancelled">کنسل شده</option>
-              <option value="rejected">رد شده</option>
             </select>
           </div>
           <div className="orders-table-heading">
@@ -1488,18 +1494,14 @@ function App() {
             .filter(
               (o) =>
                 (!query ||
-                  (query === "cancelled" || query === "rejected"
+                  (query === "cancelled"
                     ? o.status === query
                     : D.orderStage(o) === query)) &&
                 (orderView === "all" ||
                   (orderView === "history"
-                    ? o.shipping === "delivered" ||
-                      o.status === "cancelled" ||
-                      o.status === "rejected"
+                    ? o.shipping === "delivered" || o.status === "cancelled"
                     : !(
-                        o.shipping === "delivered" ||
-                        o.status === "cancelled" ||
-                        o.status === "rejected"
+                        o.shipping === "delivered" || o.status === "cancelled"
                       ))),
             )
             .map((o) => (
@@ -1508,19 +1510,13 @@ function App() {
           {!orders.filter(
             (o) =>
               (!query ||
-                (query === "cancelled" || query === "rejected"
+                (query === "cancelled"
                   ? o.status === query
                   : D.orderStage(o) === query)) &&
               (orderView === "all" ||
                 (orderView === "history"
-                  ? o.shipping === "delivered" ||
-                    o.status === "cancelled" ||
-                    o.status === "rejected"
-                  : !(
-                      o.shipping === "delivered" ||
-                      o.status === "cancelled" ||
-                      o.status === "rejected"
-                    ))),
+                  ? o.shipping === "delivered" || o.status === "cancelled"
+                  : !(o.shipping === "delivered" || o.status === "cancelled"))),
           ).length && <Empty>سفارشی در این بخش نیست.</Empty>}
         </>
       );

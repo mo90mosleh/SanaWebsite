@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   seed,
   onlinePrice,
-  createOrder,
+  createOrder as baseCreateOrder,
   pay,
   review,
   reorder,
@@ -12,6 +12,16 @@ import {
   runLog,
   ship,
 } from "../src/domain.ts";
+import { firstAvailableDelivery } from "../src/delivery.ts";
+const createOrder: typeof baseCreateOrder = (
+  s,
+  c,
+  cart,
+  method,
+  key,
+  addressId,
+  schedule = firstAvailableDelivery(),
+) => baseCreateOrder(s, c, cart, method, key, addressId, schedule);
 test("online price is exactly 80 percent of integer base", () => {
   assert.equal(onlinePrice(2400000), 1920000);
   assert.equal(onlinePrice(9600000), 7680000);
@@ -47,13 +57,13 @@ test("credit review requires explanation, remains unpaid, and reserves only once
   ship(s, o.id, "delivered");
   assert.ok(o.deliveredAt);
 });
-test("rejection does not reserve or enter replenishment calculation", () => {
+test("sales cancellation does not reserve or enter replenishment calculation", () => {
   const s = seed();
   const before = forecast(s, s.customers[0], "crp");
   const stock = s.products[0].stock;
   const o = createOrder(s, "c1", { crp: 2 }, "credit", "reject");
   review(s, o.id, false, "مدارک تکمیل نشده");
-  assert.equal(o.status, "rejected");
+  assert.equal(o.status, "cancelled");
   assert.equal(s.products[0].stock, stock);
   assert.deepEqual(forecast(s, s.customers[0], "crp"), before);
 });

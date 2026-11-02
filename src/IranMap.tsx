@@ -1,26 +1,7 @@
-import { useEffect, useState } from "react";
-import { Plus, Minus, LocateFixed } from "lucide-react";
-import { iranOutline } from "./iran-outline";
-export const project = ([lng, lat]: number[]) => [
-  (lng - 43) * 26,
-  (40.5 - lat) * 30,
-];
-const outline =
-  iranOutline.map((p, i) => (i ? "L" : "M") + project(p).join(",")).join(" ") +
-  "Z";
-export function insideIran(lng: number, lat: number) {
-  let inside = false;
-  for (let i = 0, j = iranOutline.length - 1; i < iranOutline.length; j = i++) {
-    const [xi, yi] = iranOutline[i],
-      [xj, yj] = iranOutline[j];
-    if (
-      yi > lat !== yj > lat &&
-      lng < ((xj - xi) * (lat - yi)) / (yj - yi) + xi
-    )
-      inside = !inside;
-  }
-  return inside;
-}
+import { useEffect, useRef, useState } from "react";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { LocateFixed, RefreshCw } from "lucide-react";
 export function IranMap({
   lat,
   lng,
@@ -32,131 +13,165 @@ export function IranMap({
   city: string;
   onChange: (lat: number, lng: number) => void;
 }) {
-  const [zoom, setZoom] = useState(1);
-  const [focus, setFocus] = useState<[number, number]>([300, 250]);
-  const [error, setError] = useState("");
+  const node = useRef<HTMLDivElement>(null);
+  const map = useRef<L.Map | null>(null);
+  const marker = useRef<L.Marker | null>(null);
+  const layer = useRef<L.TileLayer | null>(null);
+  const change = useRef(onChange);
+  change.current = onChange;
+  const [failed, setFailed] = useState(false);
   useEffect(() => {
-    setFocus(project([lng, lat]) as [number, number]);
-    setZoom(2.4);
-    setError("");
+    if (!node.current) return;
+    const instance = L.map(node.current, {
+      center: [lat, lng],
+      zoom: 14,
+      minZoom: 5,
+      maxZoom: 19,
+      scrollWheelZoom: false,
+      zoomControl: false,
+      maxBounds: [
+        [23, 43],
+        [41, 65],
+      ],
+      maxBoundsViscosity: 0.9,
+      attributionControl: true,
+    });
+    map.current = instance;
+    L.control
+      .zoom({
+        position: "topright",
+        zoomInTitle: "بزرگ‌نمایی نقشه",
+        zoomOutTitle: "کوچک‌نمایی نقشه",
+      })
+      .addTo(instance);
+    instance.attributionControl.setPrefix(
+      '<a href="https://leafletjs.com" target="_blank" rel="noopener noreferrer">Leaflet</a>',
+    );
+    let loaded = 0;
+    const tiles = L.tileLayer(
+      "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+      {
+        maxZoom: 19,
+        attribution:
+          '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap contributors</a>',
+        crossOrigin: false,
+        referrerPolicy: "strict-origin-when-cross-origin",
+      },
+    );
+    layer.current = tiles;
+    tiles.on("loading", () => {
+      loaded = 0;
+    });
+    tiles.on("tileload", () => {
+      loaded++;
+      setFailed(false);
+    });
+    tiles.on("tileerror", () => {
+      if (!loaded) setFailed(true);
+    });
+    tiles.addTo(instance);
+    const pin = L.marker([lat, lng], {
+      draggable: true,
+      keyboard: true,
+      alt: "نشان موقعیت تحویل",
+      icon: L.divIcon({
+        className: "sana-map-pin",
+        html: '<svg xmlns="http://www.w3.org/2000/svg" width="30" height="40" viewBox="0 0 30 40"><path d="M15 1C7 1 1 7 1 15c0 11 14 24 14 24s14-13 14-24C29 7 23 1 15 1Z" fill="#bf0015" stroke="white" stroke-width="2"/><circle cx="15" cy="14" r="5" fill="white"/></svg>',
+        iconSize: [30, 40],
+        iconAnchor: [15, 39],
+      }),
+    }).addTo(instance);
+    marker.current = pin;
+    pin
+      .getElement()
+      ?.setAttribute("aria-label", "نشان موقعیت تحویل؛ قابل جابه‌جایی");
+    const update = (p: L.LatLng) => {
+      const next = L.latLng(
+        Math.max(24, Math.min(40, p.lat)),
+        Math.max(44, Math.min(64, p.lng)),
+      );
+      pin.setLatLng(next);
+      change.current(Number(next.lat.toFixed(6)), Number(next.lng.toFixed(6)));
+    };
+    instance.on("click", (e: L.LeafletMouseEvent) => update(e.latlng));
+    pin.on("dragend", () => update(pin.getLatLng()));
+    const size = new ResizeObserver(() => instance.invalidateSize());
+    size.observe(node.current);
+    instance.invalidateSize();
+    return () => {
+      size.disconnect();
+      tiles.off();
+      instance.remove();
+      map.current = null;
+      marker.current = null;
+      layer.current = null;
+    };
+  }, []);
+  useEffect(() => {
+    marker.current?.setLatLng([lat, lng]);
+  }, [lat, lng]);
+  useEffect(() => {
+    map.current?.setView([lat, lng], 14, { animate: false });
   }, [city]);
-  const [px, py] = project([lng, lat]);
-  const tx = 300 - focus[0] * zoom,
-    ty = 250 - focus[1] * zoom;
-  function choose(e: React.MouseEvent<SVGSVGElement>) {
-    const svg = e.currentTarget;
-    const point = svg.createSVGPoint();
-    point.x = e.clientX;
-    point.y = e.clientY;
-    const ctm = svg.getScreenCTM();
-    if (!ctm) return;
-    const p = point.matrixTransform(ctm.inverse());
-    const x = (p.x - tx) / zoom,
-      y = (p.y - ty) / zoom;
-    const nextLng = x / 26 + 43,
-      nextLat = 40.5 - y / 30;
-    if (!insideIran(nextLng, nextLat)) {
-      setError("یک نقطه داخل محدوده ایران انتخاب کنید.");
-      return;
-    }
-    setError("");
-    onChange(Number(nextLat.toFixed(5)), Number(nextLng.toFixed(5)));
-  }
   return (
-    <div className="iran-map">
+    <div className="iran-map osm-map">
       <div className="map-label">
-        <span>انتخاب موقعیت روی نقشه ایران</span>
+        <span>موقعیت تحویل روی نقشه</span>
         <strong>{city}</strong>
       </div>
-      <svg
-        role="img"
-        aria-label={"نقشه ایران، موقعیت " + city}
-        viewBox="0 0 600 500"
-        onClick={choose}
-      >
-        <rect width="600" height="500" fill="#eef6fa" />
-        <defs>
-          <pattern
-            id="map-grid"
-            width="40"
-            height="40"
-            patternUnits="userSpaceOnUse"
-          >
-            <path
-              d="M 40 0 L 0 0 0 40"
-              fill="none"
-              stroke="#dcebf0"
-              strokeWidth=".5"
-            />
-          </pattern>
-        </defs>
-        <rect width="600" height="500" fill="url(#map-grid)" />
-        <g transform={`translate(${tx},${ty}) scale(${zoom})`}>
-          <path
-            d={outline}
-            fill="#f8f6ed"
-            stroke="#9ab6ac"
-            strokeWidth={1 / zoom}
-          />
-          <circle
-            cx={px}
-            cy={py}
-            r={12 / zoom}
-            fill="#bf0015"
-            fillOpacity=".12"
-          />
-          <circle
-            cx={px}
-            cy={py}
-            r={5 / zoom}
-            fill="#bf0015"
-            stroke="white"
-            strokeWidth={2 / zoom}
-          />
-        </g>
-        <text x="23" y="470" fontSize="14" fill="#87a4b1">
-          N ↑
-        </text>
-      </svg>
-      <div className="map-controls">
+      <div
+        ref={node}
+        className="leaflet-map"
+        role="region"
+        aria-label={"نقشه OpenStreetMap، موقعیت " + city}
+        data-lat={lat}
+        data-lng={lng}
+      />
+      <div className="osm-map-actions">
         <button
           type="button"
           className="secondary"
-          aria-label="بزرگ‌نمایی نقشه"
-          onClick={() => setZoom((z) => Math.min(8, z + 1))}
-        >
-          <Plus size={16} />
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          aria-label="کوچک‌نمایی نقشه"
-          onClick={() => setZoom((z) => Math.max(1, z - 1))}
-        >
-          <Minus size={16} />
-        </button>
-        <button
-          type="button"
-          className="secondary"
-          aria-label="نمای کل ایران"
           onClick={() => {
-            setFocus([300, 250]);
-            setZoom(1);
+            const p = map.current?.getCenter();
+            if (p) {
+              onChange(Number(p.lat.toFixed(6)), Number(p.lng.toFixed(6)));
+              marker.current?.setLatLng(p);
+            }
           }}
         >
-          <LocateFixed size={16} />
+          <LocateFixed size={15} />
+          انتخاب مرکز نقشه
+        </button>
+        <button
+          type="button"
+          className="link"
+          onClick={() => map.current?.setView([lat, lng], 16)}
+        >
+          بازگشت به نشان
         </button>
       </div>
       <div className="map-caption">
-        برای جابه‌جایی نشان، روی نقشه بزنید.{" "}
+        روی خیابان موردنظر بزنید یا نشان را جابه‌جا کنید.
         <bdi>
-          {lat.toFixed(4)}, {lng.toFixed(4)}
+          {lat.toFixed(5)}, {lng.toFixed(5)}
         </bdi>
       </div>
-      {error && (
-        <p role="alert" className="error">
-          {error}
-        </p>
+      {failed && (
+        <div className="map-network-error" role="status">
+          نقشه بارگیری نشد؛ اتصال اینترنت را بررسی کنید. موقعیت انتخاب‌شده حفظ
+          شده است.
+          <button
+            type="button"
+            className="link"
+            onClick={() => {
+              setFailed(false);
+              layer.current?.redraw();
+            }}
+          >
+            <RefreshCw size={14} />
+            بارگیری دوباره
+          </button>
+        </div>
       )}
     </div>
   );

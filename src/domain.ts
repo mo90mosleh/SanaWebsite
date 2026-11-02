@@ -1,3 +1,8 @@
+import {
+  firstAvailableDelivery,
+  validateDelivery,
+  type DeliverySchedule,
+} from "./delivery";
 import { deliverDemo } from "./adapters";
 export type Item = {
   id: string;
@@ -60,11 +65,12 @@ export type Order = {
   lines: Line[];
   method: "online" | "credit";
   total: number;
-  status: "pending" | "confirmed" | "rejected" | "cancelled";
+  status: "pending" | "confirmed" | "cancelled";
   payment: "unpaid" | "failed" | "paid";
   shipping: "waiting" | "preparing" | "sent" | "delivered";
   deliveredAt?: string;
   deliveryAddress?: SavedAddress;
+  deliverySchedule?: DeliverySchedule;
   note: string;
 };
 export type Log = {
@@ -292,9 +298,11 @@ export function seed(): State {
     deliveredAt: day(d),
     note: "",
   }));
+  const pending = samplePendingOrder({ products, customers });
+  if (pending) orders.unshift(pending);
   return {
     version: 1,
-    presentationRevision: 2,
+    presentationRevision: 3,
     products,
     customers,
     orders,
@@ -335,9 +343,11 @@ export function createOrder(
   method: Order["method"],
   key: string,
   addressId?: string,
+  schedule?: DeliverySchedule,
 ) {
   const existing = s.orders.find((o) => o.key === key);
   if (existing) return existing;
+  validateDelivery(schedule);
   const c = s.customers.find((c) => c.id === customer);
   if (!c?.active) throw Error("حساب مرکز غیرفعال است");
   const chosen =
@@ -369,6 +379,7 @@ export function createOrder(
     payment: "unpaid",
     shipping: "waiting",
     note: "",
+    deliverySchedule: { ...schedule! },
   };
   if (chosen) o.deliveryAddress = { ...chosen };
   s.orders.unshift(o);
@@ -386,11 +397,7 @@ function reserve(s: State, o: Order) {
 export function pay(s: State, id: string, success: boolean) {
   const o = s.orders.find((o) => o.id === id)!;
   if (o.payment === "paid") return;
-  if (
-    o.method !== "online" ||
-    o.status === "cancelled" ||
-    o.status === "rejected"
-  )
+  if (o.method !== "online" || o.status === "cancelled")
     throw Error("این سفارش قابل پرداخت آنلاین نیست");
   if (success) {
     reserve(s, o);
@@ -407,7 +414,7 @@ export function review(s: State, id: string, approved: boolean, note: string) {
     throw Error("درخواست قبلاً بررسی شده است");
   if (!note.trim()) throw Error("توضیح بررسی الزامی است");
   if (approved) reserve(s, o);
-  o.status = approved ? "confirmed" : "rejected";
+  o.status = approved ? "confirmed" : "cancelled";
   o.note = note;
   event(s, "order.status", o.id);
 }
@@ -575,10 +582,27 @@ export function migratePresentation(s: State): State {
     });
     s.presentationRevision = 2;
   }
+  for (const o of s.orders) {
+    if ((o.status as string) === "rejected") o.status = "cancelled";
+  }
+  if ((s.presentationRevision ?? 0) < 3) {
+    if (
+      !s.orders.some(
+        (o) => o.key === "seed-review-1004" || o.id === "SANA-1004",
+      )
+    ) {
+      const pending = samplePendingOrder(s);
+      if (pending) {
+        s.orders.unshift(pending);
+        event(s, "order.created", pending.id);
+      }
+    }
+    s.presentationRevision = 3;
+  }
   return s;
 }
 export function orderStage(o: Order): "review" | "queue" | "sent" | "closed" {
-  if (o.status === "cancelled" || o.status === "rejected") return "closed";
+  if (o.status === "cancelled") return "closed";
   if (o.status === "pending") return "review";
   return o.shipping === "sent" || o.shipping === "delivered" ? "sent" : "queue";
 }
@@ -648,4 +672,33 @@ export function formatAddress(a: SavedAddress) {
   return a.address.startsWith(a.province) || a.address.startsWith(a.city)
     ? a.address
     : region + "، " + a.address;
+}
+
+export function samplePendingOrder(
+  s: Pick<State, "products" | "customers">,
+): Order | null {
+  const c = s.customers.find((c) => c.id === "c1");
+  if (!c) return null;
+  const product = s.products.find(
+    (p) => p.verified && compatible(p, c) && p.stock > 0,
+  );
+  if (!product) return null;
+  const address = c.addresses?.find((a) => a.isDefault) || c.addresses?.[0];
+  return {
+    id: "SANA-1004",
+    key: "seed-review-1004",
+    customer: c.id,
+    created: new Date().toISOString(),
+    lines: [
+      { product: product.id, name: product.name, qty: 1, price: product.price },
+    ],
+    method: "credit",
+    total: product.price,
+    status: "pending",
+    payment: "unpaid",
+    shipping: "waiting",
+    note: "در انتظار بررسی فروش",
+    deliveryAddress: address ? { ...address } : undefined,
+    deliverySchedule: firstAvailableDelivery(),
+  };
 }

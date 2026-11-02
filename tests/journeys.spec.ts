@@ -58,13 +58,13 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await c.getByRole("button", { name: "پرداخت ناموفق", exact: true }).click();
   let s = await state(p);
   expect(s.orders[0].payment).toBe("failed");
-  expect(s.orders).toHaveLength(4);
+  expect(s.orders).toHaveLength(5);
   await p.reload();
   c = await firstOrder(p);
   await c.getByRole("button", { name: "پرداخت موفق", exact: true }).click();
   s = await state(p);
   expect(s.orders[0].payment).toBe("paid");
-  expect(s.orders).toHaveLength(4);
+  expect(s.orders).toHaveLength(5);
   expect(s.products[0].stock).toBe(23);
   await switchToAdmin(p);
   await nav(p, "/admin/orders");
@@ -88,12 +88,12 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await nav(p, "/admin/orders");
   c = await firstOrder(p);
   await c.getByLabel("توضیح بررسی").fill("مدارک دمو تکمیل نشده");
-  await c.getByLabel("نتیجه").selectOption("reject");
+  await c.getByLabel("نتیجه").selectOption("cancel");
   await c.getByRole("button", { name: "ثبت نتیجه بررسی" }).click();
   await p.getByRole("button", { name: "نمای مشتری", exact: true }).click();
   await nav(p, "/customer/orders");
   c = await firstOrder(p);
-  await expect(c).toContainText("رد شده");
+  await expect(c).toContainText("کنسل شده");
   await expect(c).toContainText("مدارک دمو تکمیل نشده");
   await orderAgain(p);
   await p.getByText("چک سه‌ماهه؛ نیازمند تأیید فروش", { exact: true }).click();
@@ -139,11 +139,9 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await expect(p.locator("main")).toContainText("پرسش فنی دمو");
   await switchToAdmin(p);
   await nav(p, "/admin/tickets");
-  const ticket = p
-    .locator("main article")
-    .filter({
-      has: p.getByRole("heading", { name: "پرسش فنی دمو", exact: true }),
-    });
+  const ticket = p.locator("main article").filter({
+    has: p.getByRole("heading", { name: "پرسش فنی دمو", exact: true }),
+  });
   await ticket
     .getByLabel("پاسخ", { exact: true })
     .fill("پاسخ نمایشی کارشناس سانا");
@@ -180,7 +178,7 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await p
     .getByRole("button", { name: "بازنشانی داده‌ها", exact: true })
     .click();
-  expect((await state(p)).orders.length).toBe(3);
+  expect((await state(p)).orders.length).toBe(4);
   expect((await state(p)).tickets.length).toBe(1);
   expect(external).toEqual([]);
 });
