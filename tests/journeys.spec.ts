@@ -224,7 +224,6 @@ test("public and panel pages render RTL without viewport overflow on mobile and 
       "/devices/bha3000",
       "/devices/bha5000",
       "/devices/bha5100",
-      "/about",
       "/services",
       "/contact",
       "/login",

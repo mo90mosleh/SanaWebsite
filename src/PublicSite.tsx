@@ -98,37 +98,6 @@ export function PublicSite({ path }: { path: string }) {
         </section>
       </main>
     );
-  if (path === "/about")
-    return (
-      <main className="public-main prose">
-        <span className="eyebrow">آشنایی با سانا</span>
-        <h1>همراه مسیر آزمایشگاه</h1>
-        <p className="lead">
-          سانا، لاین دستگاه‌های CBC و POCT مجموعه‌ای است که پیش‌تر با نام یاسین
-          طب فعالیت داشته است.
-        </p>
-        <p>
-          اورتانیس برند لوازم مصرفی آزمایشگاه است. در سانا، معرفی روشن دستگاه‌ها
-          و دسترسی ساده‌تر مشتریان به سفارش و پشتیبانی در کنار یکدیگر قرار
-          می‌گیرند.
-        </p>
-        <div className="grid three">
-          {[
-            "انتخاب آگاهانه دستگاه",
-            "تأمین متناسب با نیاز مرکز",
-            "پیگیری خدمات و سفارش",
-          ].map((x, i) => (
-            <div className="card" key={x}>
-              <span className="step">۰{i + 1}</span>
-              <h3>{x}</h3>
-            </div>
-          ))}
-        </div>
-        <p className="notice">
-          اطلاعات ثبتی، نام حقوقی و تعهدات تجاری پس از تأیید سانا تکمیل می‌شوند.
-        </p>
-      </main>
-    );
   if (path === "/services")
     return (
       <main className="public-main prose">
