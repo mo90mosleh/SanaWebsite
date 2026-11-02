@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   MessageSquarePlus,
-  MousePointer2,
+  List,
   X,
   Download,
   ChevronLeft,
@@ -263,28 +263,8 @@ export function Feedback() {
       data-feedback-ui="true"
       dir="rtl"
     >
-      {selecting && (
-        <>
-          <div className="feedback-select-instruction" role="status">
-            <MousePointer2 size={18} />
-            <span>
-              روی بخش موردنظر بزن؛ فقط یادداشت می‌گذاریم.
-              <small>با کلید Tab و سپس Enter هم می‌توانی انتخاب کنی.</small>
-            </span>
-            <button
-              className="feedback-icon"
-              aria-label="لغو انتخاب بخش"
-              onClick={() => {
-                setSelecting(false);
-                setHover(null);
-                launcher.current?.focus();
-              }}
-            >
-              <X size={19} />
-            </button>
-          </div>
-          {hover && <div className="feedback-highlight" style={hover} />}
-        </>
+      {selecting && hover && (
+        <div className="feedback-highlight" style={hover} />
       )}
       {!selecting &&
         visibleMarks &&
@@ -346,10 +326,6 @@ export function Feedback() {
             </button>
           </header>
           <div className="feedback-content">
-            <p className="feedback-local">
-              یادداشت‌ها فقط در همین مرورگر ذخیره می‌شوند. برای بررسی و اعمال
-              تغییرات، فایل خروجی را در گفت‌وگوی Codex پیوست کن.
-            </p>
             {error && (
               <p className="feedback-error" role="alert">
                 {error}
@@ -376,8 +352,10 @@ export function Feedback() {
                         : [...notes, note],
                     )
                   ) {
-                    setDraft(null);
-                    setMessage("یادداشت در همین مرورگر ذخیره شد.");
+                    close();
+                    setMessage(
+                      "یادداشت ذخیره شد؛ برای مورد بعدی دوباره بازخورد را بزنید.",
+                    );
                   }
                 }}
               >
@@ -405,21 +383,13 @@ export function Feedback() {
                 </label>
                 <div className="feedback-actions">
                   <button type="submit">ذخیره یادداشت</button>
-                  <button
-                    type="button"
-                    className="secondary"
-                    onClick={() => setDraft(null)}
-                  >
+                  <button type="button" className="secondary" onClick={close}>
                     انصراف
                   </button>
                 </div>
               </form>
             ) : (
               <>
-                <button className="full" onClick={begin}>
-                  <MousePointer2 size={17} />
-                  انتخاب بخش و افزودن یادداشت
-                </button>
                 <div className="feedback-toolbar">
                   <label>
                     نمایش یادداشت‌ها
@@ -550,18 +520,45 @@ export function Feedback() {
           </div>
         </section>
       )}
-      {!open && !selecting && (
-        <button
-          ref={launcher}
-          className="feedback-launcher"
-          onClick={() => setOpen(true)}
-        >
-          <MessageSquarePlus size={18} />
-          بازخورد
-          {notes.length > 0 && (
+      {!open && (
+        <div className="feedback-launcher-group">
+          <button
+            ref={launcher}
+            className="feedback-launcher"
+            aria-pressed={selecting}
+            onClick={() => {
+              if (selecting) {
+                setSelecting(false);
+                setHover(null);
+              } else begin();
+            }}
+          >
+            {selecting ? <X size={18} /> : <MessageSquarePlus size={18} />}
+            {selecting ? "لغو انتخاب" : "بازخورد"}
+          </button>
+          <button
+            className="feedback-history"
+            aria-label={
+              "مشاهده بازخوردهای ثبت‌شده (" +
+              notes.length.toLocaleString("fa-IR") +
+              ")"
+            }
+            onClick={() => {
+              setSelecting(false);
+              setHover(null);
+              setDraft(null);
+              setOpen(true);
+            }}
+          >
+            <List size={18} />
             <span>{notes.length.toLocaleString("fa-IR")}</span>
-          )}
-        </button>
+          </button>
+        </div>
+      )}
+      {!open && message && (
+        <span className="sr-only" role="status">
+          {message}
+        </span>
       )}
     </div>
   );

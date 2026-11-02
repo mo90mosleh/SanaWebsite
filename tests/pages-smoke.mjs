@@ -128,9 +128,6 @@ try {
   assert.deepEqual(errors, []);
   await page.getByRole("button", { name: "بازخورد", exact: true }).click();
   await page
-    .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
-    .click();
-  await page
     .getByRole("heading", { name: "سفارش‌های من", exact: true })
     .click();
   await page.getByLabel("تغییر پیشنهادی").fill("بازخورد آزمایشی نسخه Pages");

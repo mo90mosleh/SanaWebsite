@@ -7,9 +7,6 @@ test("page annotations persist, select without triggering links, edit, export an
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await page.getByRole("button", { name: "بازخورد", exact: true }).click();
-  await page
-    .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
-    .click();
   await page.getByRole("link", { name: "ورود", exact: true }).click();
   await expect(page).not.toHaveURL(/#\/login/);
   const editor = page.getByRole("dialog", { name: "نوشتن بازخورد" });
@@ -20,12 +17,12 @@ test("page annotations persist, select without triggering links, edit, export an
   await editor
     .getByRole("button", { name: "ذخیره یادداشت", exact: true })
     .click();
-  await expect(page.getByRole("dialog")).toContainText(
-    "دکمه ورود مشتریان بزرگ‌تر شود.",
-  );
-  await page.getByRole("button", { name: "بستن بازخورد", exact: true }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(
+    page.getByRole("button", { name: "بازخورد", exact: true }),
+  ).toBeVisible();
   await page.reload();
-  await page.getByRole("button", { name: /^بازخورد/ }).click();
+  await page.getByRole("button", { name: /مشاهده بازخوردهای ثبت‌شده/ }).click();
   await expect(page.getByRole("dialog")).toContainText(
     "دکمه ورود مشتریان بزرگ‌تر شود.",
   );
@@ -36,6 +33,8 @@ test("page annotations persist, select without triggering links, edit, export an
   await page
     .getByRole("button", { name: "ذخیره یادداشت", exact: true })
     .click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await page.getByRole("button", { name: /مشاهده بازخوردهای ثبت‌شده/ }).click();
   const download = page.waitForEvent("download");
   await page
     .getByRole("button", { name: /دریافت بازخوردهای در انتظار بررسی/ })
@@ -76,25 +75,19 @@ test("notes retain original page and survive role changes and demo reset; keyboa
   await page.goto("/#/login");
   await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
   await page.getByRole("button", { name: "بازخورد", exact: true }).click();
-  await page
-    .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
-    .click();
   await page.keyboard.press("Escape");
   await expect(
     page.getByRole("button", { name: "بازخورد", exact: true }),
   ).toBeVisible();
   await page.getByRole("button", { name: "بازخورد", exact: true }).click();
-  await page
-    .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
-    .click();
   await page.getByRole("heading", { name: "سلام، به سانا خوش آمدید" }).click();
   await page.getByLabel("تغییر پیشنهادی").fill("متن خوش‌آمد کوتاه شود.");
   await page
     .getByRole("button", { name: "ذخیره یادداشت", exact: true })
     .click();
-  await page.getByRole("button", { name: "بستن بازخورد" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
   await switchToAdmin(page);
-  await page.getByRole("button", { name: /^بازخورد/ }).click();
+  await page.getByRole("button", { name: /مشاهده بازخوردهای ثبت‌شده/ }).click();
   await expect(page.getByRole("dialog")).toContainText(
     "در این صفحه یادداشتی نیست",
   );
@@ -107,7 +100,7 @@ test("notes retain original page and survive role changes and demo reset; keyboa
   await page
     .getByRole("button", { name: "بازنشانی داده‌ها", exact: true })
     .click();
-  await page.getByRole("button", { name: /^بازخورد/ }).click();
+  await page.getByRole("button", { name: /مشاهده بازخوردهای ثبت‌شده/ }).click();
   await expect(page.getByRole("dialog")).toContainText(
     "متن خوش‌آمد کوتاه شود.",
   );
@@ -118,9 +111,6 @@ test("form selection exports labels, never typed password values", async ({
   await page.goto("/#/login");
   await page.getByLabel("رمز عبور", { exact: true }).fill("private-test-text");
   await page.getByRole("button", { name: "بازخورد", exact: true }).click();
-  await page
-    .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
-    .click();
   await page.getByLabel("رمز عبور", { exact: true }).click();
   await page.getByLabel("تغییر پیشنهادی").fill("عنوان رمز واضح‌تر باشد");
   await page
@@ -171,7 +161,7 @@ test("JSON exports only pending notes from all pages, preserves completed notes 
     );
   });
   await page.reload();
-  await page.getByRole("button", { name: /^بازخورد/ }).click();
+  await page.getByRole("button", { name: /مشاهده بازخوردهای ثبت‌شده/ }).click();
   const exportButton = page.getByRole("button", {
     name: /دریافت بازخوردهای در انتظار بررسی/,
   });
@@ -199,4 +189,52 @@ test("JSON exports only pending notes from all pages, preserves completed notes 
   expect(next.notes.every((n: { status: string }) => n.status === "open")).toBe(
     true,
   );
+});
+
+test("one-click selection supports consecutive notes, collapses after each save and leaves normal navigation usable", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+  for (const [index, target] of [
+    page.getByRole("heading", { level: 1 }),
+    page.locator(".hero-copy > p"),
+  ].entries()) {
+    await page.getByRole("button", { name: "بازخورد", exact: true }).click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "لغو انتخاب", exact: true }),
+    ).toHaveAttribute("aria-pressed", "true");
+    await expect(page.locator(".feedback-select-instruction")).toHaveCount(0);
+    await target.click();
+    await page
+      .getByLabel("تغییر پیشنهادی")
+      .fill("بازخورد پیاپی " + (index + 1));
+    await page
+      .getByRole("button", { name: "ذخیره یادداشت", exact: true })
+      .click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: "بازخورد", exact: true }),
+    ).toBeFocused();
+  }
+  expect(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("sana-feedback-v1")!).length,
+    ),
+  ).toBe(2);
+  await page.getByRole("button", { name: /مشاهده بازخوردهای ثبت‌شده/ }).click();
+  await expect(page.locator(".feedback-notes > li")).toHaveCount(2);
+  await expect(
+    page.getByRole("button", {
+      name: "انتخاب بخش و افزودن یادداشت",
+      exact: true,
+    }),
+  ).toHaveCount(0);
+  await expect(page.locator(".feedback-local")).toHaveCount(0);
+  await page.getByRole("button", { name: "بستن بازخورد", exact: true }).click();
+  await page.getByRole("button", { name: "بازخورد", exact: true }).click();
+  await page.getByRole("button", { name: "لغو انتخاب", exact: true }).click();
+  await page.getByRole("link", { name: "ورود", exact: true }).click();
+  await expect(page).toHaveURL(/#\/login$/);
 });

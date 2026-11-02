@@ -344,3 +344,46 @@ body:has(.feedback-selecting) #root > :not(.feedback-root) {
     transition: none !important;
   }
 }
+
+/* Direct selection launcher with a separate saved-notes control. */
+.feedback-launcher-group {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 1005;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.feedback-launcher-group .feedback-launcher {
+  position: static;
+  min-height: 44px;
+}
+.feedback-history {
+  min-height: 44px;
+  border: 1px solid #e3d7db;
+  border-radius: 24px;
+  padding: 8px 11px;
+  gap: 5px;
+  background: #fff;
+  color: #66535a;
+  box-shadow: 0 4px 18px #46252b12;
+  font-size: 12px;
+}
+body:has(.feedback-selecting) #root > :not(.feedback-root) * {
+  cursor: crosshair !important;
+}
+@media (max-width: 900px) {
+  .feedback-launcher-group {
+    bottom: 14px;
+    left: 12px;
+  }
+  .app-shell ~ .feedback-root .feedback-launcher-group {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+  .app-shell:has(.mobile-cart-summary)
+    ~ .feedback-root
+    .feedback-launcher-group {
+    bottom: calc(156px + env(safe-area-inset-bottom, 0px));
+  }
+}
