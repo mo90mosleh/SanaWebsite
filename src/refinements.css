@@ -1458,3 +1458,5 @@ small,
   .public-header > nav { gap: 4px; padding: 5px; }
   .public-header > nav > a { padding-inline: 12px; }
 }
+.jalali-calendar button.nonworking:disabled { color: #b84251; background: #fff4f5; opacity: .65; }
+.delivery-picker .notice .link { display: block; margin-top: 8px; }

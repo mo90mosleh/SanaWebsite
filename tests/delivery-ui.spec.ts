@@ -28,7 +28,7 @@ test("Jalali calendar forbids today/tomorrow, stores chosen date and all three w
   await expect(page.locator('button[data-date="2026-11-02"]')).toBeDisabled();
   await expect(page.locator('button[data-date="2026-11-03"]')).toBeDisabled();
   await expect(page.locator('button[data-date="2026-11-04"]')).toBeEnabled();
-  await page.locator('button[data-date="2026-11-05"]').click();
+  await page.locator('button[data-date="2026-11-07"]').click();
   await expect(page.locator('input[name="delivery-slot"]')).toHaveCount(3);
   await page.getByRole("radio", { name: "۱۵ تا ۱۸", exact: true }).check();
   await page
@@ -38,7 +38,7 @@ test("Jalali calendar forbids today/tomorrow, stores chosen date and all three w
     JSON.parse(localStorage.getItem("sana-demo-v1")!),
   );
   expect(s.orders[0].deliverySchedule).toEqual({
-    date: "2026-11-05",
+    date: "2026-11-07",
     slot: "15-18",
     timeZone: "Asia/Tehran",
   });
@@ -169,4 +169,91 @@ test("kit artwork differs and favicon is a transparent vector without raster fil
   expect(svg).not.toContain("<filter");
   expect(svg).not.toContain("<image");
   expect(svg).not.toContain("<rect");
+});
+
+test("offline calendar blocks Fridays and religious holidays, and Thursday removes the afternoon slot", async ({
+  page,
+}) => {
+  await page.clock.install({ time: new Date("2026-11-02T08:00:00Z") });
+  await page.route(
+    "https://cdn.jsdelivr.net/npm/@avan-persian/holidays*/**",
+    (route) => route.abort(),
+  );
+  await page.goto("/#/login");
+  await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
+  await page.goto("/#/customer/supplies");
+  await page.getByLabel("جست‌وجوی محصول").fill("W201");
+  await page
+    .getByRole("button", { name: "افزودن به سبد", exact: true })
+    .click();
+  await page.goto("/#/customer/cart");
+  await expect(page.locator('button[data-date="2026-11-06"]')).toBeDisabled();
+  await page.getByRole("radio", { name: "۱۵ تا ۱۸", exact: true }).check();
+  await page.locator('button[data-date="2026-11-05"]').click();
+  await expect(page.locator('input[name="delivery-slot"]')).toHaveCount(2);
+  await expect(
+    page.getByRole("radio", { name: "۹ تا ۱۲", exact: true }),
+  ).toBeChecked();
+  await expect(
+    page.getByRole("radio", { name: "۱۵ تا ۱۸", exact: true }),
+  ).toHaveCount(0);
+  await page.locator('button[data-date="2026-11-07"]').click();
+  await expect(page.locator('input[name="delivery-slot"]')).toHaveCount(3);
+  await page.getByRole("button", { name: "ماه بعد", exact: true }).click();
+  await page.getByRole("button", { name: "ماه بعد", exact: true }).click();
+  await expect(page.locator('button[data-date="2026-12-23"]')).toBeDisabled();
+  await expect(page.locator('button[data-date="2026-12-23"]')).toHaveAttribute(
+    "title",
+    /تعطیل رسمی/,
+  );
+  await expect(
+    page.getByText("تعطیلات براساس نسخه ذخیره‌شده تقویم نمایش داده می‌شود.", {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("تخفیف خرید آنلاین", { exact: true }),
+  ).toBeVisible();
+});
+
+test("a newly received API holiday invalidates the selected date before checkout", async ({
+  page,
+}) => {
+  const { readFile } = await import("node:fs/promises");
+  const holidays = JSON.parse(
+    await readFile("src/data/holidays/1405.json", "utf8"),
+  );
+  holidays.push({
+    date: "1405-08-13",
+    title: "تعطیلی آزمایشی از منبع تقویم",
+    type: "public",
+  });
+  await page.clock.install({ time: new Date("2026-11-02T08:00:00Z") });
+  await page.route(
+    "https://cdn.jsdelivr.net/npm/@avan-persian/holidays*/**",
+    (route) => route.fulfill({ json: holidays }),
+  );
+  await page.goto("/#/login");
+  await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
+  await page.goto("/#/customer/supplies");
+  await page.getByLabel("جست‌وجوی محصول").fill("W201");
+  await page
+    .getByRole("button", { name: "افزودن به سبد", exact: true })
+    .click();
+  await page.goto("/#/customer/cart");
+  await expect(page.locator('button[data-date="2026-11-04"]')).toBeDisabled();
+  await expect(page.locator('button[data-date="2026-11-05"]')).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.locator('input[name="delivery-slot"]')).toHaveCount(2);
+  await page
+    .getByRole("button", { name: "ثبت سفارش و پرداخت", exact: true })
+    .click();
+  const date = await page.evaluate(
+    () =>
+      JSON.parse(localStorage.getItem("sana-demo-v1")!).orders[0]
+        .deliverySchedule.date,
+  );
+  expect(date).toBe("2026-11-05");
 });

@@ -1000,7 +1000,9 @@ function App() {
           <span className="online">
             آنلاین، ۲۰٪ کمتر <strong>{D.money(D.onlinePrice(p.price))}</strong>
           </span>
-          <small>صرفه‌جویی: {D.money(p.price - D.onlinePrice(p.price))}</small>
+          <small>
+            تخفیف خرید آنلاین: {D.money(p.price - D.onlinePrice(p.price))}
+          </small>
         </div>
         {(cart[p.id] || 0) > 0 && (
           <div className="selected-total" aria-live="polite">
@@ -1613,7 +1615,7 @@ function App() {
                   <strong>{D.money(base)}</strong>
                 </div>
                 <div className="line green">
-                  <span>صرفه‌جویی آنلاین</span>
+                  <span>تخفیف خرید آنلاین</span>
                   <strong>
                     {D.money(
                       method === "online" ? base - D.onlinePrice(base) : 0,

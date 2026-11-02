@@ -128,3 +128,69 @@ test("legacy rejected orders become cancelled, a pending sample is added once an
   assert.equal(migrated.orders.filter((o) => o.id === "SANA-1004").length, 1);
   assert.equal(migrated.orders[0].status, "cancelled");
 });
+
+test("Fridays and solar/lunar public holidays are rejected, Thursday has only two slots", () => {
+  const now = new Date("2026-11-02T08:00:00Z");
+  for (const slot of ["09-12", "12-15", "15-18"] as const)
+    assert.throws(
+      () =>
+        validateDelivery(
+          { date: "2026-11-06", slot, timeZone: "Asia/Tehran" },
+          now,
+        ),
+      /جمعه/,
+    );
+  for (const slot of ["09-12", "12-15"] as const)
+    assert.doesNotThrow(() =>
+      validateDelivery(
+        { date: "2026-11-05", slot, timeZone: "Asia/Tehran" },
+        now,
+      ),
+    );
+  assert.throws(
+    () =>
+      validateDelivery(
+        { date: "2026-11-05", slot: "15-18", timeZone: "Asia/Tehran" },
+        now,
+      ),
+    /پنج‌شنبه/,
+  );
+  // 2 Dey 1405: a midweek religious holiday from the published-year dataset.
+  assert.throws(
+    () =>
+      validateDelivery(
+        { date: "2026-12-23", slot: "09-12", timeZone: "Asia/Tehran" },
+        now,
+      ),
+    /تعطیل رسمی/,
+  );
+  assert.throws(
+    () =>
+      validateDelivery(
+        { date: "2027-03-21", slot: "09-12", timeZone: "Asia/Tehran" },
+        now,
+      ),
+    /تعطیل رسمی/,
+  );
+  assert.equal(
+    firstAvailableDelivery(new Date("2026-11-04T08:00:00Z")).date,
+    "2026-11-07",
+  );
+  assert.equal(
+    firstAvailableDelivery(new Date("2027-03-20T08:00:00Z")).date,
+    "2027-03-25",
+  );
+  assert.throws(
+    () =>
+      createOrder(
+        seed(),
+        "c1",
+        { crp: 1 },
+        "online",
+        "friday-order",
+        undefined,
+        { date: "2026-11-06", slot: "09-12", timeZone: "Asia/Tehran" },
+      ),
+    /جمعه/,
+  );
+});

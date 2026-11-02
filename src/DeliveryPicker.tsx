@@ -1,7 +1,17 @@
+import {
+  loadHolidayYear,
+  holidayForDate,
+  holidayYearAvailable,
+  type HolidayResult,
+} from "./holidays";
 import { useEffect, useState } from "react";
 import { CalendarDays, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import {
   DELIVERY_SLOTS,
+  deliverySlotsFor,
+  deliveryUnavailableReason,
+  deliveryWeekday,
+  nextAvailableDeliveryDate,
   addCalendarDays,
   earliestDeliveryDate,
   formatDeliveryDate,
@@ -22,15 +32,46 @@ export function DeliveryPicker({
   const [today, setToday] = useState(todayInTehran);
   const [cursor, setCursor] = useState(() => persianParts(value.date));
   const [notice, setNotice] = useState("");
+  const [calendarRevision, setCalendarRevision] = useState(0);
+  const [retry, setRetry] = useState(0);
+  const [calendarStatus, setCalendarStatus] = useState<HolidayResult>();
+  const selectedYear = persianParts(value.date).year;
+  useEffect(() => {
+    let active = true;
+    setCalendarStatus(undefined);
+    Promise.all(
+      [...new Set([cursor.year, selectedYear])].map(async (year) => ({
+        year,
+        result: await loadHolidayYear(year, retry > 0),
+      })),
+    ).then((results) => {
+      if (!active) return;
+      setCalendarStatus(results.find((r) => r.year === cursor.year)!.result);
+      setCalendarRevision((n) => n + 1);
+    });
+    return () => {
+      active = false;
+    };
+  }, [cursor.year, selectedYear, retry]);
   useEffect(() => {
     const refresh = () => {
       const min = earliestDeliveryDate();
       setMinimum(min);
       setToday(todayInTehran());
-      if (value.date < min) {
-        onChange({ ...value, date: min });
-        setCursor(persianParts(min));
-        setNotice("با تغییر تاریخ روز، اولین زمان مجاز تحویل به‌روز شد.");
+      const date = nextAvailableDeliveryDate(
+        value.date < min ? min : value.date,
+      );
+      const slot = deliverySlotsFor(date).some((s) => s.id === value.slot)
+        ? value.slot
+        : "09-12";
+      if (value.date !== date || value.slot !== slot) {
+        onChange({ ...value, date, slot });
+        setCursor(persianParts(date));
+        setNotice(
+          value.date < min
+            ? "با تغییر تاریخ روز، اولین زمان مجاز تحویل به‌روز شد."
+            : "زمان انتخابی با روزهای مجاز تحویل به‌روز شد.",
+        );
       }
     };
     refresh();
@@ -40,7 +81,7 @@ export function DeliveryPicker({
       clearInterval(timer);
       window.removeEventListener("focus", refresh);
     };
-  }, [value, onChange]);
+  }, [value, onChange, calendarRevision]);
   const month = persianMonth(cursor.year, cursor.month);
   const cells = Array.from(
     { length: Math.ceil((month.offset + month.days) / 7) * 7 },
@@ -69,7 +110,8 @@ export function DeliveryPicker({
         <span>به وقت تهران</span>
       </div>
       <p className="delivery-help">
-        اولین روز قابل انتخاب: {formatDeliveryDate(minimum)}
+        اولین روز قابل انتخاب:{" "}
+        {formatDeliveryDate(nextAvailableDeliveryDate(minimum))}
       </p>
       <div className="jalali-calendar">
         <div className="calendar-heading">
@@ -124,10 +166,20 @@ export function DeliveryPicker({
                     {key && (
                       <button
                         type="button"
-                        disabled={key < minimum}
+                        disabled={
+                          key < minimum || !!deliveryUnavailableReason(key)
+                        }
+                        title={
+                          key < minimum
+                            ? "تحویل از دو روز بعد از امروز"
+                            : deliveryUnavailableReason(key)
+                        }
                         className={
                           (key === value.date ? "selected " : "") +
-                          (key === today ? "today" : "")
+                          (key === today ? "today " : "") +
+                          (deliveryWeekday(key) === 5 || holidayForDate(key)
+                            ? "nonworking"
+                            : "")
                         }
                         aria-current={key === today ? "date" : undefined}
                         aria-label={
@@ -136,7 +188,15 @@ export function DeliveryPicker({
                         aria-pressed={key === value.date}
                         data-date={key}
                         onClick={() => {
-                          onChange({ ...value, date: key });
+                          onChange({
+                            ...value,
+                            date: key,
+                            slot: deliverySlotsFor(key).some(
+                              (s) => s.id === value.slot,
+                            )
+                              ? value.slot
+                              : "09-12",
+                          });
                           setNotice("");
                         }}
                       >
@@ -150,12 +210,39 @@ export function DeliveryPicker({
           </tbody>
         </table>
       </div>
-      <fieldset className="delivery-slots">
+      <p className="delivery-help">
+        جمعه‌ها و تعطیلات رسمی تحویل نداریم. پنج‌شنبه‌ها فقط ۹ تا ۱۲ و ۱۲ تا ۱۵.
+      </p>
+      {!holidayYearAvailable(cursor.year) && (
+        <p className="notice" role="status">
+          {calendarStatus
+            ? "تقویم تعطیلات این سال در دسترس نیست؛ انتخاب روز تا دریافت تقویم غیرفعال است."
+            : "در حال دریافت تعطیلات این سال…"}
+          <button
+            type="button"
+            className="link"
+            onClick={() => setRetry((n) => n + 1)}
+          >
+            تلاش دوباره
+          </button>
+        </p>
+      )}
+      {calendarStatus?.source === "local" && (
+        <p className="delivery-help">
+          تعطیلات براساس نسخه ذخیره‌شده تقویم نمایش داده می‌شود.
+        </p>
+      )}
+      <fieldset
+        className="delivery-slots"
+        style={{
+          gridTemplateColumns: `repeat(${deliverySlotsFor(value.date).length}, minmax(0, 1fr))`,
+        }}
+      >
         <legend>
           <Clock size={16} />
           بازه ساعت تحویل
         </legend>
-        {DELIVERY_SLOTS.map((slot) => (
+        {deliverySlotsFor(value.date).map((slot) => (
           <label
             key={slot.id}
             className={value.slot === slot.id ? "selected" : ""}

@@ -32,7 +32,13 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
 }) => {
   const external: string[] = [];
   p.on("request", (r) => {
-    if (!r.url().startsWith("http://127.0.0.1:5173")) external.push(r.url());
+    if (
+      !r.url().startsWith("http://127.0.0.1:5173") &&
+      !/^https:\/\/cdn\.jsdelivr\.net\/npm\/@avan-persian\/holidays@latest\/data\/\d{4}\.json$/.test(
+        r.url(),
+      )
+    )
+      external.push(r.url());
   });
   await p.goto("/#/login");
   await p.getByRole("button", { name: "ورود مشتری", exact: true }).click();

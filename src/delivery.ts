@@ -1,3 +1,4 @@
+import { holidayForDate, holidayYearAvailable } from "./holidays";
 export const DELIVERY_TIME_ZONE = "Asia/Tehran" as const;
 export const DELIVERY_SLOTS = [
   { id: "09-12", label: "۹ تا ۱۲", description: "۹ صبح تا ۱۲ ظهر" },
@@ -29,10 +30,29 @@ export const earliestDeliveryDate = (now = new Date()) =>
   addCalendarDays(todayInTehran(now), 2);
 export function firstAvailableDelivery(now = new Date()): DeliverySchedule {
   return {
-    date: earliestDeliveryDate(now),
+    date: nextAvailableDeliveryDate(earliestDeliveryDate(now)),
     slot: "09-12",
     timeZone: DELIVERY_TIME_ZONE,
   };
+}
+export const deliveryWeekday = (date: string) =>
+  new Date(date + "T12:00:00Z").getUTCDay();
+export const deliverySlotsFor = (date: string) =>
+  deliveryWeekday(date) === 4 ? DELIVERY_SLOTS.slice(0, 2) : DELIVERY_SLOTS;
+export function deliveryUnavailableReason(date: string): string | undefined {
+  if (deliveryWeekday(date) === 5) return "جمعه؛ تحویل نداریم";
+  const holiday = holidayForDate(date);
+  if (holiday) return "تعطیل رسمی: " + holiday.title;
+  if (!holidayYearAvailable(persianParts(date).year))
+    return "اطلاعات تعطیلات این سال هنوز در دسترس نیست";
+}
+export function nextAvailableDeliveryDate(from: string): string {
+  let date = from;
+  // Unknown years stay pending until their calendar loads; never guess lunar holidays.
+  for (let i = 0; i < 370; i++, date = addCalendarDays(date, 1)) {
+    if (deliveryWeekday(date) !== 5 && !holidayForDate(date)) return date;
+  }
+  throw Error("روز مجاز تحویل پیدا نشد");
 }
 export function validateDelivery(
   schedule: DeliverySchedule | undefined,
@@ -48,11 +68,17 @@ export function validateDelivery(
     throw Error(
       "تحویل از دو روز بعد از امروز قابل انتخاب است؛ روز تحویل را دوباره انتخاب کنید",
     );
+  const unavailable = deliveryUnavailableReason(schedule.date);
+  if (unavailable) throw Error(unavailable);
   if (
-    !DELIVERY_SLOTS.some((s) => s.id === schedule.slot) ||
+    !deliverySlotsFor(schedule.date).some((s) => s.id === schedule.slot) ||
     schedule.timeZone !== DELIVERY_TIME_ZONE
   )
-    throw Error("بازه ساعت تحویل معتبر نیست");
+    throw Error(
+      deliveryWeekday(schedule.date) === 4
+        ? "پنج‌شنبه فقط بازه‌های ۹ تا ۱۲ و ۱۲ تا ۱۵ قابل انتخاب‌اند"
+        : "بازه ساعت تحویل معتبر نیست",
+    );
 }
 export const formatDeliveryDate = (key: string) =>
   new Intl.DateTimeFormat("fa-IR", {
