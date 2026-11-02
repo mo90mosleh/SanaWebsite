@@ -22,14 +22,12 @@ test("dashboard recommendations, live totals, header counter and both delete con
       exact: true,
     }),
   ).toBeDisabled();
-  const crp = recommendations
-    .locator("article.supply")
-    .filter({
-      has: page.getByRole("heading", {
-        name: "کیت پروتئین واکنشی C",
-        exact: true,
-      }),
-    });
+  const crp = recommendations.locator("article.supply").filter({
+    has: page.getByRole("heading", {
+      name: "کیت پروتئین واکنشی C",
+      exact: true,
+    }),
+  });
   await crp.getByRole("button", { name: "افزودن به سبد", exact: true }).click();
   await crp.getByRole("button", { name: "افزایش CRP", exact: true }).click();
   await expect(crp.locator(".selected-total")).toContainText("۳٬۸۴۰٬۰۰۰ تومان");
@@ -140,4 +138,37 @@ test("mobile populated cart and dashboard remain readable without page overflow;
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+});
+
+test("device replenishment matches dashboard cards with one shared suggestion caption and keeps cart selection", async ({
+  page,
+}) => {
+  await page.goto("/#/login");
+  await expect(
+    page.getByLabel("شماره موبایل مسئول مرکز", { exact: true }),
+  ).toHaveAttribute("placeholder", "09123456789");
+  await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
+  const recommendations = page.getByRole("region", {
+    name: "پیشنهاد تأمین مجدد",
+    exact: true,
+  });
+  await expect(
+    recommendations.getByText("پیشنهاد متناسب با دستگاه شما", { exact: true }),
+  ).toHaveCount(1);
+  const titles = await recommendations
+    .locator("article.supply h2")
+    .allTextContents();
+  await page.goto("/#/customer/devices");
+  await expect(recommendations.locator("article.supply h2")).toHaveText(titles);
+  await expect(
+    recommendations.getByText("پیشنهاد متناسب با دستگاه شما", { exact: true }),
+  ).toHaveCount(1);
+  await recommendations
+    .getByRole("button", { name: "افزودن به سبد", exact: true })
+    .first()
+    .click();
+  await recommendations
+    .getByRole("button", { name: "نهایی‌سازی سفارش", exact: true })
+    .click();
+  await expect(page.locator(".cart-table tbody tr")).toHaveCount(1);
 });

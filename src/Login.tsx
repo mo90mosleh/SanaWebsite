@@ -75,7 +75,7 @@ export function Login({
               value={mobile}
               onChange={(e) => setMobile(e.target.value)}
               pattern="09[0-9]{9}"
-              placeholder="09000000001"
+              placeholder="09123456789"
             />
           </label>
           {mode === "password" ? (

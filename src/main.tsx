@@ -990,6 +990,9 @@ function App() {
           <div>
             <span className="eyebrow">آماده برای روزهای پیش رو</span>
             <h2>پیشنهاد تأمین مجدد</h2>
+            {items.some(({ forecast }) => !forecast) && (
+              <p className="muted">پیشنهاد متناسب با دستگاه شما</p>
+            )}
           </div>
         </div>
         <div className="grid cards">
@@ -1001,9 +1004,7 @@ function App() {
                   {D.date(forecast.due)}
                 </p>
               ) : (
-                <p className="replenishment-date">
-                  پیشنهاد متناسب با دستگاه شما
-                </p>
+                <div className="replenishment-date" aria-hidden="true" />
               )}
               {KitCard({ p, compact: true })}
             </div>
@@ -1286,10 +1287,7 @@ function App() {
               );
             })}
           </div>
-          <section className="card">
-            <h2>برآورد تأمین بعدی</h2>
-            {Forecast({ c: customer })}
-          </section>
+          {ReplenishmentCards()}
         </>
       );
     if (tab === "supplies")
