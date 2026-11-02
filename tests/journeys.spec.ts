@@ -1,4 +1,4 @@
-import { switchToAdmin } from "./helpers";
+import { switchToAdmin, logoutFromPanel } from "./helpers";
 import { test, expect, type Page } from "@playwright/test";
 const state = async (p: Page) =>
   p.evaluate(() => JSON.parse(localStorage.getItem("sana-demo-v1")!));
@@ -137,6 +137,8 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await expect(p.locator("main")).toContainText("۳٬۰۰۰٬۰۰۰ تومان");
   expect((await state(p)).orders[0].lines[0].price).toBe(2400000);
   await nav(p, "/customer/tickets");
+  await p.getByRole("button", { name: "تیکت جدید", exact: true }).click();
+  await p.getByLabel("دستگاه خریداری‌شده", { exact: true }).selectOption("d1");
   await p.getByLabel("موضوع", { exact: true }).fill("پرسش فنی دمو");
   await p
     .getByLabel("پیام شما")
@@ -145,6 +147,7 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await expect(p.locator("main")).toContainText("پرسش فنی دمو");
   await switchToAdmin(p);
   await nav(p, "/admin/tickets");
+  await p.getByRole("button", { name: "پرسش فنی دمو", exact: true }).click();
   const ticket = p.locator("main article").filter({
     has: p.getByRole("heading", { name: "پرسش فنی دمو", exact: true }),
   });
@@ -177,8 +180,10 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   expect((await state(p)).logs.at(-1).status).toBe("success");
   await p.getByRole("button", { name: "نمای مشتری", exact: true }).click();
   await nav(p, "/customer/tickets");
+  await p.getByRole("button", { name: "پرسش فنی دمو", exact: true }).click();
   await expect(p.locator("main")).toContainText("پاسخ نمایشی کارشناس سانا");
   await p.reload();
+  await p.getByRole("button", { name: "پرسش فنی دمو", exact: true }).click();
   await expect(p.locator("main")).toContainText("پاسخ نمایشی کارشناس سانا");
   p.once("dialog", (d) => d.accept());
   await p
@@ -203,7 +208,7 @@ test("OTP, password and recovery demo flows and logout", async ({
   await p.getByLabel("کد یک‌بارمصرف").fill("123456");
   await p.getByRole("button", { name: "تأیید کد و ورود" }).click();
   await expect(p.locator(".sidebar")).toBeVisible();
-  await p.locator(".logout-header").click();
+  await logoutFromPanel(p);
   await p.getByLabel("شماره موبایل مسئول مرکز").fill("09000000001");
   await p.getByRole("button", { name: "فراموشی رمز", exact: true }).click();
   await p.getByRole("button", { name: "دریافت کد" }).click();
@@ -277,7 +282,7 @@ test("public and panel pages render RTL without viewport overflow on mobile and 
         route + " width " + width,
       ).toBe(true);
     }
-    await p.locator(".logout-header").click();
+    await logoutFromPanel(p);
   }
   expect(errors).toEqual([]);
 });

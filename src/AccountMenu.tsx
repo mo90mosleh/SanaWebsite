@@ -71,6 +71,7 @@ export function AccountMenu({
         <button
           ref={trigger}
           className="account-trigger"
+          aria-label={role === "admin" ? "مدیریت سانا" : customer.manager}
           aria-expanded={open}
           aria-controls="account-links"
           onClick={() => setOpen((v) => !v)}

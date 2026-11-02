@@ -1,3 +1,5 @@
+import { MobileNavigation } from "./MobileNavigation";
+import { TicketsPanel } from "./Tickets";
 import { categories, categoryFor } from "./kitCategories";
 import { KitArtwork } from "./KitArtwork";
 import { DeliveryPicker } from "./DeliveryPicker";
@@ -44,6 +46,7 @@ import * as D from "./domain";
 import * as repo from "./repository";
 import "./style.css";
 import "./refinements.css";
+import "./mobile.css";
 import { PublicSite } from "./PublicSite";
 import { Logo, DeviceImage, Empty } from "./ui";
 import { Login } from "./Login";
@@ -500,100 +503,6 @@ function App() {
           </div>
         )}
       </article>
-    );
-  }
-  function Tickets() {
-    const tickets = state.tickets.filter((t) => admin || t.customer === cid);
-    return (
-      <>
-        <div className="section-title">
-          <h2>{admin ? "گفت‌وگو با مراکز" : "همراه شما هستیم"}</h2>
-          <span>{tickets.length} تیکت</span>
-        </div>
-        {!admin && (
-          <form
-            className="card"
-            onSubmit={(e) => {
-              e.preventDefault();
-              const f = new FormData(e.currentTarget);
-              if (
-                mutate((s) => {
-                  s.tickets.unshift({
-                    id: D.uid(),
-                    customer: cid,
-                    title: String(f.get("title")),
-                    messages: [
-                      {
-                        text: String(f.get("text")),
-                        by: "مرکز",
-                        time: new Date().toISOString(),
-                      },
-                    ],
-                  });
-                })
-              ) {
-                e.currentTarget.reset();
-                setToast("تیکت ثبت شد");
-              }
-            }}
-          >
-            <h3>تیکت جدید</h3>
-            <label>
-              موضوع
-              <input required name="title" maxLength={100} />
-            </label>
-            <label>
-              پیام شما
-              <textarea required name="text" maxLength={2000} />
-            </label>
-            <button>ارسال تیکت</button>
-          </form>
-        )}
-        {tickets.length === 0 && <Empty>هنوز تیکتی ثبت نشده است.</Empty>}
-        {tickets.map((t) => (
-          <article className="card" key={t.id}>
-            <h3>{t.title}</h3>
-            <small>
-              {state.customers.find((c) => c.id === t.customer)?.name}
-            </small>
-            {t.messages.map((m, i) => (
-              <div
-                key={i}
-                className={"message " + (m.by === "سانا" ? "reply" : "")}
-              >
-                <small>
-                  {m.by} · {D.date(m.time)}
-                </small>
-                <p>{m.text}</p>
-              </div>
-            ))}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                const text = String(new FormData(e.currentTarget).get("reply"));
-                if (
-                  mutate((s) =>
-                    s.tickets
-                      .find((x) => x.id === t.id)!
-                      .messages.push({
-                        text,
-                        by: admin ? "سانا" : "مرکز",
-                        time: new Date().toISOString(),
-                      }),
-                  )
-                )
-                  e.currentTarget.reset();
-              }}
-            >
-              <label>
-                پاسخ
-                <textarea name="reply" required maxLength={2000} />
-              </label>
-              <button className="secondary">ثبت پاسخ</button>
-            </form>
-          </article>
-        ))}
-      </>
     );
   }
   function CustomerEditor({ c }: { c?: D.Customer }) {
@@ -1388,7 +1297,7 @@ function App() {
         <>
           <h1>کیت‌ها و مواد مصرفی</h1>
           <p className="muted">انتخابی متناسب با دستگاه‌های مرکز شما</p>
-          <div className="filters">
+          <div className="filters supplies-filters">
             <label className="search">
               <Search size={19} />
               <input
@@ -1401,45 +1310,52 @@ function App() {
                 }}
               />
             </label>
-            <select
-              aria-label="فیلتر دستگاه"
-              value={deviceFilter}
-              onChange={(e) => {
-                setDeviceFilter(e.target.value);
-                setSupplyLimit(6);
-              }}
+            <label className="device-filter">
+              <span>دستگاه</span>
+              <select
+                aria-label="فیلتر دستگاه"
+                value={deviceFilter}
+                onChange={(e) => {
+                  setDeviceFilter(e.target.value);
+                  setSupplyLimit(6);
+                }}
+              >
+                <option value="">همه دستگاه‌های من</option>
+                {customer.devices.map((d) => (
+                  <option key={d.id}>{d.model}</option>
+                ))}
+              </select>
+            </label>
+            <label className="category-filter">
+              <span>دسته‌بندی</span>
+              <select
+                aria-label="دسته‌بندی کیت‌ها"
+                value={categoryFilter}
+                onChange={(e) => {
+                  setCategoryFilter(e.target.value);
+                  setSupplyLimit(6);
+                }}
+              >
+                <option value="">همه دسته‌ها</option>
+                {categories
+                  .filter((c) =>
+                    state.products.some((p) => categoryFor(p.id).id === c.id),
+                  )
+                  .map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.label}
+                    </option>
+                  ))}
+              </select>
+            </label>
+            <button
+              className="secondary supplies-cart-link"
+              onClick={() => go("/customer/cart")}
             >
-              <option value="">همه دستگاه‌های من</option>
-              {customer.devices.map((d) => (
-                <option key={d.id}>{d.model}</option>
-              ))}
-            </select>
-            <button className="secondary" onClick={() => go("/customer/cart")}>
               سبد خرید ({count})
             </button>
           </div>
-          <label className="category-filter">
-            دسته‌بندی آزمایش
-            <select
-              aria-label="دسته‌بندی کیت‌ها"
-              value={categoryFilter}
-              onChange={(e) => {
-                setCategoryFilter(e.target.value);
-                setSupplyLimit(6);
-              }}
-            >
-              <option value="">همه دسته‌ها</option>
-              {categories
-                .filter((c) =>
-                  state.products.some((p) => categoryFor(p.id).id === c.id),
-                )
-                .map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.label}
-                  </option>
-                ))}
-            </select>
-          </label>
+
           <p className="muted" aria-live="polite">
             {filteredProducts.length.toLocaleString("fa-IR")} محصول
           </p>
@@ -1713,7 +1629,16 @@ function App() {
           ).length && <Empty>سفارشی در این بخش نیست.</Empty>}
         </>
       );
-    if (tab === "tickets") return Tickets();
+    if (tab === "tickets")
+      return (
+        <TicketsPanel
+          state={state}
+          customer={customer}
+          admin={admin}
+          mutate={mutate}
+          notify={setToast}
+        />
+      );
     if (tab === "profile")
       return (
         <Profile
@@ -2004,7 +1929,7 @@ function App() {
                 <span className="avatar small">س</span>
               </div>
             </header>
-            <main className="panel-main" key={revision}>
+            <main className={"panel-main panel-page-" + tab} key={revision}>
               {PanelContent()}
             </main>
             <footer className="panel-footer">
@@ -2014,6 +1939,18 @@ function App() {
               </button>
             </footer>
           </div>
+          <MobileNavigation
+            admin={admin}
+            tab={tab}
+            path={path}
+            items={navItems.map(([key, label, Icon]) => ({
+              key: String(key),
+              label: String(label),
+              Icon: Icon as typeof Package,
+            }))}
+            count={count}
+            total={method === "online" ? D.onlinePrice(base) : base}
+          />
         </div>
       ) : (
         <>

@@ -85,6 +85,9 @@ export type Log = {
 };
 export type Ticket = {
   id: string;
+  number?: number;
+  createdAt?: string;
+  device?: Pick<Device, "id" | "model" | "serial">;
   customer: string;
   title: string;
   messages: { text: string; by: string; time: string }[];
@@ -539,6 +542,9 @@ export function defaultAddress(): SavedAddress {
 export function sampleTicket(): Ticket {
   return {
     id: "TICKET-WELCOME",
+    number: 1001,
+    createdAt: day(3),
+    device: { id: "d1", model: "FS-114", serial: "DEMO-FS114-001" },
     customer: "c1",
     title: "راهنمای راه‌اندازی و کنترل کیفیت دستگاه",
     messages: [
@@ -598,6 +604,12 @@ export function migratePresentation(s: State): State {
       }
     }
     s.presentationRevision = 3;
+  }
+  let ticketNumber = Math.max(1000, ...s.tickets.map((t) => t.number || 0));
+  for (const ticket of [...s.tickets].reverse()) {
+    if (!ticket.number) ticket.number = ++ticketNumber;
+    if (!ticket.createdAt && ticket.messages[0])
+      ticket.createdAt = ticket.messages[0].time;
   }
   return s;
 }
@@ -701,4 +713,60 @@ export function samplePendingOrder(
     deliveryAddress: address ? { ...address } : undefined,
     deliverySchedule: firstAvailableDelivery(),
   };
+}
+
+export const ticketReference = (ticket: Ticket) =>
+  `SANA-T-${ticket.number ?? ticket.id}`;
+export const ticketStatus = (ticket: Ticket) =>
+  ticket.messages.at(-1)?.by === "سانا" ? "answered" : "pending";
+export function createTicket(
+  s: State,
+  cid: string,
+  deviceId: string,
+  title: string,
+  text: string,
+) {
+  const customer = s.customers.find((c) => c.id === cid);
+  if (!customer?.active) throw Error("حساب مشتری فعال نیست");
+  const device = customer.devices.find((d) => d.id === deviceId);
+  if (!device) throw Error("یکی از دستگاه‌های خریداری‌شده خود را انتخاب کنید");
+  title = title.trim();
+  text = text.trim();
+  if (!title || title.length > 100 || !text || text.length > 2000)
+    throw Error("عنوان و متن معتبر وارد کنید");
+  const now = new Date().toISOString();
+  const ticket: Ticket = {
+    id: uid(),
+    number: Math.max(1000, ...s.tickets.map((t) => t.number || 0)) + 1,
+    createdAt: now,
+    customer: cid,
+    title,
+    device: { id: device.id, model: device.model, serial: device.serial },
+    messages: [{ text, by: "مرکز", time: now }],
+  };
+  s.tickets.unshift(ticket);
+  return ticket;
+}
+export function replyToTicket(
+  s: State,
+  id: string,
+  role: "admin" | "customer",
+  cid: string,
+  text: string,
+) {
+  const ticket = s.tickets.find((t) => t.id === id);
+  if (
+    !ticket ||
+    (role === "customer" &&
+      (ticket.customer !== cid ||
+        !s.customers.find((c) => c.id === cid)?.active))
+  )
+    throw Error("این تیکت در دسترس نیست");
+  text = text.trim();
+  if (!text || text.length > 2000) throw Error("متن پاسخ معتبر وارد کنید");
+  ticket.messages.push({
+    text,
+    by: role === "admin" ? "سانا" : "مرکز",
+    time: new Date().toISOString(),
+  });
 }

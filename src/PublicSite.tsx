@@ -55,7 +55,7 @@ export function PublicSite({ path }: { path: string }) {
               گفت‌وگو با سانا
             </a>
           </div>
-          <DeviceImage model={model} />
+          <DeviceImage model={model} priority />
         </section>
         {model.id === "bha5000" && (
           <p className="notice">

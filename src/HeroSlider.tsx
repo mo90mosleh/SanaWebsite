@@ -61,7 +61,7 @@ export function HeroSlider() {
         href={"#/devices/" + p.id}
         aria-label={"مشخصات " + p.name}
       >
-        <DeviceImage model={p} />
+        <DeviceImage model={p} priority />
       </a>
       <div className="floating-label">
         <div>

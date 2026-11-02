@@ -52,7 +52,10 @@ try {
   });
   const url = `http://127.0.0.1:${port}/SanaWebsite/`;
   await page.goto(url);
-  assert.equal(await page.getByRole("link", { name: "معرفی سانا", exact: true }).count(), 0);
+  assert.equal(
+    await page.getByRole("link", { name: "معرفی سانا", exact: true }).count(),
+    0,
+  );
   await page.locator(".hero-slide img").waitFor();
   assert.equal(
     await page
@@ -65,6 +68,19 @@ try {
   const icon = await page.request.get(new URL(iconHref, url).href);
   assert.equal(icon.status(), 200);
   assert.match(await icon.text(), /<path/);
+  const manifestHref = await page
+    .locator('link[rel="manifest"]')
+    .getAttribute("href");
+  assert.match(manifestHref, /^\/SanaWebsite\/manifest\.webmanifest$/);
+  const manifestUrl = new URL(manifestHref, url);
+  const manifestResponse = await page.request.get(manifestUrl.href);
+  assert.equal(manifestResponse.status(), 200);
+  const manifest = await manifestResponse.json();
+  assert.equal(manifest.display, "standalone");
+  assert.equal(
+    new URL(manifest.start_url, manifestUrl).pathname,
+    "/SanaWebsite/",
+  );
   await page.evaluate(() => document.fonts.ready);
   assert.equal(
     await page.evaluate(() => document.fonts.check("14px Vazirmatn")),
@@ -73,8 +89,8 @@ try {
   await page.goto(url + "#/devices/bha3000");
   const deviceImage = page.locator(".product-hero img.device-image");
   await deviceImage.waitFor();
-  await deviceImage.evaluate(image => image.decode());
-  assert.ok(await deviceImage.evaluate(image => image.naturalWidth >= 1200));
+  await deviceImage.evaluate((image) => image.decode());
+  assert.ok(await deviceImage.evaluate((image) => image.naturalWidth >= 1200));
   const link = page.getByRole("link", { name: "دریافت کاتالوگ" });
   assert.match(
     await link.getAttribute("href"),
