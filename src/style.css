@@ -772,17 +772,25 @@ input[type="radio"] {
   font-size: 14px;
 }
 .demo-logins {
-  border-top: 1px solid var(--border);
-  padding-top: 20px;
+  border: 1px dashed #d9c5a7;
+  border-radius: 12px;
+  background: #fffcf6;
+  padding: 18px;
   margin-top: 20px;
   display: grid;
   gap: 10px;
 }
 .demo-logins span {
   font-size: 14px;
+  font-weight: 600;
   text-align: center;
-  color: #8b8f98;
-  margin-bottom: 5px;
+  color: #785b2f;
+}
+.demo-logins .demo-login-note {
+  text-align: center;
+  color: #8b785b;
+  font-size: 13px;
+  margin: -4px 0 4px;
 }
 .app-shell {
   min-height: 100vh;

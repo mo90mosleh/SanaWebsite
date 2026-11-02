@@ -146,10 +146,6 @@ export function PublicSite({ path }: { path: string }) {
               <bdi>۰۲۶ ۳۳۱۰۷</bdi>
             </a>
             <p>البرز، شهرک صنعتی بهارستان، فاز سه، نبش بهار دوم</p>
-            <small>
-              منبع: اطلاعات تماس مخزن لندینگ قبلی؛ پیش از انتشار نهایی تأیید
-              شود.
-            </small>
           </div>
           <div className="card soft">
             <h2>مشتری سانا هستید؟</h2>
@@ -179,7 +175,7 @@ export function PublicSite({ path }: { path: string }) {
           <section className="hero public-main">
             <div className="hero-copy">
               <span className="eyebrow">
-                <span className="dot" /> همراه تجهیزات آزمایشگاهی شما
+                <span className="dot" /> سانا، همراه آزمایشگاه شما
               </span>
               <h1>
                 دقت در انتخاب،

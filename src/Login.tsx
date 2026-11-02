@@ -158,7 +158,8 @@ export function Login({
           </button>
         </div>
         <div className="demo-logins">
-          <span>ورود سریع</span>
+          <span>ورود آزمایشی برای دمو</span>
+          <small className="demo-login-note">دسترسی موقت برای بررسی نسخه نمایشی</small>
           <button className="secondary" onClick={() => login("customer")}>
             ورود مشتری
           </button>
