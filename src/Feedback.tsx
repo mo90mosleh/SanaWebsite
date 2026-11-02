@@ -243,7 +243,7 @@ export function Feedback() {
     setOpen(true);
   }
   function exportNotes() {
-    if (!notes.length) return;
+    if (!notes.some((note) => note.status === "open")) return;
     const blob = new Blob([JSON.stringify(feedbackFile(notes), null, 2)], {
       type: "application/json;charset=utf-8",
     });
@@ -463,7 +463,7 @@ export function Feedback() {
                         <span>
                           {note.status === "done"
                             ? "انجام‌شده"
-                            : "در انتظار تغییر"}
+                            : "در انتظار بررسی"}
                         </span>
                       </div>
                       <p>{note.text}</p>
@@ -530,12 +530,15 @@ export function Feedback() {
                 </ol>
                 <button
                   className="secondary full"
-                  disabled={!notes.length}
+                  disabled={!notes.some((note) => note.status === "open")}
                   onClick={exportNotes}
                 >
                   <Download size={17} />
-                  دریافت فایل همه بازخوردها (
-                  {notes.length.toLocaleString("fa-IR")})
+                  دریافت بازخوردهای در انتظار بررسی (
+                  {notes
+                    .filter((note) => note.status === "open")
+                    .length.toLocaleString("fa-IR")}
+                  )
                 </button>
               </>
             )}

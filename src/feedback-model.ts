@@ -54,7 +54,12 @@ export function feedbackFile(
   notes: FeedbackNote[],
   now = new Date().toISOString(),
 ): FeedbackFile {
-  return { format: "sana-feedback", version: 1, exportedAt: now, notes };
+  return {
+    format: "sana-feedback",
+    version: 1,
+    exportedAt: now,
+    notes: notes.filter((note) => note.status === "open"),
+  };
 }
 export function elementExcerpt(el: Element) {
   if (
