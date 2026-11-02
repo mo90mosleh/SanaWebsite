@@ -131,3 +131,86 @@ test("pending cancellation blocks payment and review without inventory effects",
   assert.equal(s.products[0].stock, stock);
   assert.deepEqual(forecast(s, s.customers[0], "crp"), before);
 });
+test("presentation migration retains custom data and adds defaults only once", async () => {
+  const { migratePresentation } = await import("../src/domain.ts");
+  const s = seed();
+  delete s.presentationRevision;
+  s.customers[0].name = "مرکز ویرایش‌شده";
+  s.customers[0].manager = "مدیر ویرایش‌شده";
+  delete s.customers[0].addresses;
+  s.tickets = [
+    { id: "custom-ticket", customer: "c1", title: "موجود", messages: [] },
+  ];
+  s.orders[0].total = 123456;
+  s.products[0].price = 987654;
+  const migrated = migratePresentation(s);
+  assert.equal(migrated.customers[0].name, "مرکز ویرایش‌شده");
+  assert.equal(migrated.customers[0].manager, "مدیر ویرایش‌شده");
+  assert.equal(migrated.orders[0].total, 123456);
+  assert.equal(migrated.products[0].price, 987654);
+  assert.ok(migrated.tickets.some((t) => t.id === "custom-ticket"));
+  assert.ok(migrated.customers[0].addresses?.length);
+  const before = JSON.stringify(migrated);
+  migratePresentation(migrated);
+  assert.equal(JSON.stringify(migrated), before);
+});
+test("address selection snapshots delivery details; edits/deletion never change past orders", async () => {
+  const { saveAddress, deleteAddress, defaultAddress } =
+    await import("../src/domain.ts");
+  const s = seed();
+  const a = {
+    ...defaultAddress(),
+    id: "branch-address",
+    label: "شعبه دوم",
+    city: "کرج",
+    province: "البرز",
+    address: "نشانی شعبه دوم",
+    lat: 35.833,
+    lng: 50.991,
+    isDefault: false,
+  };
+  saveAddress(s, "c1", a);
+  const order = createOrder(
+    s,
+    "c1",
+    { crp: 1 },
+    "credit",
+    "with-address",
+    a.id,
+  );
+  assert.equal(order.deliveryAddress?.label, "شعبه دوم");
+  saveAddress(s, "c1", { ...a, address: "نشانی ویرایش‌شده", isDefault: true });
+  deleteAddress(s, "c1", a.id);
+  assert.equal(order.deliveryAddress?.address, "نشانی شعبه دوم");
+  assert.equal(order.deliveryAddress?.city, "کرج");
+  assert.throws(() =>
+    createOrder(s, "c1", { crp: 1 }, "credit", "bad-address", "not-found"),
+  );
+  assert.throws(() => saveAddress(s, "c1", { ...a, phone: "123" }));
+  assert.equal(s.customers[0].addresses?.filter((a) => a.isDefault).length, 1);
+});
+test("profile validates unique mobile and order journey separates closed orders", async () => {
+  const { saveCustomerProfile, orderStage } = await import("../src/domain.ts");
+  const s = seed();
+  assert.throws(() =>
+    saveCustomerProfile(s, "c1", {
+      name: "بقراط",
+      manager: "الف",
+      mobile: s.customers[1].mobile,
+    }),
+  );
+  saveCustomerProfile(s, "c1", {
+    name: "بقراط جدید",
+    manager: "مدیر جدید",
+    mobile: "09000000004",
+  });
+  assert.equal(s.customers[0].name, "بقراط جدید");
+  const o = createOrder(s, "c1", { crp: 1 }, "online", "journey");
+  assert.equal(orderStage(o), "review");
+  pay(s, o.id, true);
+  assert.equal(orderStage(o), "queue");
+  ship(s, o.id, "sent");
+  assert.equal(orderStage(o), "sent");
+  o.status = "cancelled";
+  assert.equal(orderStage(o), "closed");
+});

@@ -22,6 +22,19 @@ export type Device = {
   delivered: string;
   initial: { product: string; qty: number }[];
 };
+export type SavedAddress = {
+  id: string;
+  label: string;
+  province: string;
+  city: string;
+  address: string;
+  postalCode: string;
+  recipient: string;
+  phone: string;
+  lat: number;
+  lng: number;
+  isDefault: boolean;
+};
 export type Customer = {
   id: string;
   name: string;
@@ -30,6 +43,8 @@ export type Customer = {
   address: string;
   active: boolean;
   devices: Device[];
+  addresses?: SavedAddress[];
+  avatar?: string;
 };
 export type Line = {
   product: string;
@@ -49,6 +64,7 @@ export type Order = {
   payment: "unpaid" | "failed" | "paid";
   shipping: "waiting" | "preparing" | "sent" | "delivered";
   deliveredAt?: string;
+  deliveryAddress?: SavedAddress;
   note: string;
 };
 export type Log = {
@@ -69,6 +85,7 @@ export type Ticket = {
 };
 export type State = {
   version: 1;
+  presentationRevision?: number;
   products: Item[];
   customers: Customer[];
   orders: Order[];
@@ -219,10 +236,12 @@ export function seed(): State {
   const customers: Customer[] = [
     {
       id: "c1",
-      name: "آزمایشگاه نمونه سپید",
-      manager: "مسئول نمونه الف",
+      name: "آزمایشگاه بقراط",
+      manager: "آرمان بهرامی",
       mobile: "09000000001",
-      address: "نشانی فرضی مرکز — صرفاً برای دمو",
+      address: "تهران، نشانی مرکز بقراط",
+      avatar: "/profile/boghrat.svg",
+      addresses: [defaultAddress()],
       active: true,
       devices: [
         {
@@ -246,7 +265,7 @@ export function seed(): State {
       name: "آزمایشگاه نمونه باران",
       manager: "مسئول نمونه ب",
       mobile: "09000000002",
-      address: "نشانی فرضی",
+      address: "نشانی مرکز باران",
       active: true,
       devices: [
         {
@@ -271,10 +290,11 @@ export function seed(): State {
     payment: "paid",
     shipping: "delivered",
     deliveredAt: day(d),
-    note: "سابقه کاملاً فرضی دمو",
+    note: "",
   }));
   return {
     version: 1,
+    presentationRevision: 2,
     products,
     customers,
     orders,
@@ -290,7 +310,7 @@ export function seed(): State {
         destination: "demo://crm/orders",
       },
     ],
-    tickets: [],
+    tickets: [sampleTicket()],
   };
 }
 export function compatible(p: Item, c: Customer) {
@@ -314,11 +334,19 @@ export function createOrder(
   cart: Record<string, number>,
   method: Order["method"],
   key: string,
+  addressId?: string,
 ) {
   const existing = s.orders.find((o) => o.key === key);
   if (existing) return existing;
   const c = s.customers.find((c) => c.id === customer);
   if (!c?.active) throw Error("حساب مرکز غیرفعال است");
+  const chosen =
+    c.addresses?.find((a) => a.id === addressId) ||
+    (!addressId
+      ? c.addresses?.find((a) => a.isDefault) || c.addresses?.[0]
+      : undefined);
+  if (addressId && !chosen) throw Error("نشانی تحویل انتخاب‌شده پیدا نشد");
+  if (!chosen) throw Error("ابتدا یک نشانی تحویل در آدرس‌های من ثبت کنید");
   const lines = Object.entries(cart)
     .filter(([, q]) => q > 0)
     .map(([id, qty]) => {
@@ -342,6 +370,7 @@ export function createOrder(
     shipping: "waiting",
     note: "",
   };
+  if (chosen) o.deliveryAddress = { ...chosen };
   s.orders.unshift(o);
   event(s, "order.created", o.id);
   return o;
@@ -481,6 +510,142 @@ export function cancelOrder(s: State, id: string) {
   if (!o || o.status !== "pending")
     throw Error("فقط سفارش در انتظار بررسی قابل لغو است");
   o.status = "cancelled";
-  o.note = "لغو در محیط نمایشی؛ هیچ پرداخت یا رزرو قطعی انجام نشده بود";
+  o.note = "سفارش پیش از تأیید نهایی لغو شد.";
   event(s, "order.cancelled", id);
+}
+
+export function defaultAddress(): SavedAddress {
+  return {
+    id: "address-boghrat",
+    label: "آدرس مرکز",
+    province: "تهران",
+    city: "تهران",
+    address: "تهران، نشانی مرکز بقراط",
+    postalCode: "",
+    recipient: "آرمان بهرامی",
+    phone: "09000000001",
+    lat: 35.6892,
+    lng: 51.389,
+    isDefault: true,
+  };
+}
+export function sampleTicket(): Ticket {
+  return {
+    id: "TICKET-WELCOME",
+    customer: "c1",
+    title: "راهنمای راه‌اندازی و کنترل کیفیت دستگاه",
+    messages: [
+      {
+        text: "سلام، برای اجرای کنترل کیفیت روزانه دستگاه Finecare راهنمایی می‌خواهم.",
+        by: "مرکز",
+        time: day(3),
+      },
+      {
+        text: "سلام، مدل و سریال دستگاه شما بررسی شد. مراحل راه‌اندازی را طبق راهنمای همان مدل و دستورالعمل کیت دنبال کنید. برای بررسی مرحله‌ای، مشخصات مواد کنترل را در همین تیکت ارسال کنید.",
+        by: "سانا",
+        time: day(2),
+      },
+    ],
+  };
+}
+/** Add presentation defaults once, preserving all user edits, orders and feedback. */
+export function migratePresentation(s: State): State {
+  if ((s.presentationRevision ?? 0) < 2) {
+    const c = s.customers.find((c) => c.id === "c1");
+    if (c) {
+      if (c.name === "آزمایشگاه نمونه سپید") c.name = "آزمایشگاه بقراط";
+      if (c.manager === "مسئول نمونه الف") c.manager = "آرمان بهرامی";
+      if (c.address === "نشانی فرضی مرکز — صرفاً برای دمو")
+        c.address = "تهران، نشانی مرکز بقراط";
+      if (!c.avatar) c.avatar = "/profile/boghrat.svg";
+      if (!c.addresses)
+        c.addresses = [
+          {
+            ...defaultAddress(),
+            address: c.address,
+            recipient: c.manager,
+            phone: c.mobile,
+          },
+        ];
+    }
+    if (!s.tickets.some((t) => t.id === "TICKET-WELCOME"))
+      s.tickets.push(sampleTicket());
+    s.orders.forEach((o) => {
+      if (o.note === "سابقه کاملاً فرضی دمو") o.note = "";
+    });
+    s.presentationRevision = 2;
+  }
+  return s;
+}
+export function orderStage(o: Order): "review" | "queue" | "sent" | "closed" {
+  if (o.status === "cancelled" || o.status === "rejected") return "closed";
+  if (o.status === "pending") return "review";
+  return o.shipping === "sent" || o.shipping === "delivered" ? "sent" : "queue";
+}
+export function saveCustomerProfile(
+  s: State,
+  id: string,
+  value: Pick<Customer, "name" | "manager" | "mobile">,
+) {
+  if (!value.name.trim() || !value.manager.trim())
+    throw Error("نام مرکز و مسئول مرکز الزامی است");
+  if (!/^09[0-9]{9}$/.test(value.mobile))
+    throw Error("شماره موبایل معتبر نیست");
+  if (s.customers.some((c) => c.id !== id && c.mobile === value.mobile))
+    throw Error("شماره موبایل تکراری است");
+  const c = s.customers.find((c) => c.id === id);
+  if (!c) throw Error("مرکز پیدا نشد");
+  Object.assign(c, value);
+}
+export function saveAddress(s: State, cid: string, a: SavedAddress) {
+  const c = s.customers.find((c) => c.id === cid);
+  if (!c) throw Error("مرکز پیدا نشد");
+  if (
+    !a.label.trim() ||
+    !a.address.trim() ||
+    !a.city ||
+    !a.province ||
+    !a.recipient.trim()
+  )
+    throw Error("مشخصات نشانی را کامل کنید");
+  if (!/^09[0-9]{9}$/.test(a.phone)) throw Error("موبایل گیرنده معتبر نیست");
+  if (a.postalCode && !/^[0-9]{10}$/.test(a.postalCode))
+    throw Error("کد پستی باید ۱۰ رقم باشد");
+  if (
+    !Number.isFinite(a.lat) ||
+    !Number.isFinite(a.lng) ||
+    a.lat < 24 ||
+    a.lat > 40 ||
+    a.lng < 44 ||
+    a.lng > 64
+  )
+    throw Error("موقعیت معتبر انتخاب کنید");
+  const list = c.addresses ?? [];
+  const next = list.some((x) => x.id === a.id)
+    ? list.map((x) => (x.id === a.id ? { ...a } : x))
+    : [...list, { ...a }];
+  if (a.isDefault || next.length === 1) {
+    next.forEach((x) => (x.isDefault = x.id === a.id));
+    c.address = a.address;
+  }
+  c.addresses = next;
+  if (!next.some((x) => x.isDefault)) {
+    next[0].isDefault = true;
+    c.address = next[0].address;
+  }
+}
+export function deleteAddress(s: State, cid: string, id: string) {
+  const c = s.customers.find((c) => c.id === cid)!;
+  c.addresses = (c.addresses ?? []).filter((a) => a.id !== id);
+  if (c.addresses.length && !c.addresses.some((a) => a.isDefault)) {
+    c.addresses[0].isDefault = true;
+    c.address = c.addresses[0].address;
+  }
+}
+
+export function formatAddress(a: SavedAddress) {
+  const region = a.province === a.city ? a.city : a.province + "، " + a.city;
+  return a.address.startsWith(a.province) || a.address.startsWith(a.city)
+    ? a.address
+    : region + "، " + a.address;
 }

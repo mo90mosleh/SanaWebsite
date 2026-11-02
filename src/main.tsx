@@ -1,3 +1,6 @@
+import { AccountMenu } from "./AccountMenu";
+import { Profile } from "./Profile";
+import { OrderJourney } from "./OrderJourney";
 import { Feedback } from "./Feedback";
 import { assetPath } from "./assets";
 import React, { useState, useEffect, type FormEvent } from "react";
@@ -24,11 +27,14 @@ import {
   ClipboardList,
   Activity,
   RefreshCw,
+  PanelRightClose,
+  PanelRightOpen,
 } from "lucide-react";
 import { products as devices } from "./devices";
 import * as D from "./domain";
 import * as repo from "./repository";
 import "./style.css";
+import "./refinements.css";
 import { PublicSite } from "./PublicSite";
 import { Logo, DeviceImage, Empty } from "./ui";
 import { Login } from "./Login";
@@ -36,7 +42,7 @@ const labels: Record<string, string> = {
   pending: "در انتظار بررسی",
   confirmed: "تأیید شده",
   rejected: "رد شده",
-  cancelled: "لغو شده",
+  cancelled: "کنسل شده",
   unpaid: "پرداخت نشده",
   failed: "ناموفق",
   paid: "پرداخت شده",
@@ -59,6 +65,10 @@ function App() {
       return D.seed();
     }
   });
+  const [collapsed, setCollapsed] = useState(
+    () => localStorage.getItem("sana-sidebar-collapsed") === "true",
+  );
+  const [deliveryId, setDeliveryId] = useState("");
   const [revision, setRevision] = useState(0);
   const [supplyLimit, setSupplyLimit] = useState(6);
   const [storageError, setStorageError] = useState("");
@@ -72,6 +82,7 @@ function App() {
   const [checkoutKey, setCheckoutKey] = useState(D.uid());
   const [method, setMethod] = useState<D.Order["method"]>("online");
   const [selected, setSelected] = useState("");
+  const [orderView, setOrderView] = useState("all");
   const [query, setQuery] = useState("");
   const [deviceFilter, setDeviceFilter] = useState("");
   useEffect(() => {
@@ -157,10 +168,14 @@ function App() {
     setCart({ ...cart, [p.id]: (cart[p.id] || 0) + 1 });
     setToast("به سبد خرید اضافه شد");
   };
+  const delivery =
+    customer.addresses?.find((a) => a.id === deliveryId) ||
+    customer.addresses?.find((a) => a.isDefault) ||
+    customer.addresses?.[0];
   function place() {
     if (
       mutate((s) => {
-        D.createOrder(s, cid, cart, method, checkoutKey);
+        D.createOrder(s, cid, cart, method, checkoutKey, delivery?.id);
       })
     ) {
       setCart({});
@@ -170,7 +185,7 @@ function App() {
       setToast(
         method === "credit"
           ? "درخواست برای بررسی فروش ثبت شد"
-          : "سفارش ثبت شد؛ نتیجه پرداخت نمایشی را انتخاب کنید",
+          : "سفارش ثبت شد؛ نتیجه پرداخت را انتخاب کنید",
       );
     }
   }
@@ -187,9 +202,7 @@ function App() {
   };
   const reset = () => {
     if (
-      confirm(
-        "تمام سفارش‌ها و تغییرات دمو پاک و داده‌های نمونه بازگردانده شوند؟",
-      )
+      confirm("تمام سفارش‌ها و تغییرات پاک و داده‌های اولیه بازگردانده شوند؟")
     ) {
       try {
         repo.reset();
@@ -198,7 +211,7 @@ function App() {
         setCart({});
         setSelected("");
         setCheckoutKey(D.uid());
-        setToast("داده‌های دمو بازنشانی شد");
+        setToast("داده‌ها بازنشانی شد");
       } catch {
         setStorageError("ذخیره‌سازی مرورگر در دسترس نیست");
       }
@@ -281,9 +294,13 @@ function App() {
   }
   function OrderCard({ o }: { o: D.Order }) {
     const detail = selected === o.id;
+    const historical =
+      o.shipping === "delivered" ||
+      o.status === "cancelled" ||
+      o.status === "rejected";
     return (
-      <article className="order-card">
-        <div className="row wrap">
+      <article className={"order-card order-stage-" + D.orderStage(o)}>
+        <div className="order-summary">
           <div>
             <bdi>{o.id}</bdi>
             <p>
@@ -291,7 +308,21 @@ function App() {
               {state.customers.find((c) => c.id === o.customer)?.name}
             </p>
           </div>
-          <Badge value={o.status} />
+          <Badge
+            value={
+              o.status === "cancelled"
+                ? "cancelled"
+                : o.status === "rejected"
+                  ? "rejected"
+                  : D.orderStage(o) === "review"
+                    ? "در حال بررسی"
+                    : D.orderStage(o) === "queue"
+                      ? "در صف ارسال"
+                      : o.shipping === "delivered"
+                        ? "تحویل شده"
+                        : "ارسال شده"
+            }
+          />
           <strong>{D.money(o.total)}</strong>
           <button
             className="link"
@@ -301,8 +332,23 @@ function App() {
             <ChevronLeft size={16} />
           </button>
         </div>
+        {!detail && !historical && <OrderJourney order={o} />}
         {detail && (
           <div className="order-detail">
+            {!historical && <OrderJourney order={o} />}
+            {o.deliveryAddress && (
+              <div className="order-address">
+                <strong>نشانی تحویل</strong>
+                <p>
+                  {o.deliveryAddress.label}:{" "}
+                  {D.formatAddress(o.deliveryAddress)}
+                </p>
+                <small>
+                  {o.deliveryAddress.recipient} ·{" "}
+                  <bdi>{o.deliveryAddress.phone}</bdi>
+                </small>
+              </div>
+            )}
             <div className="row wrap">
               <span>روش خرید: {labels[o.method]}</span>
               <span>
@@ -342,16 +388,16 @@ function App() {
               o.payment !== "paid" &&
               o.status === "pending" && (
                 <div className="payment-box">
-                  <strong>درگاه نمایشی — هیچ مبلغی جابه‌جا نمی‌شود</strong>
+                  <strong>نتیجه پرداخت</strong>
                   <div className="actions">
                     <button onClick={() => mutate((s) => D.pay(s, o.id, true))}>
-                      شبیه‌سازی پرداخت موفق
+                      پرداخت موفق
                     </button>
                     <button
                       className="secondary"
                       onClick={() => mutate((s) => D.pay(s, o.id, false))}
                     >
-                      شبیه‌سازی پرداخت ناموفق
+                      پرداخت ناموفق
                     </button>
                   </div>
                   <small>تلاش مجدد روی همین سفارش انجام می‌شود.</small>
@@ -530,12 +576,12 @@ function App() {
                 address: String(f.get("address")),
                 active: f.get("active") === "on",
               };
-              if (c)
-                Object.assign(
-                  s.customers.find((x) => x.id === c.id)!,
-                  v,
-                );
-              else s.customers.push({ ...v, id: D.uid(), devices: [] });
+              if (c) {
+                const target = s.customers.find((x) => x.id === c.id)!;
+                Object.assign(target, v);
+                const saved = target.addresses?.find((a) => a.isDefault);
+                if (saved) saved.address = v.address;
+              } else s.customers.push({ ...v, id: D.uid(), devices: [] });
             })
           ) {
             setToast("اطلاعات مرکز ذخیره شد");
@@ -543,7 +589,7 @@ function App() {
           }
         }}
       >
-        <h3>{c ? "ویرایش " + c.name : "ایجاد مرکز فرضی"}</h3>
+        <h3>{c ? "ویرایش " + c.name : "ایجاد مرکز"}</h3>
         <div className="form-grid">
           <label>
             نام مرکز
@@ -564,7 +610,7 @@ function App() {
             />
           </label>
           <label>
-            موبایل نمایشی
+            موبایل
             <input
               dir="ltr"
               name="mobile"
@@ -645,9 +691,7 @@ function App() {
                   pid &&
                   !s.products.find((p) => p.id === pid)?.models.includes(model)
                 )
-                  throw Error(
-                    "قلم تحویل اولیه با مدل انتخابی در دمو سازگار نیست",
-                  );
+                  throw Error("قلم تحویل اولیه با مدل انتخابی سازگار نیست");
                 const serial = String(f.get("serial"));
                 if (
                   s.customers.some((c) =>
@@ -681,7 +725,7 @@ function App() {
               </select>
             </label>
             <label>
-              سریال فرضی
+              سریال دستگاه
               <input required name="serial" dir="ltr" maxLength={60} />
             </label>
             <label>
@@ -816,7 +860,7 @@ function App() {
             />
           </label>
           <label>
-            موجودی نمایشی (بسته)
+            موجودی (بسته)
             <input
               required
               name="stock"
@@ -842,9 +886,7 @@ function App() {
         {p && (
           <p>
             آنلاین: {D.money(D.onlinePrice(p.price))} ·{" "}
-            {p.verified
-              ? "قابل سفارش فقط در دمو"
-              : "در انتظار تأیید؛ غیرقابل سفارش"}
+            {p.verified ? "قابل سفارش" : "در انتظار تأیید؛ غیرقابل سفارش"}
           </p>
         )}
         <button className="secondary">ذخیره محصول</button>
@@ -940,7 +982,7 @@ function App() {
             <section className="card soft">
               {admin ? (
                 <>
-                  <span className="eyebrow">پیگیری مالی دمو</span>
+                  <span className="eyebrow">پیگیری مالی</span>
                   <h2>نمای پرداخت‌ها</h2>
                   <div className="line">
                     <span>جمع پرداخت موفق آنلاین</span>
@@ -976,10 +1018,7 @@ function App() {
                         .length.toLocaleString("fa-IR")}
                     </strong>
                   </div>
-                  <p>
-                    تأیید خرید شرایطی به معنی وصول چک نیست. تمام مبالغ نمایشی
-                    هستند.
-                  </p>
+                  <p>تأیید خرید شرایطی به معنی وصول چک نیست.</p>
                   <button className="link" onClick={() => go("/admin/orders")}>
                     بررسی و پیگیری سفارش‌ها <ArrowLeft size={15} />
                   </button>
@@ -996,7 +1035,7 @@ function App() {
                   <div className="discount-number">
                     ۲۰<span>٪</span>
                   </div>
-                  <small>تمام قیمت‌ها و پرداخت‌های این دمو فرضی‌اند.</small>
+                  <small></small>
                 </>
               )}
             </section>
@@ -1074,11 +1113,6 @@ function App() {
         <>
           <h1>کیت‌ها و مواد مصرفی</h1>
           <p className="muted">انتخابی متناسب با دستگاه‌های مرکز شما</p>
-          <div className="notice">
-            منوی سازنده با موجودی واقعی سانا یکسان نیست. سازگاری اقلام قابل
-            سفارش فقط برای سناریوی دمو تعریف شده؛ کد دقیق، بسته‌بندی و IFU پیش
-            از عرضه واقعی باید تأیید شوند.
-          </div>
           <div className="filters">
             <label className="search">
               <Search size={19} />
@@ -1131,17 +1165,34 @@ function App() {
                     <Badge
                       value={
                         p.verified
-                          ? "قابل سفارش در دمو"
+                          ? "قابل سفارش"
                           : p.models.length
                             ? "معرفی‌شده سازنده"
                             : "نیازمند تأیید"
                       }
                     />
                   </div>
-                  <div className="kit-art">
-                    <Package size={52} strokeWidth={1} />
-                    <bdi>{p.english}</bdi>
-                    <small>تصویر نمادین بسته؛ عکس محصول نیست</small>
+                  <div className="kit-photo">
+                    {p.brand === "Wondfo" ? (
+                      <>
+                        <img
+                          src={assetPath(
+                            "/product-assets/wondfo/images/finecare-cassette.png",
+                          )}
+                          alt="کاست مرجع خانواده Finecare از کاتالوگ سازنده"
+                        />
+                        <img
+                          className="id-chip"
+                          src={assetPath(
+                            "/product-assets/wondfo/images/finecare-id-chip.png",
+                          )}
+                          alt="چیپ شناسایی کیت Finecare"
+                        />
+                        <small>تصویر مرجع خانواده Finecare</small>
+                      </>
+                    ) : (
+                      <Package size={52} />
+                    )}
                   </div>
                   <h2>{p.name}</h2>
                   <p>
@@ -1152,27 +1203,30 @@ function App() {
                   <p className="muted">
                     {p.models.length ? (
                       <>
-                        <bdi>{p.models.join(" / ")}</bdi> · تطبیق نمایشی
+                        <bdi>{p.models.join(" / ")}</bdi>
                       </>
                     ) : (
                       "سازگاری مستند نشده؛ قابل فروش نیست"
                     )}
                   </p>
-                  <small>
-                    معرفی‌شده در منوی سازنده؛ عرضه واقعی سانا تأیید نشده
-                  </small>
-                  <small>
-                    تعداد تست در بسته: {p.tests ?? "نیازمند تأیید"} · واحد
-                    سفارش: بسته
-                  </small>
-                  <a
-                    className="source"
-                    href={assetPath(p.source)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
-                  </a>
+                  <details className="product-evidence">
+                    <summary>جزئیات بسته و منبع</summary>{" "}
+                    <small>
+                      معرفی‌شده در منوی سازنده؛ عرضه واقعی سانا تأیید نشده
+                    </small>
+                    <small>
+                      تعداد تست در بسته: {p.tests ?? "نیازمند تأیید"} · واحد
+                      سفارش: بسته
+                    </small>
+                    <a
+                      className="source"
+                      href={assetPath(p.source)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
+                    </a>
+                  </details>
                   <div className="price-block">
                     <span>
                       پایه، چک سه‌ماهه <strong>{D.money(p.price)}</strong>
@@ -1185,15 +1239,47 @@ function App() {
                       صرفه‌جویی: {D.money(p.price - D.onlinePrice(p.price))}
                     </small>
                   </div>
-                  <button
-                    disabled={!D.compatible(p, customer) || p.stock === 0}
-                    onClick={() => add(p)}
-                  >
-                    <Plus size={17} /> افزودن به سبد
-                  </button>
-                  <small className="stock">
-                    موجودی نمایشی: {p.stock} بسته · قیمت فرضی
-                  </small>
+                  {(cart[p.id] || 0) > 0 ? (
+                    <div
+                      className="product-quantity"
+                      aria-label={"تعداد انتخابی " + p.english}
+                    >
+                      <button
+                        aria-label={"کاهش " + p.english}
+                        onClick={() =>
+                          setCart({
+                            ...cart,
+                            [p.id]: Math.max(0, (cart[p.id] || 0) - 1),
+                          })
+                        }
+                      >
+                        <Minus size={18} />
+                      </button>
+                      <output aria-label={"تعداد بسته " + p.english}>
+                        {(cart[p.id] || 0).toLocaleString("fa-IR")}
+                        <small>بسته</small>
+                      </output>
+                      <button
+                        aria-label={"افزایش " + p.english}
+                        disabled={(cart[p.id] || 0) >= p.stock}
+                        onClick={() => add(p)}
+                      >
+                        <Plus size={18} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      disabled={!D.compatible(p, customer) || p.stock === 0}
+                      onClick={() => add(p)}
+                    >
+                      <Plus size={17} />
+                      افزودن به سبد
+                    </button>
+                  )}
+                  <div className="stock">
+                    موجودی: <strong>{p.stock.toLocaleString("fa-IR")}</strong>{" "}
+                    بسته
+                  </div>
                 </article>
               ))}
           </div>
@@ -1268,7 +1354,39 @@ function App() {
                     </div>
                   );
                 })}
-                <p>نشانی تحویل: {customer.address}</p>
+                <section className="checkout-address">
+                  <h3>نشانی تحویل</h3>
+                  {customer.addresses?.length ? (
+                    <>
+                      <label>
+                        انتخاب از آدرس‌های من
+                        <select
+                          value={delivery?.id || ""}
+                          onChange={(e) => setDeliveryId(e.target.value)}
+                        >
+                          {customer.addresses.map((a) => (
+                            <option key={a.id} value={a.id}>
+                              {a.label} — {a.city}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <p>
+                        {delivery
+                          ? D.formatAddress(delivery)
+                          : customer.address}
+                      </p>
+                      <small>
+                        {delivery?.recipient} · <bdi>{delivery?.phone}</bdi>
+                      </small>
+                    </>
+                  ) : (
+                    <p>برای ادامه، یک نشانی تحویل ثبت کنید.</p>
+                  )}
+                  <a className="source" href="#/customer/profile">
+                    ویرایش یا افزودن آدرس
+                  </a>
+                </section>
               </div>
               <div className="card">
                 <h2>روش خرید</h2>
@@ -1313,11 +1431,11 @@ function App() {
                 <p className="muted">
                   {method === "credit"
                     ? "ثبت درخواست به معنی پرداخت یا تأیید نهایی نیست."
-                    : "پس از ثبت سفارش، نتیجه پرداخت نمایشی را انتخاب کنید."}
+                    : "پس از ثبت سفارش، نتیجه پرداخت را انتخاب کنید."}
                 </p>
-                <button className="full" onClick={place}>
+                <button className="full" onClick={place} disabled={!delivery}>
                   {method === "online"
-                    ? "ثبت سفارش و پرداخت نمایشی"
+                    ? "ثبت سفارش و پرداخت"
                     : "ثبت درخواست خرید شرایطی"}
                   <ArrowLeft size={16} />
                 </button>
@@ -1330,6 +1448,22 @@ function App() {
       return (
         <>
           <h1>{admin ? "مدیریت سفارش‌ها" : "سفارش‌های من"}</h1>
+          <div className="order-tabs" role="group" aria-label="نمای سفارش‌ها">
+            {[
+              ["all", "همه سفارش‌ها"],
+              ["active", "سفارش‌های جاری"],
+              ["history", "سوابق سفارش‌ها"],
+            ].map(([v, label]) => (
+              <button
+                key={v}
+                className={orderView === v ? "selected" : ""}
+                aria-pressed={orderView === v}
+                onClick={() => setOrderView(v)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
           <div className="filters">
             <select
               aria-label="فیلتر سفارش"
@@ -1337,47 +1471,82 @@ function App() {
               onChange={(e) => setQuery(e.target.value)}
             >
               <option value="">همه سفارش‌ها</option>
-              <option value="pending">در انتظار بررسی</option>
-              <option value="confirmed">تأیید شده</option>
+              <option value="review">در حال بررسی</option>
+              <option value="queue">در صف ارسال</option>
+              <option value="sent">ارسال شده</option>
+              <option value="cancelled">کنسل شده</option>
               <option value="rejected">رد شده</option>
             </select>
           </div>
+          <div className="orders-table-heading">
+            <span>شماره و تاریخ سفارش</span>
+            <span>وضعیت</span>
+            <span>مبلغ سفارش</span>
+            <span>پیگیری</span>
+          </div>
           {orders
-            .filter((o) => !query || o.status === query)
+            .filter(
+              (o) =>
+                (!query ||
+                  (query === "cancelled" || query === "rejected"
+                    ? o.status === query
+                    : D.orderStage(o) === query)) &&
+                (orderView === "all" ||
+                  (orderView === "history"
+                    ? o.shipping === "delivered" ||
+                      o.status === "cancelled" ||
+                      o.status === "rejected"
+                    : !(
+                        o.shipping === "delivered" ||
+                        o.status === "cancelled" ||
+                        o.status === "rejected"
+                      ))),
+            )
             .map((o) => (
               <React.Fragment key={o.id}>{OrderCard({ o })}</React.Fragment>
             ))}
-          {!orders.filter((o) => !query || o.status === query).length && (
-            <Empty>سفارشی در این بخش نیست.</Empty>
-          )}
+          {!orders.filter(
+            (o) =>
+              (!query ||
+                (query === "cancelled" || query === "rejected"
+                  ? o.status === query
+                  : D.orderStage(o) === query)) &&
+              (orderView === "all" ||
+                (orderView === "history"
+                  ? o.shipping === "delivered" ||
+                    o.status === "cancelled" ||
+                    o.status === "rejected"
+                  : !(
+                      o.shipping === "delivered" ||
+                      o.status === "cancelled" ||
+                      o.status === "rejected"
+                    ))),
+          ).length && <Empty>سفارشی در این بخش نیست.</Empty>}
         </>
       );
     if (tab === "tickets") return Tickets();
     if (tab === "profile")
       return (
-        <>
-          <h1>اطلاعات مرکز</h1>
-          <div className="card">
-            <h2>{customer.name}</h2>
-            <p>مسئول: {customer.manager}</p>
-            <p>
-              موبایل: <bdi>{customer.mobile}</bdi>
-            </p>
-            <p>{customer.address}</p>
-            <p className="notice">
-              اطلاعات کاملاً فرضی است. تغییر حساب و دستگاه از پنل مدیریت انجام
-              می‌شود.
-            </p>
-          </div>
-        </>
+        <Profile
+          customer={customer}
+          onProfile={(v) => {
+            const ok = mutate((s) => D.saveCustomerProfile(s, cid, v));
+            if (ok) setToast("اطلاعات مرکز ذخیره شد");
+            return ok;
+          }}
+          onAddress={(a) => {
+            const ok = mutate((s) => D.saveAddress(s, cid, a));
+            if (ok) setToast("آدرس ذخیره شد");
+            return ok;
+          }}
+          onDelete={(id) => mutate((s) => D.deleteAddress(s, cid, id))}
+        />
       );
     if (tab === "customers" && admin)
       return (
         <>
           <h1>مشتریان و دستگاه‌ها</h1>
-          <p className="notice">
-            فقط اطلاعات فرضی وارد کنید. رمز عبور واقعی ذخیره نمی‌شود.
-          </p>
+
           {CustomerEditor({})}
           {state.customers.map((c) => (
             <section key={c.id}>
@@ -1390,11 +1559,10 @@ function App() {
     if (tab === "products" && admin)
       return (
         <>
-          <h1>محصولات، قیمت و موجودی نمایشی</h1>
+          <h1>محصولات، قیمت و موجودی</h1>
           <p className="notice">
             سفارش ثبت‌شده قیمت و نام زمان ثبت را حفظ می‌کند. اقلام جدید ابتدا
-            غیرقابل سفارش هستند؛ تأیید علمی سازگاری و بسته‌بندی در این دمو انجام
-            نمی‌شود.
+            غیرقابل سفارش هستند؛ تأیید سازگاری و بسته‌بندی پیش از عرضه لازم است.
           </p>
           {ProductEditor({})}
           {state.products.map((p) => (
@@ -1458,8 +1626,8 @@ function App() {
             SERVICELOGS
           </h1>
           <p className="notice">
-            adapter نمایشی: هیچ درخواست بیرونی ارسال نمی‌شود. تلاش مجدد تنها
-            نتیجه همین رویداد را تغییر می‌دهد و سفارش جدید نمی‌سازد.
+            تلاش مجدد تنها نتیجه همین رویداد را تغییر می‌دهد و سفارش جدید
+            نمی‌سازد.
           </p>
           {state.logs.map((l) => (
             <article className="card" key={l.id}>
@@ -1485,24 +1653,31 @@ function App() {
                     شناسه: <bdi>{l.id}</bdi>
                   </p>
                   <p>
-                    مقصد: <bdi>{l.destination}</bdi>
+                    مقصد: <bdi>{l.destination.replace(/^demo:\/\//, "")}</bdi>
                   </p>
                   <p>
                     {D.date(l.time)} ·{" "}
                     {new Date(l.time).toLocaleTimeString("fa-IR")}
                   </p>
-                  <p>{l.error || "بدون خطا"}</p>
+                  <p>
+                    {l.error
+                      ? l.error.includes("نمایشی") ||
+                        l.error.includes("شبیه‌سازی")
+                        ? "پاسخی از مقصد دریافت نشد"
+                        : l.error
+                      : "بدون خطا"}
+                  </p>
                   <div className="actions">
                     <button
                       onClick={() => mutate((s) => D.runLog(s, l.id, true))}
                     >
-                      تلاش نمایشی موفق
+                      تلاش موفق
                     </button>
                     <button
                       className="secondary"
                       onClick={() => mutate((s) => D.runLog(s, l.id, false))}
                     >
-                      تلاش نمایشی ناموفق
+                      تلاش ناموفق
                     </button>
                   </div>
                 </>
@@ -1522,18 +1697,45 @@ function App() {
         </div>
       )}
       {panel && role === (admin ? "admin" : "customer") ? (
-        <div className="app-shell">
+        <div className={"app-shell" + (collapsed ? " sidebar-collapsed" : "")}>
           <aside className="sidebar">
+            <button
+              className="sidebar-toggle"
+              aria-label={collapsed ? "باز کردن منو" : "جمع کردن منو"}
+              aria-expanded={!collapsed}
+              onClick={() => {
+                setCollapsed((v) => !v);
+                localStorage.setItem(
+                  "sana-sidebar-collapsed",
+                  String(!collapsed),
+                );
+              }}
+            >
+              {collapsed ? (
+                <PanelRightOpen size={19} />
+              ) : (
+                <PanelRightClose size={19} />
+              )}
+            </button>
             <a href="#/" className="panel-brand">
               <Logo />
               <span>{admin ? "پنل مدیریت" : "پنل مشتریان"}</span>
             </a>
             <div className="center-name">
-              <span className="avatar">{admin ? "س" : "س‌پ"}</span>
+              <span className="avatar">
+                {admin ? (
+                  "س"
+                ) : (
+                  <img
+                    src={assetPath(customer.avatar || "/profile/boghrat.svg")}
+                    alt={"نشان " + customer.name}
+                  />
+                )}
+              </span>
               <div>
                 <strong>{admin ? "مدیریت سانا" : customer.name}</strong>
                 <small>
-                  {admin ? "دسترسی نمایشی مدیر" : "مرکز آزمایشگاهی · حساب دمو"}
+                  {admin ? "مدیریت مراکز و سفارش‌ها" : "مرکز آزمایشگاهی"}
                 </small>
               </div>
             </div>
@@ -1543,6 +1745,8 @@ function App() {
                 return (
                   <a
                     key={String(key)}
+                    aria-label={String(label)}
+                    title={String(label)}
                     className={tab === key ? "active" : ""}
                     href={"#/" + (admin ? "admin" : "customer") + "/" + key}
                   >
@@ -1579,14 +1783,23 @@ function App() {
                 {titleMap[tab] || "پنل"}
               </div>
               <div className="row">
-                <span className="demo-dot">نسخه نمایشی</span>
-                <button
-                  className="link role-switch"
-                  onClick={() => login(admin ? "customer" : "admin")}
-                >
-                  {admin ? "نمای مشتری" : "نمای مدیریت"}{" "}
-                  <ArrowUpLeft size={16} />
-                </button>
+                {admin && (
+                  <button
+                    className="link role-switch"
+                    onClick={() => login("customer")}
+                  >
+                    نمای مشتری <ArrowUpLeft size={16} />
+                  </button>
+                )}
+                <AccountMenu
+                  role={role}
+                  customer={customer}
+                  onLogout={() => {
+                    setRole("");
+                    sessionStorage.removeItem("sana-role");
+                    go("/login");
+                  }}
+                />
                 <button
                   className="link logout-header"
                   aria-label="خروج از حساب"
@@ -1601,17 +1814,13 @@ function App() {
                 <span className="avatar small">س</span>
               </div>
             </header>
-            <div className="demo-bar">
-              محیط دمو · اطلاعات، قیمت‌ها و موجودی‌ها فرضی هستند. هیچ پرداخت یا
-              پیامک واقعی انجام نمی‌شود.
-            </div>
             <main className="panel-main" key={revision}>
               {PanelContent()}
             </main>
             <footer className="panel-footer">
               <span>سانا؛ همراه آزمایشگاه شما</span>
               <button className="link" onClick={reset}>
-                بازنشانی داده‌های دمو
+                بازنشانی داده‌ها
               </button>
             </footer>
           </div>
@@ -1640,9 +1849,15 @@ function App() {
                 </a>
               ))}
             </nav>
-            <a className="button small-button" href="#/login">
-              ورود مشتریان <ArrowLeft size={16} />
-            </a>
+            <AccountMenu
+              role={role}
+              customer={customer}
+              onLogout={() => {
+                setRole("");
+                sessionStorage.removeItem("sana-role");
+                go("/login");
+              }}
+            />
           </header>
           {panel || path === "/login" ? (
             <Login state={state} login={login} setToast={setToast} />
@@ -1663,9 +1878,9 @@ function App() {
             </div>
             <div className="enamad">محل نمایش نماد اعتماد</div>
             <div className="footer-bottom">
-              <span>سانا · نسخه نمایشی برای بررسی ایده</span>
+              <span>سانا؛ همراه آزمایشگاه شما</span>
               <button className="link" onClick={reset}>
-                بازنشانی داده‌های دمو
+                بازنشانی داده‌ها
               </button>
             </div>
           </footer>

@@ -36,3 +36,13 @@ export const Empty = ({ children }: { children: React.ReactNode }) => (
     <p>{children}</p>
   </div>
 );
+
+export const BrandLogo = ({ brand }: { brand: "Getein" | "Wondfo" }) => (
+  <img
+    className="manufacturer-logo"
+    src={assetPath(
+      `/product-assets/${brand.toLowerCase()}/branding/${brand.toLowerCase()}-logo.png`,
+    )}
+    alt={"لوگوی " + brand}
+  />
+);

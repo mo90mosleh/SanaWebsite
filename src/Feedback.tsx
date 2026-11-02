@@ -126,7 +126,7 @@ export function Feedback() {
         return null;
       return (
         raw.closest(
-          "button,a,input,textarea,select,label,h1,h2,h3,p,img,section,article,header,footer,nav",
+          'button,a,input,textarea,select,label,h1,h2,h3,p,img,svg[role="img"],section,article,header,footer,nav',
         ) || raw
       );
     };
@@ -335,7 +335,7 @@ export function Feedback() {
           <header className="feedback-header">
             <div>
               <MessageSquarePlus size={20} />
-              <strong>{draft ? "یادداشت روی صفحه" : "بازخورد روی دمو"}</strong>
+              <strong>{draft ? "یادداشت روی صفحه" : "بازخورد روی صفحه"}</strong>
             </div>
             <button
               className="feedback-icon"

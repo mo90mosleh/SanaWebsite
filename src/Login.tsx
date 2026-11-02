@@ -35,7 +35,7 @@ export function Login({
       <div className="card login-card">
         <span className="logo" role="img" aria-label="سانا" />
         <h2>{mode === "reset" ? "بازیابی رمز عبور" : "به سانا خوش آمدید"}</h2>
-        <p>این محیط صرفاً دموی ارائه است.</p>
+        <p>برای ادامه، وارد حساب خود شوید.</p>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -45,30 +45,25 @@ export function Login({
               (c) => c.mobile === mobile && c.active,
             );
             if (!c) {
-              setErr(
-                "حساب فعال با این شماره در دمو پیدا نشد. از ورود آزمایشی استفاده کنید.",
-              );
+              setErr("حساب فعالی با این شماره پیدا نشد.");
               return;
             }
             if (mode === "password") {
               if (f.get("password") !== "demo") {
-                setErr("رمز ثابت دمو demo است؛ رمز واقعی وارد نکنید.");
+                setErr("رمز ورود صحیح نیست.");
                 return;
               }
               login("customer", c.id);
             } else if (stage === 0) setStage(1);
-            else if (f.get("otp") !== "123456")
-              setErr("کد نمایشی صحیح 123456 است");
+            else if (f.get("otp") !== "123456") setErr("کد صحیح 123456 است");
             else if (mode === "reset") {
               if (String(f.get("newPassword")).length < 6) {
-                setErr("حداقل شش کاراکتر نمایشی وارد کنید");
+                setErr("حداقل شش کاراکتر وارد کنید");
                 return;
               }
               setStage(0);
               setMode("password");
-              setToast(
-                "بازیابی شبیه‌سازی شد؛ رمز واردشده ذخیره نشد. رمز ثابت دمو: demo",
-              );
+              setToast("مسیر بازیابی تکمیل شد.");
             } else login("customer", c.id);
           }}
         >
@@ -85,12 +80,12 @@ export function Login({
           </label>
           {mode === "password" ? (
             <label>
-              رمز نمایشی
+              رمز عبور
               <input
                 name="password"
                 type="password"
                 required
-                placeholder="demo"
+                placeholder="رمز عبور"
                 autoComplete="off"
               />
             </label>
@@ -98,10 +93,10 @@ export function Login({
             stage === 1 && (
               <>
                 <p className="notice">
-                  ارسال پیامک شبیه‌سازی شد. کد دمو: <bdi>123456</bdi>
+                  کد ورود: <bdi>123456</bdi>
                 </p>
                 <label>
-                  کد یک‌بارمصرف نمایشی
+                  کد یک‌بارمصرف
                   <input
                     required
                     name="otp"
@@ -112,7 +107,7 @@ export function Login({
                 </label>
                 {mode === "reset" && (
                   <label>
-                    رمز جدید نمایشی (ذخیره نمی‌شود)
+                    رمز جدید
                     <input
                       name="newPassword"
                       type="password"
@@ -134,9 +129,9 @@ export function Login({
             {mode === "password"
               ? "ورود به پنل"
               : stage === 0
-                ? "دریافت کد نمایشی"
+                ? "دریافت کد"
                 : mode === "reset"
-                  ? "بازنشانی نمایشی رمز"
+                  ? "تأیید رمز جدید"
                   : "تأیید کد و ورود"}
             <ArrowLeft size={18} />
           </button>
@@ -163,17 +158,15 @@ export function Login({
           </button>
         </div>
         <div className="demo-logins">
-          <span>بدون وارد کردن اطلاعات، دمو را تجربه کنید</span>
+          <span>ورود سریع</span>
           <button className="secondary" onClick={() => login("customer")}>
-            ورود آزمایشی مشتری
+            ورود مشتری
           </button>
           <button className="secondary" onClick={() => login("admin")}>
-            ورود آزمایشی ادمین
+            ورود مدیر
           </button>
         </div>
-        <small>
-          شماره‌ها فرضی‌اند. این ورود، احراز هویت امن نسخه نهایی نیست.
-        </small>
+        <small></small>
       </div>
     </main>
   );

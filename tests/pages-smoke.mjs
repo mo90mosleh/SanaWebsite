@@ -52,13 +52,18 @@ try {
   });
   const url = `http://127.0.0.1:${port}/SanaWebsite/`;
   await page.goto(url);
-  await page.locator(".hero-visual img").waitFor();
+  await page.locator(".hero-slide img").waitFor();
   assert.equal(
     await page
-      .locator(".hero-visual img")
+      .locator(".hero-slide img")
       .evaluate((e) => e.complete && e.naturalWidth > 0),
     true,
   );
+  const iconHref = await page.locator('link[rel="icon"]').getAttribute("href");
+  assert.match(iconHref, /^\/SanaWebsite\/favicon\.svg/);
+  const icon = await page.request.get(new URL(iconHref, url).href);
+  assert.equal(icon.status(), 200);
+  assert.match(await icon.text(), /extract-s/);
   await page.evaluate(() => document.fonts.ready);
   assert.equal(
     await page.evaluate(() => document.fonts.check("14px Vazirmatn")),
@@ -76,18 +81,16 @@ try {
   assert.equal(pdf.status(), 200);
   assert.equal((await pdf.body()).subarray(0, 4).toString(), "%PDF");
   await page.goto(url + "#/login");
-  await page
-    .getByRole("button", { name: "ورود آزمایشی مشتری", exact: true })
-    .click();
+  await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
   await page.goto(url + "#/customer/supplies");
   await page.getByLabel("جست‌وجوی محصول").fill("W201");
   await page
     .getByRole("button", { name: "افزودن به سبد", exact: true })
     .click();
   await page.goto(url + "#/customer/cart");
-  await page.getByRole("button", { name: "ثبت سفارش و پرداخت نمایشی" }).click();
+  await page.getByRole("button", { name: "ثبت سفارش و پرداخت" }).click();
   await page.getByRole("button", { name: "جزئیات و پیگیری" }).first().click();
-  await page.getByRole("button", { name: "شبیه‌سازی پرداخت موفق" }).click();
+  await page.getByRole("button", { name: "پرداخت موفق" }).click();
   await page.reload();
   assert.equal(
     await page.evaluate(

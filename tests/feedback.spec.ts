@@ -1,3 +1,4 @@
+import { switchToAdmin } from "./helpers";
 import { test, expect } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 test("page annotations persist, select without triggering links, edit, export and delete on mobile", async ({
@@ -9,7 +10,7 @@ test("page annotations persist, select without triggering links, edit, export an
   await page
     .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
     .click();
-  await page.getByRole("link", { name: "ورود مشتریان", exact: true }).click();
+  await page.getByRole("link", { name: "ورود", exact: true }).click();
   await expect(page).not.toHaveURL(/#\/login/);
   const editor = page.getByRole("dialog", { name: "نوشتن بازخورد" });
   await expect(editor).toBeVisible();
@@ -50,7 +51,7 @@ test("page annotations persist, select without triggering links, edit, export an
     viewport: { width: 390, height: 844 },
   });
   expect(data.notes[0].selector).toContain("#root");
-  expect(data.notes[0].excerpt).toContain("ورود مشتریان");
+  expect(data.notes[0].excerpt).toContain("ورود");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -68,9 +69,7 @@ test("notes retain original page and survive role changes and demo reset; keyboa
   page,
 }) => {
   await page.goto("/#/login");
-  await page
-    .getByRole("button", { name: "ورود آزمایشی مشتری", exact: true })
-    .click();
+  await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
   await page.getByRole("button", { name: "بازخورد", exact: true }).click();
   await page
     .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
@@ -89,7 +88,7 @@ test("notes retain original page and survive role changes and demo reset; keyboa
     .getByRole("button", { name: "ذخیره یادداشت", exact: true })
     .click();
   await page.getByRole("button", { name: "بستن بازخورد" }).click();
-  await page.getByRole("button", { name: "نمای مدیریت", exact: true }).click();
+  await switchToAdmin(page);
   await page.getByRole("button", { name: /^بازخورد/ }).click();
   await expect(page.getByRole("dialog")).toContainText(
     "در این صفحه یادداشتی نیست",
@@ -101,7 +100,7 @@ test("notes retain original page and survive role changes and demo reset; keyboa
   await page.getByRole("link", { name: "رفتن به صفحه" }).click();
   page.once("dialog", (d) => d.accept());
   await page
-    .getByRole("button", { name: "بازنشانی داده‌های دمو", exact: true })
+    .getByRole("button", { name: "بازنشانی داده‌ها", exact: true })
     .click();
   await page.getByRole("button", { name: /^بازخورد/ }).click();
   await expect(page.getByRole("dialog")).toContainText(
@@ -112,14 +111,12 @@ test("form selection exports labels, never typed password values", async ({
   page,
 }) => {
   await page.goto("/#/login");
-  await page
-    .getByLabel("رمز نمایشی", { exact: true })
-    .fill("private-test-text");
+  await page.getByLabel("رمز عبور", { exact: true }).fill("private-test-text");
   await page.getByRole("button", { name: "بازخورد", exact: true }).click();
   await page
     .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
     .click();
-  await page.getByLabel("رمز نمایشی", { exact: true }).click();
+  await page.getByLabel("رمز عبور", { exact: true }).click();
   await page.getByLabel("تغییر پیشنهادی").fill("عنوان رمز واضح‌تر باشد");
   await page
     .getByRole("button", { name: "ذخیره یادداشت", exact: true })
@@ -128,5 +125,5 @@ test("form selection exports labels, never typed password values", async ({
     localStorage.getItem("sana-feedback-v1"),
   );
   expect(stored).not.toContain("private-test-text");
-  expect(stored).toContain("رمز نمایشی");
+  expect(stored).toContain("رمز عبور");
 });

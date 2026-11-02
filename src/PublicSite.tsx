@@ -1,3 +1,4 @@
+import { HeroSlider } from "./HeroSlider";
 import { assetPath } from "./assets";
 import {
   ArrowLeft,
@@ -9,7 +10,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { products as devices } from "./devices";
-import { Logo, DeviceImage, Empty } from "./ui";
+import { Logo, DeviceImage, Empty, BrandLogo } from "./ui";
 export function PublicSite({ path }: { path: string }) {
   const model = devices.find((d) => path === "/devices/" + d.id);
   if (model)
@@ -18,8 +19,11 @@ export function PublicSite({ path }: { path: string }) {
         <a className="back" href="#/devices">
           دستگاه‌ها <ChevronLeft size={15} /> {model.model}
         </a>
-        <section className="product-hero">
+        <section
+          className={"product-hero brand-" + model.manufacturer.toLowerCase()}
+        >
           <div>
+            <BrandLogo brand={model.manufacturer} />
             <span className="eyebrow">
               <bdi>
                 {model.manufacturer} · {model.category}
@@ -233,29 +237,7 @@ export function PublicSite({ path }: { path: string }) {
                 </span>
               </div>
             </div>
-            <div className="hero-visual">
-              <span className="orb orb1" />
-              <span className="orb orb2" />
-              <span className="visual-label">
-                FINECARE SERIES <span>POCT</span>
-              </span>
-              <img
-                src={assetPath("/product-assets/wondfo/images/fs-205.webp")}
-                alt="دستگاه Finecare FS-205"
-              />
-              <div className="floating-label">
-                <span className="small-icon">
-                  <Activity size={20} />
-                </span>
-                <div>
-                  <strong>Finecare FS-205</strong>
-                  <small>۲۰ کانال، یک گردش کار منظم</small>
-                </div>
-              </div>
-              <span className="visual-index">
-                01 <span>/ 05</span>
-              </span>
-            </div>
+            <HeroSlider />
           </section>
           <div className="trust-strip">
             <span>همراهی از انتخاب تا تأمین</span>
@@ -279,27 +261,52 @@ export function PublicSite({ path }: { path: string }) {
           </div>
           <span className="muted">دو خانواده، پنج انتخاب</span>
         </div>
-        <div className="device-grid">
-          {devices.map((d) => (
-            <a className="device-tile" href={"#/devices/" + d.id} key={d.id}>
-              <div className="row">
-                <span>
-                  {d.category === "POCT" ? "تشخیص سریع" : "هماتولوژی"}
-                </span>
-                <ArrowUpLeft size={19} />
+        {(["CBC", "POCT"] as const).map((category) => (
+          <section
+            className={
+              "device-family brand-" +
+              (category === "CBC" ? "getein" : "wondfo")
+            }
+            key={category}
+            aria-label={
+              category === "CBC" ? "دستگاه‌های CBC" : "دستگاه‌های POCT"
+            }
+          >
+            <div className="family-heading">
+              <div>
+                <span>{category === "CBC" ? "هماتولوژی" : "تشخیص سریع"}</span>
+                <h3>
+                  <bdi>{category}</bdi>
+                </h3>
               </div>
-              <DeviceImage model={d} />
-              <small>{d.manufacturer}</small>
-              <h3>
-                <bdi>{d.model}</bdi>
-              </h3>
-              <p>{d.highlights[0]}</p>
-              <span className="tile-link">
-                مشخصات و کاتالوگ <ArrowLeft size={15} />
-              </span>
-            </a>
-          ))}
-        </div>
+              <BrandLogo brand={category === "CBC" ? "Getein" : "Wondfo"} />
+            </div>
+            <div className="device-grid">
+              {devices
+                .filter((d) => d.category === category)
+                .map((d) => (
+                  <a
+                    className="device-tile"
+                    href={"#/devices/" + d.id}
+                    key={d.id}
+                  >
+                    <div className="row">
+                      <BrandLogo brand={d.manufacturer} />
+                      <ArrowUpLeft size={19} />
+                    </div>
+                    <DeviceImage model={d} />
+                    <h3>
+                      <bdi>{d.model}</bdi>
+                    </h3>
+                    <p>{d.highlights[0]}</p>
+                    <span className="tile-link">
+                      مشخصات و کاتالوگ <ArrowLeft size={15} />
+                    </span>
+                  </a>
+                ))}
+            </div>
+          </section>
+        ))}
       </section>
       {path === "/" && (
         <section className="portal-banner public-main">

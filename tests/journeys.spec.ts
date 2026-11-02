@@ -1,3 +1,4 @@
+import { switchToAdmin } from "./helpers";
 import { test, expect, type Page } from "@playwright/test";
 const state = async (p: Page) =>
   p.evaluate(() => JSON.parse(localStorage.getItem("sana-demo-v1")!));
@@ -34,9 +35,7 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
     if (!r.url().startsWith("http://127.0.0.1:5173")) external.push(r.url());
   });
   await p.goto("/#/login");
-  await p
-    .getByRole("button", { name: "ورود آزمایشی مشتری", exact: true })
-    .click();
+  await p.getByRole("button", { name: "ورود مشتری", exact: true }).click();
   await expect(
     p.getByRole("heading", { name: "سلام، به سانا خوش آمدید" }),
   ).toBeVisible();
@@ -53,25 +52,21 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await expect(p.locator("main")).toContainText("۱٬۹۲۰٬۰۰۰ تومان");
   await expect(p.locator("main")).toContainText("۴۸۰٬۰۰۰ تومان");
   await p
-    .getByRole("button", { name: "ثبت سفارش و پرداخت نمایشی", exact: true })
+    .getByRole("button", { name: "ثبت سفارش و پرداخت", exact: true })
     .click();
   let c = await firstOrder(p);
-  await c
-    .getByRole("button", { name: "شبیه‌سازی پرداخت ناموفق", exact: true })
-    .click();
+  await c.getByRole("button", { name: "پرداخت ناموفق", exact: true }).click();
   let s = await state(p);
   expect(s.orders[0].payment).toBe("failed");
   expect(s.orders).toHaveLength(4);
   await p.reload();
   c = await firstOrder(p);
-  await c
-    .getByRole("button", { name: "شبیه‌سازی پرداخت موفق", exact: true })
-    .click();
+  await c.getByRole("button", { name: "پرداخت موفق", exact: true }).click();
   s = await state(p);
   expect(s.orders[0].payment).toBe("paid");
   expect(s.orders).toHaveLength(4);
   expect(s.products[0].stock).toBe(23);
-  await p.getByRole("button", { name: "نمای مدیریت", exact: true }).click();
+  await switchToAdmin(p);
   await nav(p, "/admin/orders");
   c = await firstOrder(p);
   await expect(c).toContainText(s.orders[0].id);
@@ -89,7 +84,7 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   expect(s.orders[0].status).toBe("pending");
   expect(s.orders[0].payment).toBe("unpaid");
   expect(s.orders[0].total).toBe(2400000);
-  await p.getByRole("button", { name: "نمای مدیریت", exact: true }).click();
+  await switchToAdmin(p);
   await nav(p, "/admin/orders");
   c = await firstOrder(p);
   await c.getByLabel("توضیح بررسی").fill("مدارک دمو تکمیل نشده");
@@ -103,7 +98,7 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await orderAgain(p);
   await p.getByText("چک سه‌ماهه؛ نیازمند تأیید فروش", { exact: true }).click();
   await p.getByRole("button", { name: "ثبت درخواست خرید شرایطی" }).click();
-  await p.getByRole("button", { name: "نمای مدیریت", exact: true }).click();
+  await switchToAdmin(p);
   await nav(p, "/admin/orders");
   c = await firstOrder(p);
   await c.getByLabel("توضیح بررسی").fill("تأیید فروش در دمو");
@@ -142,10 +137,17 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
     .fill("برای بررسی سریال نمونه راهنمایی می‌خواهم.");
   await p.getByRole("button", { name: "ارسال تیکت", exact: true }).click();
   await expect(p.locator("main")).toContainText("پرسش فنی دمو");
-  await p.getByRole("button", { name: "نمای مدیریت", exact: true }).click();
+  await switchToAdmin(p);
   await nav(p, "/admin/tickets");
-  await p.getByLabel("پاسخ", { exact: true }).fill("پاسخ نمایشی کارشناس سانا");
-  await p.getByRole("button", { name: "ثبت پاسخ", exact: true }).click();
+  const ticket = p
+    .locator("main article")
+    .filter({
+      has: p.getByRole("heading", { name: "پرسش فنی دمو", exact: true }),
+    });
+  await ticket
+    .getByLabel("پاسخ", { exact: true })
+    .fill("پاسخ نمایشی کارشناس سانا");
+  await ticket.getByRole("button", { name: "ثبت پاسخ", exact: true }).click();
   await nav(p, "/admin/forecast");
   await expect(p.locator("main")).toContainText(
     "داده کافی برای برآورد وجود ندارد",
@@ -165,8 +167,8 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   const log = p.locator("main article").last();
   await log.getByRole("button", { name: "جزئیات", exact: true }).click();
   const orders = (await state(p)).orders.length;
-  await log.getByRole("button", { name: "تلاش نمایشی ناموفق" }).click();
-  await log.getByRole("button", { name: "تلاش نمایشی موفق" }).click();
+  await log.getByRole("button", { name: "تلاش ناموفق" }).click();
+  await log.getByRole("button", { name: "تلاش موفق" }).click();
   expect((await state(p)).orders.length).toBe(orders);
   expect((await state(p)).logs.at(-1).status).toBe("success");
   await p.getByRole("button", { name: "نمای مشتری", exact: true }).click();
@@ -176,10 +178,10 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await expect(p.locator("main")).toContainText("پاسخ نمایشی کارشناس سانا");
   p.once("dialog", (d) => d.accept());
   await p
-    .getByRole("button", { name: "بازنشانی داده‌های دمو", exact: true })
+    .getByRole("button", { name: "بازنشانی داده‌ها", exact: true })
     .click();
   expect((await state(p)).orders.length).toBe(3);
-  expect((await state(p)).tickets.length).toBe(0);
+  expect((await state(p)).tickets.length).toBe(1);
   expect(external).toEqual([]);
 });
 test("OTP, password and recovery demo flows and logout", async ({
@@ -190,23 +192,21 @@ test("OTP, password and recovery demo flows and logout", async ({
   await p
     .getByRole("button", { name: "ورود با کد یک‌بارمصرف", exact: true })
     .click();
-  await p.getByRole("button", { name: "دریافت کد نمایشی" }).click();
-  await p.getByLabel("کد یک‌بارمصرف نمایشی").fill("000000");
+  await p.getByRole("button", { name: "دریافت کد" }).click();
+  await p.getByLabel("کد یک‌بارمصرف").fill("000000");
   await p.getByRole("button", { name: "تأیید کد و ورود" }).click();
   await expect(p.getByRole("alert")).toContainText("123456");
-  await p.getByLabel("کد یک‌بارمصرف نمایشی").fill("123456");
+  await p.getByLabel("کد یک‌بارمصرف").fill("123456");
   await p.getByRole("button", { name: "تأیید کد و ورود" }).click();
   await expect(p.locator(".sidebar")).toBeVisible();
   await p.locator(".logout-header").click();
   await p.getByLabel("شماره موبایل مسئول مرکز").fill("09000000001");
   await p.getByRole("button", { name: "فراموشی رمز", exact: true }).click();
-  await p.getByRole("button", { name: "دریافت کد نمایشی" }).click();
-  await p.getByLabel("کد یک‌بارمصرف نمایشی").fill("123456");
-  await p.getByLabel("رمز جدید نمایشی (ذخیره نمی‌شود)").fill("not-real");
-  await p
-    .getByRole("button", { name: "بازنشانی نمایشی رمز", exact: true })
-    .click();
-  await p.getByLabel("رمز نمایشی", { exact: true }).fill("demo");
+  await p.getByRole("button", { name: "دریافت کد" }).click();
+  await p.getByLabel("کد یک‌بارمصرف").fill("123456");
+  await p.getByLabel("رمز جدید").fill("not-real");
+  await p.getByRole("button", { name: "تأیید رمز جدید", exact: true }).click();
+  await p.getByLabel("رمز عبور", { exact: true }).fill("demo");
   await p.getByRole("button", { name: "ورود به پنل", exact: true }).click();
   await expect(p.locator(".sidebar")).toBeVisible();
   expect(JSON.stringify(await state(p))).not.toContain("not-real");
@@ -240,9 +240,7 @@ test("public and panel pages render RTL without viewport overflow on mobile and 
         route + " width " + width,
       ).toBe(true);
     }
-    await p
-      .getByRole("button", { name: "ورود آزمایشی مشتری", exact: true })
-      .click();
+    await p.getByRole("button", { name: "ورود مشتری", exact: true }).click();
     for (const route of [
       "/customer",
       "/customer/devices",
@@ -260,7 +258,7 @@ test("public and panel pages render RTL without viewport overflow on mobile and 
         route + " width " + width,
       ).toBe(true);
     }
-    await p.getByRole("button", { name: "نمای مدیریت", exact: true }).click();
+    await switchToAdmin(p);
     for (const route of [
       "/admin",
       "/admin/customers",
@@ -284,16 +282,14 @@ test("admin creates and disables a customer, assigns a device and initial kits, 
   page: p,
 }) => {
   await p.goto("/#/login");
-  await p
-    .getByRole("button", { name: "ورود آزمایشی ادمین", exact: true })
-    .click();
+  await p.getByRole("button", { name: "ورود مدیر", exact: true }).click();
   await nav(p, "/admin/customers");
   const create = p.locator("main form").filter({
-    has: p.getByRole("heading", { name: "ایجاد مرکز فرضی", exact: true }),
+    has: p.getByRole("heading", { name: "ایجاد مرکز", exact: true }),
   });
   await create.getByLabel("نام مرکز", { exact: true }).fill("مرکز آزمایشی سوم");
   await create.getByLabel("مسئول مرکز", { exact: true }).fill("مسئول فرضی ج");
-  await create.getByLabel("موبایل نمایشی").fill("09000000003");
+  await create.getByLabel("موبایل").fill("09000000003");
   await create.getByLabel("نشانی", { exact: true }).fill("نشانی کاملاً فرضی");
   await create.getByRole("button", { name: "ذخیره مرکز", exact: true }).click();
   const d = p.locator("main .card").filter({
@@ -305,7 +301,7 @@ test("admin creates and disables a customer, assigns a device and initial kits, 
   await d
     .getByRole("combobox", { name: "مدل", exact: true })
     .selectOption("FS-205");
-  await d.getByLabel("سریال فرضی").fill("DEMO-THIRD-001");
+  await d.getByLabel("سریال دستگاه").fill("DEMO-THIRD-001");
   await d.getByLabel("تاریخ تحویل شمسی").fill("۱۴۰۵/۰۸/۰۱");
   await d.getByLabel("قلم اولیه").selectOption("crp");
   await d.getByLabel("تعداد بسته").fill("2");
@@ -334,7 +330,7 @@ test("admin creates and disables a customer, assigns a device and initial kits, 
     }),
   });
   await detail.locator("summary").click();
-  await detail.getByLabel("موجودی نمایشی (بسته)").fill("0");
+  await detail.getByLabel("موجودی (بسته)").fill("0");
   await detail.getByRole("button", { name: "ذخیره محصول" }).click();
   await p.getByRole("button", { name: "نمای مشتری", exact: true }).click();
   await nav(p, "/customer/supplies");
