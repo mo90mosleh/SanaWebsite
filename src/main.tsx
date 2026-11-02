@@ -1441,25 +1441,13 @@ function App() {
           <p className="muted" aria-live="polite">
             {filteredProducts.length.toLocaleString("fa-IR")} محصول
           </p>
-          {categories.map((category) => {
-            const items = filteredProducts
-              .slice(0, supplyLimit)
-              .filter((p) => categoryFor(p.id).id === category.id);
-            return items.length ? (
-              <section
-                className="kit-category"
-                key={category.id}
-                aria-label={category.label}
-              >
-                <h2 className="category-heading">{category.label}</h2>
-                <div className="grid cards">
-                  {items.map((p) => (
-                    <React.Fragment key={p.id}>{KitCard({ p })}</React.Fragment>
-                  ))}
-                </div>
-              </section>
-            ) : null;
-          })}
+          <section aria-label="فهرست کیت‌ها">
+            <div className="grid cards">
+              {filteredProducts.slice(0, supplyLimit).map((p) => (
+                <React.Fragment key={p.id}>{KitCard({ p })}</React.Fragment>
+              ))}
+            </div>
+          </section>
           {filteredProducts.length > supplyLimit && (
             <button
               className="secondary full"

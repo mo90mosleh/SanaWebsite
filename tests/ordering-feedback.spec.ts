@@ -82,7 +82,7 @@ test("catalog categories combine with search and device filter; non-orderable it
   await page.getByLabel("دسته‌بندی کیت‌ها").selectOption("thyroid");
   await expect(page.locator("article.supply")).toHaveCount(5);
   await expect(
-    page.getByRole("region", { name: "عملکرد تیروئید", exact: true }),
+    page.getByRole("region", { name: "فهرست کیت‌ها", exact: true }),
   ).toBeVisible();
   await page.getByLabel("جست‌وجوی محصول").fill("W220");
   await expect(page.locator("article.supply")).toHaveCount(1);
