@@ -1,3 +1,4 @@
+import { Feedback } from "./Feedback";
 import { assetPath } from "./assets";
 import React, { useState, useEffect, type FormEvent } from "react";
 import { createRoot } from "react-dom/client";
@@ -1670,6 +1671,7 @@ function App() {
           </footer>
         </>
       )}
+      <Feedback />
       {toast && (
         <div role="status" className="toast">
           <Check size={18} />

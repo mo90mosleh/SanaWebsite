@@ -102,6 +102,24 @@ try {
     true,
   );
   assert.deepEqual(errors, []);
+  await page.getByRole("button", { name: "بازخورد", exact: true }).click();
+  await page
+    .getByRole("button", { name: "انتخاب بخش و افزودن یادداشت" })
+    .click();
+  await page
+    .getByRole("heading", { name: "سفارش‌های من", exact: true })
+    .click();
+  await page.getByLabel("تغییر پیشنهادی").fill("بازخورد آزمایشی نسخه Pages");
+  await page
+    .getByRole("button", { name: "ذخیره یادداشت", exact: true })
+    .click();
+  assert.equal(
+    await page.evaluate(
+      () => JSON.parse(localStorage.getItem("sana-feedback-v1"))[0].page,
+    ),
+    "/customer/orders",
+  );
+  assert.deepEqual(errors, []);
   console.log(
     "Pages production subpath passed: images, fonts, PDF, customer checkout/payment, reload, mobile RTL; no failed HTTP requests or JavaScript errors.",
   );
