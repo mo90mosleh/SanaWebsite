@@ -3,12 +3,12 @@ import type React from "react";
 import { Package } from "lucide-react";
 import { products as devices } from "./devices";
 export const DeviceImage = ({ model }: { model: (typeof devices)[number] }) =>
-  model.id === "bha3000" || model.id === "bha5000" ? (
+  model.id === "bha5000" ? (
     <svg
       className="device-image"
       role="img"
       aria-label={model.name}
-      viewBox={model.id === "bha3000" ? "220 240 360 365" : "330 0 1020 977"}
+      viewBox="330 0 1020 977"
       preserveAspectRatio="xMidYMid meet"
       overflow="hidden"
     >
@@ -16,8 +16,8 @@ export const DeviceImage = ({ model }: { model: (typeof devices)[number] }) =>
         href={assetPath(model.image)}
         x="0"
         y="0"
-        width={model.id === "bha3000" ? 800 : 1609}
-        height={model.id === "bha3000" ? 800 : 977}
+        width="1609"
+        height="977"
       />
     </svg>
   ) : (

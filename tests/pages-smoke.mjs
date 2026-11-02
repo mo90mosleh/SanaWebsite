@@ -52,6 +52,7 @@ try {
   });
   const url = `http://127.0.0.1:${port}/SanaWebsite/`;
   await page.goto(url);
+  assert.equal(await page.getByRole("link", { name: "معرفی سانا", exact: true }).count(), 0);
   await page.locator(".hero-slide img").waitFor();
   assert.equal(
     await page
@@ -70,6 +71,10 @@ try {
     true,
   );
   await page.goto(url + "#/devices/bha3000");
+  const deviceImage = page.locator(".product-hero img.device-image");
+  await deviceImage.waitFor();
+  await deviceImage.evaluate(image => image.decode());
+  assert.ok(await deviceImage.evaluate(image => image.naturalWidth >= 1200));
   const link = page.getByRole("link", { name: "دریافت کاتالوگ" });
   assert.match(
     await link.getAttribute("href"),
