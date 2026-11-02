@@ -1,9 +1,13 @@
 import { createServer } from "node:http";
-import { readFile } from "node:fs/promises";
+import { readFile, cp } from "node:fs/promises";
 import { resolve, extname } from "node:path";
 import assert from "node:assert/strict";
 import { chromium } from "@playwright/test";
 const root = resolve("dist");
+const freshEntry =
+  process.env.PAGES_FRESH_ENTRY === "1" ? "open-smoke.html" : "";
+if (freshEntry)
+  await cp(resolve(root, "index.html"), resolve(root, freshEntry));
 const types = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -50,7 +54,7 @@ try {
   page.on("response", (r) => {
     if (r.status() >= 400) errors.push(`${r.status()} ${r.url()}`);
   });
-  const url = `http://127.0.0.1:${port}/SanaWebsite/`;
+  const url = `http://127.0.0.1:${port}/SanaWebsite/${freshEntry}`;
   await page.goto(url);
   assert.equal(
     await page.getByRole("link", { name: "معرفی سانا", exact: true }).count(),
