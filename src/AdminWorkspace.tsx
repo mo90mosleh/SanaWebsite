@@ -1,6 +1,6 @@
 import { Fragment, useState, type ReactNode } from "react";
 import * as D from "./domain";
-import { adjustStock, latestPurchase, numeric } from "./admin-data";
+import { adjustStock, latestPurchase } from "./admin-data";
 import { ExcelImport } from "./ExcelImport";
 type Shared = { state: D.State; mutate: (fn: (s: D.State) => void) => boolean };
 export function CustomersWorkspace({
@@ -199,52 +199,36 @@ function InventoryAdjustment({
   mutate: Shared["mutate"];
 }) {
   return (
-    <form
+    <div
       className="inventory-adjustment"
-      aria-label={`تغییر موجودی ${product.name}`}
-      onSubmit={(e) => {
-        e.preventDefault();
-        const form = e.currentTarget,
-          f = new FormData(form);
-        if (
-          mutate((s) => {
-            const qty = numeric(f.get("qty"));
-            if (qty <= 0) throw Error("تعداد باید مثبت باشد");
-            adjustStock(
-              s,
-              product.id,
-              qty * (f.get("operation") === "remove" ? -1 : 1),
-            );
-          })
-        )
-          form.reset();
-      }}
+      role="group"
+      aria-label={`موجودی ${product.name}`}
     >
-      <label>
-        <span className="sr-only">عملیات موجودی</span>
-        <select name="operation">
-          <option value="add">افزایش</option>
-          <option value="remove">کاهش</option>
-        </select>
-      </label>
-      <label>
-        <span className="sr-only">تعداد بسته</span>
-        <input
-          name="qty"
-          type="number"
-          min="1"
-          max="10000"
-          step="1"
-          required
-          defaultValue="1"
-        />
-      </label>
-      <button type="submit" className="secondary">
-        اعمال
+      <button
+        type="button"
+        className="secondary"
+        aria-label={`کاهش موجودی ${product.name}`}
+        disabled={product.stock <= 0}
+        onClick={() => mutate((s) => adjustStock(s, product.id, -1))}
+      >
+        −
       </button>
-    </form>
+      <output aria-live="polite" aria-label={`تعداد موجودی ${product.name}`}>
+        {product.stock.toLocaleString("fa-IR")}
+      </output>
+      <button
+        type="button"
+        className="secondary"
+        aria-label={`افزایش موجودی ${product.name}`}
+        disabled={product.stock >= 10000}
+        onClick={() => mutate((s) => adjustStock(s, product.id, 1))}
+      >
+        +
+      </button>
+    </div>
   );
 }
+
 export function ProductsWorkspace({
   state,
   mutate,
@@ -404,13 +388,7 @@ export function ProductsWorkspace({
                 <caption>موجودی محصولات و اصلاح دستی</caption>
                 <thead>
                   <tr>
-                    {[
-                      "محصول",
-                      "کد",
-                      "برند",
-                      "موجودی فعلی (بسته)",
-                      "افزایش یا کاهش",
-                    ].map((x) => (
+                    {["محصول", "کد", "برند", "موجودی فعلی (بسته)"].map((x) => (
                       <th key={x} scope="col">
                         {x}
                       </th>
@@ -425,7 +403,6 @@ export function ProductsWorkspace({
                         <bdi>{p.code || "—"}</bdi>
                       </td>
                       <td>{p.brand}</td>
-                      <td>{p.stock.toLocaleString("fa-IR")}</td>
                       <td>
                         <InventoryAdjustment product={p} mutate={mutate} />
                       </td>
@@ -433,7 +410,7 @@ export function ProductsWorkspace({
                   ))}
                   {!list.length && (
                     <tr>
-                      <td colSpan={5}>محصولی پیدا نشد.</td>
+                      <td colSpan={4}>محصولی پیدا نشد.</td>
                     </tr>
                   )}
                 </tbody>

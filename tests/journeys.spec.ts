@@ -342,15 +342,22 @@ test("admin creates and disables a customer, assigns a device and initial kits, 
       exact: true,
     }),
   });
-  await stockRow
-    .getByRole("combobox", { name: "عملیات موجودی" })
-    .selectOption("remove");
-  await stockRow
-    .getByRole("spinbutton", { name: "تعداد بسته", exact: true })
-    .fill(
-      String((await state(p)).products.find((x: any) => x.id === "crp").stock),
-    );
-  await stockRow.getByRole("button", { name: "اعمال", exact: true }).click();
+  const quantity = (await state(p)).products.find(
+    (x: any) => x.id === "crp",
+  ).stock;
+  for (let i = 0; i < quantity; i++)
+    await stockRow
+      .getByRole("button", {
+        name: "کاهش موجودی کیت پروتئین واکنشی C",
+        exact: true,
+      })
+      .click();
+  await expect(
+    stockRow.getByRole("button", {
+      name: "کاهش موجودی کیت پروتئین واکنشی C",
+      exact: true,
+    }),
+  ).toBeDisabled();
   await p.getByRole("button", { name: "نمای مشتری", exact: true }).click();
   await nav(p, "/customer/supplies");
   await p.getByLabel("جست‌وجوی محصول").fill("W201");

@@ -12,14 +12,12 @@ async function excel(page: Page, kind: ImportKind, rows: unknown[][]) {
   sheet.addRow(importColumns[kind]);
   rows.forEach((row) => sheet.addRow(row));
   await page.locator(".import-panel summary").click();
-  await page
-    .locator(".import-panel input[type=file]")
-    .setInputFiles({
-      name: "test.xlsx",
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      buffer: Buffer.from(await book.xlsx.writeBuffer()),
-    });
+  await page.locator(".import-panel input[type=file]").setInputFiles({
+    name: "test.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from(await book.xlsx.writeBuffer()),
+  });
 }
 test("dashboard aggregates all customers and customer table opens only selected details", async ({
   page,
@@ -124,50 +122,47 @@ test("inventory manual add/remove and Excel adjustments never allow negative sto
 }) => {
   await admin(page, "/admin/products");
   await page.getByRole("tab", { name: "موجودی", exact: true }).click();
-  const row = page
-    .getByRole("row")
-    .filter({
-      has: page.getByRole("rowheader", {
-        name: "کیت پروتئین واکنشی C",
+  const row = page.getByRole("row").filter({
+    has: page.getByRole("rowheader", {
+      name: "کیت پروتئین واکنشی C",
+      exact: true,
+    }),
+  });
+  for (let i = 0; i < 3; i++)
+    await row
+      .getByRole("button", {
+        name: "افزایش موجودی کیت پروتئین واکنشی C",
         exact: true,
-      }),
-    });
-  await row
-    .getByRole("spinbutton", { name: "تعداد بسته", exact: true })
-    .fill("3");
-  await row.getByRole("button", { name: "اعمال", exact: true }).click();
+      })
+      .click();
   await expect(row).toContainText("۲۷");
-  await row
-    .getByRole("combobox", { name: "عملیات موجودی" })
-    .selectOption("remove");
-  await row
-    .getByRole("spinbutton", { name: "تعداد بسته", exact: true })
-    .fill("2");
-  await row.getByRole("button", { name: "اعمال", exact: true }).click();
+  for (let i = 0; i < 2; i++)
+    await row
+      .getByRole("button", {
+        name: "کاهش موجودی کیت پروتئین واکنشی C",
+        exact: true,
+      })
+      .click();
   await expect(row).toContainText("۲۵");
   await excel(page, "inventory", [["W201", "Wondfo", -2]]);
   await page.getByRole("button", { name: "تأیید و ثبت موجودی" }).click();
   await expect(row).toContainText("۲۳");
-  await page
-    .locator(".import-panel input[type=file]")
-    .setInputFiles({
-      name: "invalid.xlsx",
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      buffer: Buffer.from("not a workbook"),
-    });
+  await page.locator(".import-panel input[type=file]").setInputFiles({
+    name: "invalid.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from("not a workbook"),
+  });
   await expect(page.locator(".import-panel [role=alert]")).toBeVisible();
   await page.reload();
   await page.getByRole("tab", { name: "موجودی", exact: true }).click();
   await expect(
-    page
-      .getByRole("row")
-      .filter({
-        has: page.getByRole("rowheader", {
-          name: "کیت پروتئین واکنشی C",
-          exact: true,
-        }),
+    page.getByRole("row").filter({
+      has: page.getByRole("rowheader", {
+        name: "کیت پروتئین واکنشی C",
+        exact: true,
       }),
+    }),
   ).toContainText("۲۳");
 });
 test("order details use bordered metadata and item tables at mobile width", async ({

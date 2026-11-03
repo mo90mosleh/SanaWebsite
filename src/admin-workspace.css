@@ -127,19 +127,29 @@
   box-shadow: none;
 }
 .inventory-adjustment {
-  display: flex;
-  gap: 8px;
+  display: inline-flex;
   align-items: center;
-  min-width: 260px;
+  gap: 12px;
+  direction: ltr;
+  padding: 5px;
+  border: 1px solid #d7dce3;
+  border-radius: 9px;
+  background: #fafbfc;
 }
-.inventory-adjustment label {
-  margin: 0;
+.inventory-adjustment output {
+  min-width: 44px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
-.inventory-adjustment input {
-  max-width: 85px;
-}
-.inventory-adjustment select {
-  min-width: 90px;
+.admin-table .inventory-adjustment button {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  font-size: 23px;
+  line-height: 1;
+  border-radius: 7px;
 }
 .sr-only {
   position: absolute !important;
