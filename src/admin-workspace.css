@@ -1,0 +1,207 @@
+.admin-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 18px 0;
+  border: 1px solid #d7dce3;
+  border-radius: 10px;
+  background: white;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 650px;
+  font-size: 13px;
+}
+.admin-table caption {
+  text-align: right;
+  padding: 14px 18px;
+  background: #fafbfc;
+  color: #525b69;
+}
+.admin-table th,
+.admin-table td {
+  padding: 14px 16px;
+  border: 1px solid #d7dce3;
+  text-align: right;
+  vertical-align: middle;
+  line-height: 1.9;
+}
+.admin-table thead th {
+  background: #f1f3f6;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.admin-table tbody th {
+  font-weight: 600;
+}
+.admin-table tbody tr:hover {
+  background: #fafbfc;
+}
+.admin-table button {
+  white-space: nowrap;
+  padding: 7px 12px;
+  font-size: 12px;
+}
+.admin-table .cell-note {
+  display: block;
+  color: #626b78;
+  font-size: 11px;
+}
+.admin-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: center;
+  margin: 20px 0;
+}
+.admin-toolbar label {
+  min-width: 260px;
+  margin: 0;
+}
+.admin-toolbar h2 {
+  margin: 0;
+}
+.admin-create > summary,
+.import-panel > summary {
+  cursor: pointer;
+  font-weight: 700;
+  padding: 5px;
+}
+.admin-create:not([open]),
+.import-panel:not([open]) {
+  padding: 12px 18px;
+  margin-block: 12px;
+}
+.admin-create > form {
+  margin: 18px 0 0;
+  border: 0;
+  box-shadow: none;
+}
+.import-panel p {
+  color: #535e6c;
+  font-size: 12px;
+}
+.import-error {
+  color: #a0182b !important;
+  background: #fff0f1;
+  padding: 12px;
+  border-radius: 6px;
+}
+.excel-file {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+}
+.excel-file input {
+  max-width: 280px;
+}
+.workspace-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 7px;
+  background: #f1f3f6;
+  border-radius: 10px;
+  margin: 24px 0;
+}
+.workspace-tabs button {
+  background: transparent;
+  border-color: transparent;
+  color: #4a5362;
+  min-width: 130px;
+}
+.workspace-tabs button[aria-selected="true"] {
+  background: #fff;
+  color: #a90013;
+  border-color: #d7dce3;
+  box-shadow: 0 2px 5px #00000008;
+}
+.customer-detail {
+  padding: 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+}
+.customer-detail .card {
+  margin: 0;
+  box-shadow: none;
+}
+.inventory-adjustment {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  min-width: 260px;
+}
+.inventory-adjustment label {
+  margin: 0;
+}
+.inventory-adjustment input {
+  max-width: 85px;
+}
+.inventory-adjustment select {
+  min-width: 90px;
+}
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+}
+.order-meta-table {
+  min-width: 0;
+}
+.order-meta-table th {
+  width: 160px;
+  background: #f7f8fa;
+}
+.order-items-table tfoot th,
+.order-items-table tfoot td {
+  background: #fafbfc;
+  font-weight: 600;
+}
+.order-detail > .admin-table-wrap {
+  margin: 0 0 20px;
+}
+.order-detail .order-actions {
+  padding: 16px;
+  border: 1px solid #d7dce3;
+  border-radius: 8px;
+}
+.order-detail .order-actions > .row {
+  margin-bottom: 14px;
+}
+@media (max-width: 700px) {
+  .admin-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .admin-toolbar label {
+    min-width: 0;
+  }
+  .admin-table {
+    font-size: 12px;
+  }
+  .admin-table th,
+  .admin-table td {
+    padding: 10px;
+  }
+  .excel-file {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .order-meta-table th {
+    width: 95px;
+  }
+  .order-meta-table td {
+    overflow-wrap: anywhere;
+  }
+  .workspace-tabs button {
+    flex: 1;
+    min-width: 0;
+  }
+  .customer-detail {
+    padding: 4px;
+  }
+}
