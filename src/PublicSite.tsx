@@ -1,3 +1,5 @@
+import {OrtanesLogo} from "./OrtanesLogo";
+import {categoryImages} from "./generatedCategoryImages";
 import { HeroSlider } from "./HeroSlider";
 import { assetPath } from "./assets";
 import {
@@ -225,6 +227,7 @@ export function PublicSite({ path }: { path: string }) {
           </div>
         </>
       )}
+      {path==='/'&&<section className="public-main"><div className="ortanes-home"><div><OrtanesLogo/><span className="eyebrow">مصرفی آزمایشگاه · اورتانیس</span><h2>همه‌چیز برای روزمره آزمایشگاه</h2><p>ظروف نمونه‌گیری، لوله و میکروتیوپ، سرسمپلر، کاپ بیوشیمی و محیط کشت؛ خرید مصرفی‌های عمومی بدون نیاز به ثبت دستگاه.</p><a className="button" href="#/supplies/ortanes">مشاهده مصرفی‌های اورتانیس <ArrowLeft size={18}/></a></div><div className="ortanes-home-art">{['collection','tubes','tips','culture','microscopy','cups'].map(id=><a key={id} href="#/supplies/ortanes" aria-label="مشاهده مصرفی آزمایشگاه"><img src={categoryImages[id]} alt="تصویر گرافیکی مصرفی آزمایشگاهی" width="160" height="160" loading="lazy"/></a>)}</div></div></section>}
       <section className="public-main devices-section">
         <div className="section-title">
           <div>
