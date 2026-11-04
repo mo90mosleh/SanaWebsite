@@ -105,6 +105,7 @@ export type State = {
   version: 1;
   presentationRevision?: number;
   catalogRevision?: number;
+  pricingRevision?: number;
   products: Item[];
   customers: Customer[];
   orders: Order[];
@@ -115,7 +116,8 @@ export const money = (n: number) =>
   new Intl.NumberFormat("fa-IR").format(n) + " تومان";
 export const date = (s: string) =>
   new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(s));
-export const onlinePrice = (n: number) => (n * 4) / 5;
+// Payment method does not change the price.
+export const onlinePrice = (n: number) => n;
 export const uid = () => crypto.randomUUID();
 const day = (n: number) => new Date(Date.now() - n * 86400000).toISOString();
 const kitSource = "/product-assets/wondfo/catalogs/fs-114-catalog.pdf";
@@ -304,7 +306,7 @@ export function seed(): State {
     created: day(d),
     lines: [{ product: "crp", name: products[0].name, qty: 4, price: 2400000 }],
     method: "online",
-    total: 7680000,
+    total: 9600000,
     status: "confirmed",
     payment: "paid",
     shipping: "delivered",
@@ -318,6 +320,7 @@ export function seed(): State {
     presentationRevision: 3,
     products: buildCatalog(products),
     catalogRevision: 1,
+    pricingRevision: 1,
     customers,
     orders,
     logs: [
@@ -621,6 +624,13 @@ export function migratePresentation(s: State): State {
     if (!ticket.number) ticket.number = ++ticketNumber;
     if (!ticket.createdAt && ticket.messages[0])
       ticket.createdAt = ticket.messages[0].time;
+  }
+  if ((s.pricingRevision ?? 0) < 1) {
+    for (const o of s.orders) {
+      if(o.method === 'online' && o.status === 'pending' && o.payment !== 'paid')
+        o.total=o.lines.reduce((sum,line)=>sum+line.price*line.qty,0);
+    }
+    s.pricingRevision=1;
   }
   return migrateCatalog(s);
 }
