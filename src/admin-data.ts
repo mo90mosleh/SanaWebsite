@@ -24,7 +24,7 @@ export function mobile(value: unknown) {
 }
 export function brands(state: D.State) {
   return [
-    ...new Set(["Wondfo", "Getein", ...state.products.map((p) => p.brand)]),
+    ...new Set(["Wondfo", "Getein", "Ortanes", ...state.products.map((p) => p.brand)]),
   ];
 }
 export function adjustStock(state: D.State, productId: string, delta: number) {
@@ -118,6 +118,8 @@ export function applyImport(state: D.State, preview: ImportPreview) {
           name: text(0, 100),
           english: text(1, 100),
           brand,
+          family: brand === 'Ortanes' ? 'laboratory' : 'poct',
+          categoryId: brand === 'Ortanes' ? 'collection' : 'poct',
           code,
           price,
           stock: 0,

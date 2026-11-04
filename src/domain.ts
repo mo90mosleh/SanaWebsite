@@ -1,3 +1,4 @@
+import { buildCatalog, migrateCatalog } from './catalog-data';
 import {
   firstAvailableDelivery,
   validateDelivery,
@@ -19,6 +20,14 @@ export type Item = {
   sourcePage?: number;
   tests: number | null;
   image: string;
+  family?: 'poct'|'laboratory';
+  categoryId?: string;
+  archived?: boolean;
+  sourceLabel?: string;
+  sourceRow?: number;
+  packLabel?: string;
+  unit?: string;
+  demoPrice?: boolean;
 };
 export type Device = {
   id: string;
@@ -95,6 +104,7 @@ export type Ticket = {
 export type State = {
   version: 1;
   presentationRevision?: number;
+  catalogRevision?: number;
   products: Item[];
   customers: Customer[];
   orders: Order[];
@@ -306,7 +316,8 @@ export function seed(): State {
   return {
     version: 1,
     presentationRevision: 3,
-    products,
+    products: buildCatalog(products),
+    catalogRevision: 1,
     customers,
     orders,
     logs: [
@@ -324,8 +335,8 @@ export function seed(): State {
     tickets: [sampleTicket()],
   };
 }
-export function compatible(p: Item, c: Customer) {
-  return p.verified && c.devices.some((d) => p.models.includes(d.model));
+export function compatible(p: Item | undefined, c: Customer) {
+  return !!p && !p.archived && p.verified && (p.family === "laboratory" || c.devices.some((d) => p.models.includes(d.model)));
 }
 export function event(s: State, type: string, related: string) {
   s.logs.unshift({
@@ -611,7 +622,7 @@ export function migratePresentation(s: State): State {
     if (!ticket.createdAt && ticket.messages[0])
       ticket.createdAt = ticket.messages[0].time;
   }
-  return s;
+  return migrateCatalog(s);
 }
 export function orderStage(o: Order): "review" | "queue" | "sent" | "closed" {
   if (o.status === "cancelled") return "closed";

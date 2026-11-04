@@ -1,3 +1,4 @@
+import {LaboratoryArtwork} from "./LaboratoryArtwork";
 import {
   Activity,
   Droplets,
@@ -37,6 +38,7 @@ const accents = [
   "#af657f",
 ];
 export function KitArtwork({ product: p }: { product: Item }) {
+  if(p.family === "laboratory") return <LaboratoryArtwork product={p}/>;
   const hash = Array.from(p.id).reduce((a, c) => a + c.charCodeAt(0), 0);
   const [accent, soft, Icon] = styles[p.id] || [
     accents[hash % accents.length],
