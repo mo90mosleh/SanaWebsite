@@ -179,60 +179,28 @@ export function Profile({
                   placeholder="مثلاً مرکز اصلی"
                 />
               </label>
-              <label>
-                استان
-                <select
-                  value={editing.province}
-                  onChange={(e) => {
-                    const c = provinces[e.target.value][0];
-                    setEditing({
-                      ...editing,
-                      province: e.target.value,
-                      city: c.name,
-                      lat: c.lat,
-                      lng: c.lng,
-                    });
-                  }}
-                >
-                  {Object.keys(provinces)
-                    .sort((a, b) => a.localeCompare(b, "fa"))
-                    .map((p) => (
-                      <option key={p}>{p}</option>
-                    ))}
-                </select>
-              </label>
-              <label>
-                شهر
-                <select
-                  value={
-                    provinces[editing.province].some(
-                      (c) => c.name === editing.city,
-                    )
-                      ? editing.city
-                      : "other"
-                  }
-                  onChange={(e) => {
-                    if (e.target.value === "other") {
-                      setEditing({ ...editing, city: "" });
-                      return;
-                    }
-                    const c = provinces[editing.province].find(
-                      (c) => c.name === e.target.value,
-                    )!;
-                    setEditing({
-                      ...editing,
-                      city: c.name,
-                      lat: c.lat,
-                      lng: c.lng,
-                    });
-                  }}
-                >
-                  {provinces[editing.province].map((c) => (
-                    <option key={c.name}>{c.name}</option>
-                  ))}
-                  <option value="other">شهر دیگر</option>
-                </select>
-              </label>
+              <LocationPicker
+                key="province"
+                label="استان"
+                value={editing.province}
+                options={Object.keys(provinces).sort((a,b)=>a.localeCompare(b,'fa'))}
+                onChange={(province)=>{
+                  const c=provinces[province][0];
+                  setEditing({...editing,province,city:c.name,lat:c.lat,lng:c.lng});
+                }}
+              />
+              <LocationPicker
+                key={'city-'+editing.province}
+                label="شهر"
+                value={provinces[editing.province].some(c=>c.name===editing.city)?editing.city:'other'}
+                options={provinces[editing.province].map(c=>c.name)}
+                allowOther
+                onChange={(city)=>{
+                  if(city==='other'){setEditing({...editing,city:''});return;}
+                  const c=provinces[editing.province].find(c=>c.name===city)!;
+                  setEditing({...editing,city:c.name,lat:c.lat,lng:c.lng});
+                }}
+              />
               {!provinces[editing.province].some(
                 (c) => c.name === editing.city,
               ) && (
@@ -334,4 +302,22 @@ export function Profile({
       </section>
     </>
   );
+}
+
+/** Search filters the authoritative location list; free text never changes a saved address. */
+function LocationPicker({label,value,options,allowOther=false,onChange}:{label:string;value:string;options:string[];allowOther?:boolean;onChange:(value:string)=>void}){
+  const [query,setQuery]=useState('');
+  const normalize=(s:string)=>s.replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\s\u200c]+/g,'').trim();
+  const filtered=options.filter(o=>normalize(o).includes(normalize(query)));
+  const id=allowOther?'address-city':'address-province';
+  return <div className="location-search-field" style={{display:'grid',gap:8,alignContent:'start'}}>
+    <label htmlFor={id}>{label}</label>
+    <input type="search" aria-label={'جست‌وجوی '+label} placeholder={'جست‌وجوی '+label+'…'} value={query} autoComplete="off" onChange={e=>setQuery(e.target.value)}/>
+    <select id={id} aria-label={label} value={value} onChange={e=>{onChange(e.target.value);setQuery('')}}>
+      {!filtered.includes(value)&&value!=='other'&&<option value={value} hidden>{value}</option>}
+      {filtered.map(o=><option key={o} value={o}>{o}</option>)}
+      {allowOther&&<option value="other">شهر دیگر</option>}
+    </select>
+    {query&&!filtered.length&&<small role="status">{label}ی با این نام پیدا نشد.{allowOther?' برای ثبت دستی، «شهر دیگر» را انتخاب کنید.':''}</small>}
+  </div>;
 }
