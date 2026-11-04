@@ -22,16 +22,16 @@ const createOrder: typeof baseCreateOrder = (
   addressId,
   schedule = firstAvailableDelivery(),
 ) => baseCreateOrder(s, c, cart, method, key, addressId, schedule);
-test("online price is exactly 80 percent of integer base", () => {
-  assert.equal(onlinePrice(2400000), 1920000);
-  assert.equal(onlinePrice(9600000), 7680000);
+test("online and credit use the same base price", () => {
+  assert.equal(onlinePrice(2400000), 2400000);
+  assert.equal(onlinePrice(9600000), 9600000);
 });
 test("creation and successful payment are idempotent; failure never marks paid", () => {
   const s = seed();
   const n = s.orders.length;
   const stock = s.products[0].stock;
   const o = createOrder(s, "c1", { crp: 2 }, "online", "same-key");
-  assert.equal(o.total, 3840000);
+  assert.equal(o.total, 4800000);
   assert.equal(createOrder(s, "c1", { crp: 2 }, "online", "same-key").id, o.id);
   assert.equal(s.orders.length, n + 1);
   pay(s, o.id, false);
@@ -88,7 +88,7 @@ test("snapshots survive catalog edits; reorder uses current availability", () =>
   const o = createOrder(s, "c1", { crp: 2 }, "online", "snapshot");
   s.products[0].price = 9900000;
   assert.equal(o.lines[0].price, 2400000);
-  assert.equal(o.total, 3840000);
+  assert.equal(o.total, 4800000);
   assert.deepEqual(reorder(s, o).cart, { crp: 2 });
   s.products[0].stock = 1;
   assert.deepEqual(reorder(s, o).cart, {});
@@ -120,8 +120,8 @@ test("log retry changes delivery evidence only, no orders or inventory duplicate
     quantities,
   );
 });
-test("discount has no rounding drift for unusual base prices", () => {
-  assert.equal(onlinePrice(1001), 800.8);
+test("online price preserves unusual base prices without adjustments", () => {
+  assert.equal(onlinePrice(1001), 1001);
 });
 test("Jalali dates accept Persian digits and reject nonexistent dates", async () => {
   const { jalaliToISO } = await import("../src/domain.ts");
@@ -223,4 +223,13 @@ test("profile validates unique mobile and order journey separates closed orders"
   assert.equal(orderStage(o), "sent");
   o.status = "cancelled";
   assert.equal(orderStage(o), "closed");
+});
+
+test('pricing migration updates unpaid pending quotes but never rewrites paid historical totals', async()=>{
+ const {migratePresentation}=await import('../src/domain.ts');
+ const s=seed();delete s.pricingRevision;
+ const paid=s.orders.find(o=>o.payment==='paid')!;paid.total=7680000;
+ const pending=createOrder(s,'c1',{crp:2},'online','old-quote');pending.total=3840000;
+ migratePresentation(s);assert.equal(pending.total,4800000);assert.equal(paid.total,7680000);
+ const once=JSON.stringify(s);migratePresentation(s);assert.equal(JSON.stringify(s),once);
 });
