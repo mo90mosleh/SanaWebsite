@@ -212,7 +212,7 @@ test("offline calendar blocks Fridays and religious holidays, and Thursday remov
     }),
   ).toBeVisible();
   await expect(
-    page.getByText("تخفیف خرید آنلاین", { exact: true }),
+    page.getByText("مبلغ نهایی", { exact: true }),
   ).toBeVisible();
 });
 
