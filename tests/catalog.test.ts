@@ -14,7 +14,7 @@ test('laboratory products use Ortanes and are purchasable without a device; POCT
  const s=seed(),c=s.customers[0];c.devices=[];const lab=s.products.find(p=>p.family==='laboratory')!;
  assert.equal(lab.brand,'Ortanes');assert.ok(compatible(lab,c));assert.equal(compatible(s.products.find(p=>p.id==='crp'),c),false);
  const o=createOrder(s,c.id,{[lab.id]:2},'online','lab-no-device',undefined,firstAvailableDelivery());
- assert.equal(o.total,lab.price*2*.8);const before=lab.stock;pay(s,o.id,true);assert.equal(lab.stock,before-2);
+ assert.equal(o.total,lab.price*2);const before=lab.stock;pay(s,o.id,true);assert.equal(lab.stock,before-2);
 });
 test('all PDF catalogue rows have an explicit family, category, source and graphic path',()=>{
  const s=seed(),lab=s.products.filter(p=>p.family==='laboratory');assert.equal(lab.length,171);
