@@ -237,7 +237,7 @@ export function ProductsWorkspace({
   const [view, setView] = useState<"products" | "inventory">("products"),
     [opened, setOpened] = useState(""),
     [query, setQuery] = useState("");
-  const list = state.products.filter((p) =>
+  const list = state.products.filter((p) => !p.archived &&
     [p.name, p.english, p.code, p.brand]
       .join(" ")
       .toLowerCase()
