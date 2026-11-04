@@ -444,17 +444,10 @@ function App() {
                       )}
                     </td>
                   </tr>
-                  <tr>
-                    <th scope="row" colSpan={3}>
-                      تخفیف آنلاین {o.method === "online" ? "(۲۰٪)" : ""}
-                    </th>
-                    <td>
-                      {D.money(
-                        o.lines.reduce((a, l) => a + l.price * l.qty, 0) -
-                          o.total,
-                      )}
-                    </td>
-                  </tr>
+                  {o.total !== o.lines.reduce((sum,l)=>sum+l.price*l.qty,0) && <tr>
+                    <th scope="row" colSpan={3}>تعدیلات ثبت‌شده سفارش</th>
+                    <td>{D.money(o.total-o.lines.reduce((sum,l)=>sum+l.price*l.qty,0))}</td>
+                  </tr>}
                   <tr>
                     <th scope="row" colSpan={3}>
                       مبلغ نهایی
@@ -886,7 +879,7 @@ function App() {
         </div>
         {p && (
           <p>
-            آنلاین: {D.money(D.onlinePrice(p.price))} ·{" "}
+            قیمت: {D.money(p.price)} ·{" "}
             {p.verified ? "قابل سفارش" : "در انتظار تأیید؛ غیرقابل سفارش"}
           </p>
         )}
@@ -956,22 +949,15 @@ function App() {
         <p className="product-unit-note">{p.packLabel}</p>
         <div className="price-block">
           <span>
-            پایه، چک سه‌ماهه <strong>{D.money(p.price)}</strong>
+            قیمت <strong>{D.money(p.price)}</strong>
           </span>
-          <span className="online">
-            آنلاین، ۲۰٪ کمتر <strong>{D.money(D.onlinePrice(p.price))}</strong>
-          </span>
-          <small>
-            تخفیف خرید آنلاین: {D.money(p.price - D.onlinePrice(p.price))}
-          </small>
         </div>
         {(cart[p.id] || 0) > 0 && (
           <div className="selected-total" aria-live="polite">
             <span>جمع {(cart[p.id] || 0).toLocaleString("fa-IR")} بسته</span>
             <strong>
-              آنلاین: {D.money(D.onlinePrice(p.price) * cart[p.id])}
+              {D.money(p.price * cart[p.id])}
             </strong>
-            <span>چک سه‌ماهه: {D.money(p.price * cart[p.id])}</span>
           </div>
         )}
         {(cart[p.id] || 0) > 0 ? (
@@ -1568,7 +1554,7 @@ function App() {
                     checked={method === "online"}
                     onChange={() => setMethod("online")}
                   />
-                  پرداخت آنلاین <Badge value="۲۰٪ تخفیف" />
+                  پرداخت آنلاین
                 </label>
                 <label
                   className={"method " + (method === "credit" ? "chosen" : "")}
@@ -1584,14 +1570,7 @@ function App() {
                   <span>جمع پایه</span>
                   <strong>{D.money(base)}</strong>
                 </div>
-                <div className="line green">
-                  <span>تخفیف خرید آنلاین</span>
-                  <strong>
-                    {D.money(
-                      method === "online" ? base - D.onlinePrice(base) : 0,
-                    )}
-                  </strong>
-                </div>
+
                 <div className="line">
                   <strong>مبلغ نهایی</strong>
                   <strong>
