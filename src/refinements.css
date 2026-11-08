@@ -1460,3 +1460,603 @@ small,
 }
 .jalali-calendar button.nonworking:disabled { color: #b84251; background: #fff4f5; opacity: .65; }
 .delivery-picker .notice .link { display: block; margin-top: 8px; }
+
+/* CSS-only public redesign: isolated palette, unchanged assets and application UI. */
+.public-header,
+.public-header + main:not(.login-page),
+.public-footer {
+  --sana-navy: #0b2554;
+  --sana-blue: #173b72;
+  --sana-text: #182c49;
+  --sana-muted: #526681;
+  --sana-border: #dce5f1;
+  --sana-surface: #f7f9fc;
+  --sana-soft: #eaf0f8;
+}
+
+.public-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  max-width: 1440px;
+  min-height: 90px;
+  padding: 16px clamp(24px, 4.5vw, 72px);
+  gap: 28px;
+  background: #fff;
+  border-bottom: 1px solid var(--sana-border);
+  color: var(--sana-text);
+}
+
+.public-header .logo {
+  background: var(--sana-navy);
+  width: 116px;
+  height: 54px;
+}
+
+.public-header .public-brand {
+  gap: 16px;
+}
+
+.public-header .public-brand > span:last-child {
+  color: var(--sana-muted);
+  border-color: var(--sana-border);
+  font-size: 12px;
+}
+
+.public-header > nav {
+  justify-self: center;
+  gap: 14px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+.public-header > nav > a {
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 6px;
+  color: var(--sana-text);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.public-header > nav > a:hover {
+  background: var(--sana-surface);
+  color: var(--sana-blue);
+}
+
+.public-header > nav > a.current {
+  background: transparent;
+  color: var(--sana-navy);
+  box-shadow: inset 0 -2px var(--sana-navy);
+  font-weight: 700;
+}
+
+.public-header > .button {
+  background: var(--sana-navy);
+  border-color: var(--sana-navy);
+  color: #fff;
+  padding: 11px 22px;
+  min-height: 48px;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 700;
+  justify-self: end;
+}
+
+.public-header .account-actions {
+  direction: rtl;
+  flex-direction: row;
+  gap: 12px;
+  justify-self: end;
+}
+
+.public-header .header-cart {
+  order: 0;
+  position: relative;
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  border-radius: 12px;
+  background: var(--sana-soft);
+  color: var(--sana-navy);
+}
+
+.public-header .header-cart > span {
+  position: absolute;
+  top: -6px;
+  right: -5px;
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 2px;
+  border: 2px solid #fff;
+  border-radius: 12px;
+  background: var(--sana-navy);
+  color: #fff;
+  font-size: 11px;
+  line-height: 1;
+}
+
+.public-header .account-menu {
+  order: 1;
+}
+
+.public-header .account-trigger {
+  min-height: 48px;
+  border: 1px solid var(--sana-border);
+  border-radius: 12px;
+  color: var(--sana-navy);
+  background: #fff;
+  font-weight: 600;
+}
+
+.public-header .account-dropdown {
+  border-color: var(--sana-border);
+  box-shadow: 0 12px 36px #0b255410;
+  color: var(--sana-text);
+}
+
+.public-header .account-dropdown > a,
+.public-header .account-dropdown > button {
+  color: var(--sana-text);
+  min-height: 44px;
+}
+
+.public-header .account-dropdown > a:hover,
+.public-header .account-dropdown > button:hover {
+  background: var(--sana-soft);
+  color: var(--sana-navy);
+}
+
+.public-header :is(a, button):focus-visible,
+.public-header + main:not(.login-page) :is(a, button, summary):focus-visible,
+.public-footer :is(a, button):focus-visible {
+  outline: 3px solid #4779b8;
+  outline-offset: 4px;
+}
+
+.public-header + main:not(.login-page) {
+  color: var(--sana-text);
+  background: #fff;
+}
+
+.public-header + main:not(.login-page) .eyebrow {
+  color: var(--sana-blue);
+  letter-spacing: 0;
+}
+
+.public-header + main:not(.login-page) .muted {
+  color: var(--sana-muted);
+}
+
+.public-header + main:not(.login-page) .button {
+  background: var(--sana-navy);
+  border-color: var(--sana-navy);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px 24px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px #0b25540b;
+}
+
+.public-header + main:not(.login-page) .button.secondary {
+  background: #fff;
+  color: var(--sana-navy);
+  border-color: var(--sana-border);
+  box-shadow: none;
+}
+
+.public-header + main:not(.login-page) .text-button {
+  color: var(--sana-blue);
+}
+
+.public-header + main:not(.login-page) .hero.public-main {
+  max-width: none;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 56px;
+  min-height: 590px;
+  padding: 36px max(32px, calc((100vw - 1280px) / 2)) 40px;
+  background: var(--sana-soft);
+  border-radius: 0 0 36px 36px;
+}
+
+.public-header + main:not(.login-page) .hero-copy {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.public-header + main:not(.login-page) .hero h1 {
+  color: var(--sana-navy);
+  font-size: clamp(40px, 3.7vw, 56px);
+  line-height: 1.55;
+  letter-spacing: -1px;
+  margin: 18px 0;
+}
+
+.public-header + main:not(.login-page) .hero h1 span {
+  color: var(--sana-blue);
+}
+
+.public-header + main:not(.login-page) .hero-copy > p {
+  color: var(--sana-muted);
+  font-size: 16px;
+  line-height: 2;
+}
+
+.public-header + main:not(.login-page) .hero .dot {
+  background: var(--sana-blue);
+  box-shadow: 0 0 0 4px #173b720b;
+}
+
+.public-header + main:not(.login-page) .hero .actions {
+  margin-top: 26px;
+  gap: 20px;
+}
+
+.public-header + main:not(.login-page) .hero-note {
+  color: var(--sana-muted);
+  margin-top: 28px;
+}
+
+.public-header + main:not(.login-page) .small-icon {
+  color: var(--sana-blue);
+  border-color: var(--sana-border);
+  background: #ffffffb3;
+}
+
+.public-header + main:not(.login-page) .hero-carousel {
+  grid-column: 1;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: center;
+  justify-items: stretch;
+  min-width: 0;
+  min-height: 490px;
+  padding: 0 16px;
+  gap: 12px;
+  background: transparent;
+  border-radius: 24px;
+}
+
+.public-header + main:not(.login-page) .hero-carousel .orb {
+  border: 1px solid #d8e3f0;
+  max-width: 94%;
+  opacity: .4;
+  transform: none;
+  pointer-events: none;
+}
+
+.public-header + main:not(.login-page) .hero-carousel .orb2 {
+  border-style: solid;
+}
+
+.public-header + main:not(.login-page) .hero-carousel .visual-label {
+  position: relative;
+  top: auto;
+  left: auto;
+  justify-content: flex-start;
+  gap: 16px;
+  letter-spacing: 0;
+}
+
+.public-header + main:not(.login-page) .hero-carousel .visual-label span {
+  color: var(--sana-muted);
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.public-header + main:not(.login-page) .hero-carousel .visual-label .manufacturer-logo {
+  width: 108px;
+  height: 34px;
+}
+
+.public-header + main:not(.login-page) .hero-slide {
+  width: 100%;
+  height: 340px;
+}
+
+.public-header + main:not(.login-page) .hero-slide .device-image {
+  object-fit: contain;
+  filter: drop-shadow(0 16px 18px #0b255414);
+}
+
+.public-header + main:not(.login-page) .hero-carousel .floating-label {
+  position: relative;
+  bottom: auto;
+  right: auto;
+  margin: 0;
+  padding: 12px 18px;
+  justify-content: space-between;
+  border: 1px solid var(--sana-border);
+  border-radius: 14px;
+  background: #ffffffde;
+  box-shadow: 0 5px 18px #0b255405;
+}
+
+.public-header + main:not(.login-page) .floating-label strong {
+  color: var(--sana-navy);
+  font-size: 17px;
+}
+
+.public-header + main:not(.login-page) .floating-label small {
+  color: var(--sana-muted);
+  font-size: 13px;
+}
+
+.public-header + main:not(.login-page) .hero-carousel .floating-label > a {
+  color: var(--sana-blue);
+  width: 44px;
+  min-height: 44px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 50%;
+  background: var(--sana-surface);
+  flex-shrink: 0;
+}
+
+.public-header + main:not(.login-page) .carousel-controls {
+  position: relative;
+  bottom: auto;
+  left: auto;
+  right: auto;
+  width: 100%;
+  gap: 8px;
+}
+
+.public-header + main:not(.login-page) .carousel-arrow {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  color: var(--sana-navy);
+  border-color: var(--sana-border);
+  box-shadow: 0 3px 10px #0b255405;
+}
+
+.public-header + main:not(.login-page) .carousel-dots {
+  gap: 0;
+}
+
+.public-header + main:not(.login-page) .carousel-dots button {
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+}
+
+.public-header + main:not(.login-page) .carousel-dots span {
+  width: 7px;
+  height: 7px;
+  background: #9badc6;
+}
+
+.public-header + main:not(.login-page) .carousel-dots button[aria-current] span {
+  width: 20px;
+  background: var(--sana-navy);
+}
+
+.public-header + main:not(.login-page) .trust-strip {
+  gap: 32px;
+  padding: 24px 32px;
+  background: #fff;
+  color: var(--sana-muted);
+  border: 0;
+  border-bottom: 1px solid var(--sana-border);
+}
+
+.public-header + main:not(.login-page) .trust-strip > span {
+  color: var(--sana-text);
+  font-size: 14px;
+}
+
+.public-header + main:not(.login-page) .trust-strip svg {
+  color: var(--sana-blue);
+}
+
+.public-header + main:not(.login-page) .devices-section {
+  max-width: 1360px;
+  padding: 56px 48px;
+}
+
+.public-header + main:not(.login-page) .section-heading {
+  color: var(--sana-navy);
+  font-size: 30px;
+  line-height: 1.6;
+}
+
+.public-header + main:not(.login-page) .device-family {
+  background: var(--sana-surface);
+  border-color: var(--sana-border);
+  border-radius: 22px;
+  padding: 26px;
+  margin-top: 26px;
+}
+
+.public-header + main:not(.login-page) .family-heading {
+  border-color: var(--sana-border);
+}
+
+.public-header + main:not(.login-page) .family-heading span {
+  color: var(--sana-muted);
+}
+
+.public-header + main:not(.login-page) .family-heading h3 {
+  color: var(--sana-navy);
+}
+
+.public-header + main:not(.login-page) .device-grid {
+  gap: 20px;
+}
+
+.public-header + main:not(.login-page) .device-tile {
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
+  border-color: var(--sana-border);
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 4px 12px #0b255403;
+}
+
+.public-header + main:not(.login-page) .device-tile:hover {
+  border-color: #b8cae1;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px #0b255409;
+}
+
+.public-header + main:not(.login-page) .device-tile .row {
+  color: var(--sana-muted);
+}
+
+.public-header + main:not(.login-page) .device-tile .manufacturer-logo {
+  width: 92px;
+  height: 30px;
+  margin: 0;
+}
+
+.public-header + main:not(.login-page) .device-tile .device-image {
+  width: 100%;
+  height: 210px;
+  object-fit: contain;
+  margin: 20px 0;
+}
+
+.public-header + main:not(.login-page) .device-tile h3 {
+  color: var(--sana-navy);
+  font-size: 23px;
+}
+
+.public-header + main:not(.login-page) .device-tile p {
+  color: var(--sana-muted);
+  line-height: 1.9;
+  margin: 6px 0 20px;
+}
+
+.public-header + main:not(.login-page) .tile-link {
+  color: var(--sana-blue);
+  border-color: var(--sana-border);
+  margin-top: auto;
+  padding-top: 14px;
+  min-height: 44px;
+  font-weight: 600;
+}
+
+.public-header + main:not(.login-page) .portal-banner {
+  background: var(--sana-soft);
+  border: 1px solid var(--sana-border);
+  border-radius: 24px;
+  max-width: 1264px;
+  margin: 0 auto 64px;
+  padding: 44px;
+  gap: 48px;
+}
+
+.public-header + main:not(.login-page) .portal-banner h2 {
+  color: var(--sana-navy);
+  line-height: 1.6;
+}
+
+.public-header + main:not(.login-page) .portal-banner p {
+  color: var(--sana-muted);
+}
+
+.public-header + main:not(.login-page) .steps {
+  border-color: #ccd9eb;
+}
+
+.public-header + main:not(.login-page) .steps > div > span {
+  color: var(--sana-navy);
+  border-color: var(--sana-border);
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+}
+
+.public-header + main:not(.login-page) :is(.product-hero, .card) {
+  border-color: var(--sana-border);
+}
+
+.public-header + main:not(.login-page) .product-hero {
+  background: var(--sana-surface);
+  border-radius: 24px;
+  padding: 34px;
+}
+
+.public-header + main:not(.login-page) .product-hero > .device-image {
+  background: transparent;
+  object-fit: contain;
+}
+
+.public-header + main:not(.login-page) :is(.big-phone, .step, .source) {
+  color: var(--sana-blue);
+}
+
+.public-header + main:not(.login-page) .card.soft {
+  background: var(--sana-surface);
+}
+
+.public-header + main:not(.login-page) .notice {
+  background: var(--sana-soft);
+  border-color: var(--sana-border);
+  color: var(--sana-text);
+}
+
+.public-footer {
+  background: var(--sana-surface);
+  border-color: var(--sana-border);
+  color: var(--sana-muted);
+}
+
+.public-footer h3 {
+  color: var(--sana-navy);
+}
+
+.public-footer .link {
+  color: var(--sana-blue);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-header a,
+  .public-header button,
+  .public-header + main:not(.login-page) a,
+  .public-header + main:not(.login-page) button {
+    transition: none;
+  }
+
+  .public-header + main:not(.login-page) .hero-slide {
+    animation: none;
+  }
+
+  .public-header + main:not(.login-page) .device-tile:hover {
+    transform: none;
+  }
+
+}
+
+/* White product stage accommodates the unchanged opaque product photography. */
+.public-header + main:not(.login-page) .hero-slide {
+  background: #fff;
+  border: 1px solid var(--sana-border);
+  border-radius: 22px;
+  padding: 12px;
+}
+
+.public-header + main:not(.login-page) .hero-note small {
+  color: var(--sana-muted);
+}
+
+.public-footer .footer-bottom {
+  border-color: var(--sana-border);
+  color: var(--sana-muted);
+}
+
+.public-footer .enamad {
+  color: var(--sana-muted);
+  border-color: var(--sana-border);
+}

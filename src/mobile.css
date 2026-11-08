@@ -949,3 +949,483 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* Public redesign responsive layer;
+no panel, login-form or shared-token overrides. */
+@media (min-width: 901px) and (max-width: 1150px) {
+  .public-header {
+    gap: 18px;
+    padding-inline: 28px;
+  }
+
+  .public-header > nav {
+    gap: 4px;
+  }
+
+  .public-header > nav > a {
+    padding-inline: 6px;
+  }
+
+  .public-header + main:not(.login-page) .hero.public-main {
+    gap: 28px;
+    padding-inline: 32px;
+  }
+
+  .public-header + main:not(.login-page) .hero h1 {
+    font-size: 40px;
+  }
+
+  .public-header + main:not(.login-page) .hero-copy > p {
+    font-size: 15px;
+  }
+
+  .public-header + main:not(.login-page) .devices-section {
+    padding-inline: 32px;
+  }
+
+  .public-header + main:not(.login-page) .portal-banner {
+    margin-inline: 32px;
+  }
+
+}
+
+@media (max-width: 900px) {
+  .public-header {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px 16px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 20px 10px;
+    min-height: 0;
+  }
+
+  .public-header .logo {
+    width: 100px;
+    height: 46px;
+  }
+
+  .public-header > nav {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    width: 100%;
+    justify-self: stretch;
+    justify-content: center;
+    gap: 12px;
+    padding: 4px 0;
+    margin: 0;
+    border-top: 1px solid var(--sana-border);
+    white-space: normal;
+  }
+
+  .public-header > nav > a {
+    min-height: 44px;
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .public-header > .button {
+    justify-self: end;
+    padding: 10px 20px;
+    min-height: 46px;
+  }
+
+  .public-header .account-actions {
+    justify-self: end;
+    margin: 0;
+    gap: 10px;
+  }
+
+  .public-header .account-trigger {
+    padding: 8px 10px;
+    gap: 6px;
+  }
+
+  .public-header .account-trigger > span {
+    max-width: 130px;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    line-height: 1.5;
+  }
+
+  .public-header .account-dropdown {
+    left: 0;
+    right: auto;
+    min-width: 224px;
+    max-width: calc(100vw - 32px);
+  }
+
+  .public-header + main:not(.login-page) .hero.public-main {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 32px 32px 28px;
+    gap: 30px;
+    min-height: 0;
+    border-radius: 0 0 28px 28px;
+  }
+
+  .public-header + main:not(.login-page) .hero-copy,
+  .public-header + main:not(.login-page) .hero-carousel {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .public-header + main:not(.login-page) .hero h1 {
+    font-size: 42px;
+  }
+
+  .public-header + main:not(.login-page) .hero-carousel {
+    width: 100%;
+    max-width: 600px;
+    justify-self: center;
+    padding: 0 12px;
+    min-height: 0;
+  }
+
+  .public-header + main:not(.login-page) .hero-slide {
+    height: 320px;
+  }
+
+  .public-header + main:not(.login-page) .trust-strip {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+    padding: 26px 32px;
+  }
+
+  .public-header + main:not(.login-page) .trust-strip > span {
+    line-height: 1.8;
+    align-items: center;
+  }
+
+  .public-header + main:not(.login-page) .devices-section {
+    padding: 36px 24px;
+  }
+
+  .public-header + main:not(.login-page) .section-heading {
+    font-size: 26px;
+  }
+
+  .public-header + main:not(.login-page) .devices-section > .section-title {
+    flex-wrap: wrap;
+  }
+
+  .public-header + main:not(.login-page) .device-family {
+    padding: 22px 18px;
+    border-radius: 18px;
+  }
+
+  .public-header + main:not(.login-page) .device-family .device-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .public-header + main:not(.login-page) .device-tile {
+    padding: 18px;
+  }
+
+  .public-header + main:not(.login-page) .device-tile .device-image {
+    height: 180px;
+    margin: 18px 0;
+  }
+
+  .public-header + main:not(.login-page) .device-tile h3 {
+    font-size: 21px;
+  }
+
+  .public-header + main:not(.login-page) .portal-banner {
+    grid-template-columns: minmax(0, 1fr);
+    margin: 0 24px 40px;
+    padding: 28px;
+    gap: 28px;
+    border-radius: 20px;
+  }
+
+  .public-header + main:not(.login-page) .steps {
+    padding-right: 20px;
+  }
+
+  .public-header + main:not(.login-page) .product-hero {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px;
+  }
+
+  .public-header + main:not(.login-page) .product-hero > .device-image {
+    max-height: 320px;
+  }
+
+}
+
+@media (max-width: 600px) {
+  .public-header {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding-inline: 14px;
+    gap: 8px 10px;
+  }
+
+  .public-header .logo {
+    width: 86px;
+    height: 44px;
+  }
+
+  .public-header > nav {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px;
+    overflow: visible;
+  }
+
+  .public-header > nav > a {
+    padding: 6px 3px;
+    min-height: 44px;
+    font-size: 12.5px;
+    line-height: 1.6;
+    white-space: normal;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .public-header > .button {
+    min-height: 44px;
+    padding: 9px 18px;
+    font-size: 14px;
+  }
+
+  .public-header .account-actions {
+    gap: 8px;
+  }
+
+  .public-header .account-trigger {
+    gap: 5px;
+    padding: 7px;
+    font-size: 12px;
+    min-height: 44px;
+  }
+
+  .public-header .account-trigger > span {
+    max-width: 76px;
+  }
+
+  .public-header .header-cart {
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .public-header + main:not(.login-page) .hero.public-main {
+    padding: 26px 20px;
+    gap: 28px;
+    border-radius: 0 0 24px 24px;
+  }
+
+  .public-header + main:not(.login-page) .hero .eyebrow {
+    font-size: 13px;
+  }
+
+  .public-header + main:not(.login-page) .hero h1 {
+    font-size: clamp(30px, 8.1vw, 36px);
+    margin: 14px 0;
+    line-height: 1.65;
+  }
+
+  .public-header + main:not(.login-page) .hero-copy > p {
+    font-size: 14px;
+    line-height: 2;
+  }
+
+  .public-header + main:not(.login-page) .hero .actions {
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .public-header + main:not(.login-page) .hero .actions > a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .public-header + main:not(.login-page) .hero .button {
+    min-width: 190px;
+    padding: 11px 16px;
+  }
+
+  .public-header + main:not(.login-page) .hero-note {
+    font-size: 13px;
+    margin-top: 22px;
+  }
+
+  .public-header + main:not(.login-page) .hero-note small {
+    font-size: 12px;
+  }
+
+  .public-header + main:not(.login-page) .hero-carousel {
+    padding: 0;
+    gap: 10px;
+  }
+
+  .public-header + main:not(.login-page) .hero-slide {
+    height: 260px;
+  }
+
+  .public-header + main:not(.login-page) .hero-carousel .visual-label .manufacturer-logo {
+    width: 96px;
+    height: 30px;
+  }
+
+  .public-header + main:not(.login-page) .hero-carousel .floating-label {
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+
+  .public-header + main:not(.login-page) .floating-label strong {
+    font-size: 15px;
+  }
+
+  .public-header + main:not(.login-page) .floating-label small {
+    font-size: 12px;
+  }
+
+  .public-header + main:not(.login-page) .carousel-controls {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2px 8px;
+  }
+
+  .public-header + main:not(.login-page) .carousel-dots {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    justify-content: center;
+  }
+
+  .public-header + main:not(.login-page) .carousel-arrow {
+    grid-row: 2;
+    justify-self: center;
+  }
+
+  .public-header + main:not(.login-page) .carousel-arrow:first-child {
+    grid-column: 1;
+  }
+
+  .public-header + main:not(.login-page) .carousel-arrow:nth-last-child(2) {
+    grid-column: 2;
+  }
+
+  .public-header + main:not(.login-page) .carousel-arrow:last-child {
+    grid-column: 3;
+  }
+
+  .public-header + main:not(.login-page) .trust-strip {
+    gap: 16px 12px;
+    padding: 22px 20px;
+  }
+
+  .public-header + main:not(.login-page) .trust-strip > span {
+    font-size: 12px;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .public-header + main:not(.login-page) .devices-section {
+    padding: 32px 16px;
+  }
+
+  .public-header + main:not(.login-page) .section-heading {
+    font-size: 24px;
+  }
+
+  .public-header + main:not(.login-page) .device-family {
+    padding: 20px 14px;
+    margin-top: 20px;
+  }
+
+  .public-header + main:not(.login-page) .device-family .device-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .public-header + main:not(.login-page) .family-heading {
+    padding-bottom: 14px;
+    gap: 10px;
+  }
+
+  .public-header + main:not(.login-page) .family-heading > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .public-header + main:not(.login-page) .family-heading h3 {
+    font-size: 23px;
+  }
+
+  .public-header + main:not(.login-page) .family-heading .manufacturer-logo {
+    width: 88px;
+    height: 30px;
+  }
+
+  .public-header + main:not(.login-page) .device-tile {
+    padding: 20px;
+  }
+
+  .public-header + main:not(.login-page) .device-tile .device-image {
+    height: 190px;
+    margin: 20px 0;
+  }
+
+  .public-header + main:not(.login-page) .device-tile .manufacturer-logo {
+    width: 88px;
+    height: 30px;
+  }
+
+  .public-header + main:not(.login-page) .device-tile h3 {
+    font-size: 22px;
+  }
+
+  .public-header + main:not(.login-page) .portal-banner {
+    margin: 0 16px 36px;
+    padding: 24px 20px;
+    gap: 24px;
+  }
+
+  .public-header + main:not(.login-page) .portal-banner h2 {
+    font-size: 24px;
+  }
+
+  .public-header + main:not(.login-page) .portal-banner p {
+    font-size: 14px;
+  }
+
+  .public-header + main:not(.login-page) .portal-banner .button {
+    min-height: 44px;
+    padding: 11px 16px;
+  }
+
+  .public-header + main:not(.login-page) .product-hero {
+    padding: 22px 16px;
+  }
+
+  .public-header + main:not(.login-page) .product-hero > .device-image {
+    max-height: 260px;
+  }
+
+  .public-header + main:not(.login-page) .public-main.prose {
+    padding-inline: 20px;
+  }
+
+}
+
+@media (max-width: 900px) {
+  .public-footer a,
+  .public-header + main:not(.login-page) :is(.back, .source) {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  .public-header + main:not(.login-page) summary {
+    min-height: 44px;
+    padding-block: 8px;
+  }
+
+}
