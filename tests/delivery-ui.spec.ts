@@ -43,10 +43,10 @@ test("Jalali calendar forbids today/tomorrow, stores chosen date and all three w
     timeZone: "Asia/Tehran",
   });
   await page.getByRole("button", { name: "جزئیات و پیگیری" }).first().click();
-  await expect(page.locator(".order-delivery-time")).toContainText("۱۵ تا ۱۸");
+  await expect(page.locator(".order-meta-table")).toContainText("۱۵ تا ۱۸");
   await page.reload();
   await page.getByRole("button", { name: "جزئیات و پیگیری" }).first().click();
-  await expect(page.locator(".order-delivery-time")).toContainText("۱۵ تا ۱۸");
+  await expect(page.locator(".order-meta-table")).toContainText("۱۵ تا ۱۸");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,

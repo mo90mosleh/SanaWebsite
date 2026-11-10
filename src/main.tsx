@@ -1,4 +1,17 @@
 import { PublicShell } from "./PublicShell";
+import { CategoryCircles } from "./CategoryCircles";
+import { SupplyCatalog } from "./SupplyCatalog";
+import { isCatalogItem } from "./catalog-data";
+import { poctGroups } from "./kitCategories";
+import "./catalog.css";
+import {
+  CustomersWorkspace,
+  ProductsWorkspace,
+  ForecastTable,
+} from "./AdminWorkspace";
+import { MoneyInput } from "./MoneyInput";
+import { brands, numeric, recordNearReminders } from "./admin-data";
+import "./admin-workspace.css";
 import { MobileNavigation } from "./MobileNavigation";
 import { TicketsPanel } from "./Tickets";
 import { categories, categoryFor } from "./kitCategories";
@@ -101,6 +114,8 @@ function App() {
   const [query, setQuery] = useState("");
   const [deviceFilter, setDeviceFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
+  const [familyFilter, setFamilyFilter] = useState("all");
+  const [poctFilter, setPoctFilter] = useState("");
   useEffect(() => {
     const nav = () => {
       setPath(location.hash.slice(1) || "/");
@@ -159,7 +174,21 @@ function App() {
     setCid(c);
     sessionStorage.setItem("sana-role", r);
     sessionStorage.setItem("sana-customer", c);
-    go(r === "customer" && path.startsWith("/customer/") ? path : "/" + r);
+    const intent = sessionStorage.getItem("sana-catalog-intent");
+    sessionStorage.removeItem("sana-catalog-intent");
+    const chosen = state.products.find((p) => p.id === intent),
+      center = state.customers.find((x) => x.id === c);
+    if (
+      r === "customer" &&
+      chosen &&
+      center &&
+      D.compatible(chosen, center) &&
+      chosen.stock > 0
+    ) {
+      setCart((prev) => ({ ...prev, [chosen.id]: (prev[chosen.id] || 0) + 1 }));
+      go("/customer/cart");
+    } else
+      go(r === "customer" && path.startsWith("/customer/") ? path : "/" + r);
   };
   const customer =
     state.customers.find((c) => c.id === cid) || state.customers[0];
@@ -181,10 +210,15 @@ function App() {
     });
   const filteredProducts = state.products.filter(
     (p) =>
+      isCatalogItem(p) &&
+      (familyFilter !== "ortanes" || p.family === "laboratory") &&
+      (familyFilter !== "poct" || p.family === "poct") &&
+      (!poctFilter ||
+        poctGroups.find((g) => g.id === poctFilter)?.products.includes(p.id)) &&
       (p.name + " " + p.english + " " + p.code)
         .toLowerCase()
         .includes(query.toLowerCase()) &&
-      (!categoryFilter || categoryFor(p.id).id === categoryFilter) &&
+      (!categoryFilter || categoryFor(p).id === categoryFilter) &&
       (!deviceFilter ||
         p.models.includes(deviceFilter) ||
         p.referenceModels?.includes(deviceFilter)),
@@ -291,48 +325,6 @@ function App() {
         ["tickets", "تیکت‌های پشتیبانی", LifeBuoy],
         ["profile", "اطلاعات مرکز", Settings],
       ];
-  function Forecast({ c, limit = 99 }: { c: D.Customer; limit?: number }) {
-    const relevant = state.products.filter(
-      (p) =>
-        p.verified &&
-        (c.devices.some((d) => d.initial.some((l) => l.product === p.id)) ||
-          state.orders.some(
-            (o) =>
-              o.customer === c.id && o.lines.some((l) => l.product === p.id),
-          )),
-    );
-    if (!relevant.length)
-      return <p className="muted">داده کافی برای برآورد وجود ندارد</p>;
-    return (
-      <>
-        {relevant.slice(0, limit).map((p) => {
-          const f = D.forecast(state, c, p.id);
-          return (
-            <div className="forecast-row" key={p.id}>
-              <div>
-                <strong>{p.name}</strong>
-                <p>{c.name}</p>
-              </div>
-              {f ? (
-                <div>
-                  <Badge value={f.near ? "نزدیک به موعد" : "برآورد موجود"} />
-                  <p>
-                    {D.date(f.due)} · اطمینان {f.confidence}
-                  </p>
-                  <small>
-                    {f.count} تحویل؛ فاصله بعدی {f.days} روز، بر پایه مقدار
-                    تحویل و میانگین فاصله به ازای بسته
-                  </small>
-                </div>
-              ) : (
-                <small>داده کافی برای برآورد وجود ندارد</small>
-              )}
-            </div>
-          );
-        })}
-      </>
-    );
-  }
   function OrderCard({ o }: { o: D.Order }) {
     const detail = selected === o.id;
     const historical = o.shipping === "delivered" || o.status === "cancelled";
@@ -372,46 +364,125 @@ function App() {
         {detail && (
           <div className="order-detail">
             {!historical && <OrderJourney order={o} />}
-            {o.deliverySchedule && (
-              <div className="order-delivery-time">
-                <strong>زمان تحویل</strong>
-                <p>
-                  {formatDeliveryDate(o.deliverySchedule.date)}، ساعت{" "}
-                  {deliverySlotLabel(o.deliverySchedule.slot)} (به وقت تهران)
-                </p>
-              </div>
-            )}
-            {o.deliveryAddress && (
-              <div className="order-address">
-                <strong>نشانی تحویل</strong>
-                <p>
-                  {o.deliveryAddress.label}:{" "}
-                  {D.formatAddress(o.deliveryAddress)}
-                </p>
-                <small>
-                  {o.deliveryAddress.recipient} ·{" "}
-                  <bdi>{o.deliveryAddress.phone}</bdi>
-                </small>
-              </div>
-            )}
-            <div className="row wrap">
-              <span>روش خرید: {labels[o.method]}</span>
-              <span>
-                پرداخت: <Badge value={o.payment} />
-              </span>
-              <span>
-                ارسال: <Badge value={o.shipping} />
-              </span>
+            <div className="admin-table-wrap">
+              <table className="admin-table order-meta-table">
+                <caption>مشخصات سفارش</caption>
+                <tbody>
+                  <tr>
+                    <th scope="row">شماره سفارش</th>
+                    <td>
+                      <bdi>{o.id}</bdi>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">تاریخ ثبت</th>
+                    <td>{D.date(o.created)}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">روش خرید</th>
+                    <td>{labels[o.method]}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">وضعیت پرداخت</th>
+                    <td>
+                      <Badge value={o.payment} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">وضعیت ارسال</th>
+                    <td>
+                      <Badge value={o.shipping} />
+                    </td>
+                  </tr>
+                  {o.deliverySchedule && (
+                    <tr>
+                      <th scope="row">زمان تحویل</th>
+                      <td>
+                        {formatDeliveryDate(o.deliverySchedule.date)}، ساعت{" "}
+                        {deliverySlotLabel(o.deliverySchedule.slot)} (به وقت
+                        تهران)
+                      </td>
+                    </tr>
+                  )}
+                  {o.deliveryAddress && (
+                    <>
+                      <tr>
+                        <th scope="row">نشانی تحویل</th>
+                        <td>
+                          {o.deliveryAddress.label}:{" "}
+                          {D.formatAddress(o.deliveryAddress)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">گیرنده</th>
+                        <td>
+                          {o.deliveryAddress.recipient} ·{" "}
+                          <bdi>{o.deliveryAddress.phone}</bdi>
+                        </td>
+                      </tr>
+                    </>
+                  )}
+                </tbody>
+              </table>
             </div>
-            {o.lines.map((l) => (
-              <div className="line" key={l.product}>
-                <span>
-                  {l.name} × {l.qty} بسته
-                </span>
-                <span>{D.money(l.price * l.qty)}</span>
-              </div>
-            ))}
-            <p>مبلغ ثبت‌شده سفارش: {D.money(o.total)}</p>
+            <div className="admin-table-wrap">
+              <table className="admin-table order-items-table">
+                <caption>اقلام و مبالغ سفارش</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">محصول</th>
+                    <th scope="col">تعداد بسته</th>
+                    <th scope="col">قیمت واحد</th>
+                    <th scope="col">جمع ردیف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {o.lines.map((l) => (
+                    <tr key={l.product}>
+                      <th scope="row">{l.name}</th>
+                      <td>{l.qty.toLocaleString("fa-IR")}</td>
+                      <td>{D.money(l.price)}</td>
+                      <td>{D.money(l.price * l.qty)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th scope="row" colSpan={3}>
+                      جمع پایه
+                    </th>
+                    <td>
+                      {D.money(
+                        o.lines.reduce((a, l) => a + l.price * l.qty, 0),
+                      )}
+                    </td>
+                  </tr>
+                  {o.total !==
+                    o.lines.reduce((sum, l) => sum + l.price * l.qty, 0) && (
+                    <tr>
+                      <th scope="row" colSpan={3}>
+                        تعدیلات ثبت‌شده سفارش
+                      </th>
+                      <td>
+                        {D.money(
+                          o.total -
+                            o.lines.reduce(
+                              (sum, l) => sum + l.price * l.qty,
+                              0,
+                            ),
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                  <tr>
+                    <th scope="row" colSpan={3}>
+                      مبلغ نهایی
+                    </th>
+                    <td>{D.money(o.total)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
             {o.note && <p className="notice">توضیح فروش: {o.note}</p>}
             {o.status === "pending" && (
               <button
@@ -729,10 +800,26 @@ function App() {
                 name: String(f.get("name")),
                 english: String(f.get("english")),
                 brand: String(f.get("brand")),
+                family: String(f.get("family")) as "poct" | "laboratory",
+                categoryId: String(f.get("categoryId")),
+                packLabel: String(f.get("packLabel")),
                 code: String(f.get("code")),
-                price: Number(f.get("price")),
-                stock: Number(f.get("stock")),
+                price: numeric(f.get("price")),
               };
+              if (value.price < 1 || value.price > 1000000000)
+                throw Error("قیمت معتبر نیست");
+              if (!brands(s).includes(value.brand))
+                throw Error("برند معتبر نیست");
+              if (
+                value.code &&
+                s.products.some(
+                  (x) =>
+                    x.id !== p?.id &&
+                    x.brand === value.brand &&
+                    x.code === value.code,
+                )
+              )
+                throw Error("کد محصول و برند تکراری است");
               if (p)
                 Object.assign(
                   s.products.find((x) => x.id === p.id)!,
@@ -741,6 +828,7 @@ function App() {
               else
                 s.products.push({
                   ...value,
+                  stock: 0,
                   id: D.uid(),
                   models: [],
                   tests: null,
@@ -778,11 +866,37 @@ function App() {
           </label>
           <label>
             برند
+            <select required name="brand" defaultValue={p?.brand || "Wondfo"}>
+              {brands(state).map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            خانواده محصول
+            <select name="family" defaultValue={p?.family || "poct"}>
+              <option value="poct">کیت دستگاه POCT</option>
+              <option value="laboratory">مصرفی عمومی آزمایشگاه</option>
+            </select>
+          </label>
+          <label>
+            دسته‌بندی
+            <select name="categoryId" defaultValue={p?.categoryId || "poct"}>
+              {categories.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            بسته‌بندی
             <input
-              required
-              name="brand"
-              defaultValue={p?.brand}
-              maxLength={50}
+              name="packLabel"
+              defaultValue={p?.packLabel || ""}
+              placeholder="مثلاً ۷۲ عدد در بسته"
             />
           </label>
           <label>
@@ -796,28 +910,9 @@ function App() {
           </label>
           <label>
             قیمت پایه (تومان)
-            <input
-              required
-              name="price"
-              type="number"
-              min="1"
-              step="1"
-              max="1000000000"
-              defaultValue={p?.price ?? 2000000}
-            />
+            <MoneyInput name="price" defaultValue={p?.price ?? 2000000} />
           </label>
-          <label>
-            موجودی (بسته)
-            <input
-              required
-              name="stock"
-              type="number"
-              min="0"
-              step="1"
-              max="10000"
-              defaultValue={p?.stock ?? 0}
-            />
-          </label>
+
           {!p && (
             <label>
               نشانی منبع سازنده
@@ -832,7 +927,7 @@ function App() {
         </div>
         {p && (
           <p>
-            آنلاین: {D.money(D.onlinePrice(p.price))} ·{" "}
+            قیمت: {D.money(p.price)} ·{" "}
             {p.verified ? "قابل سفارش" : "در انتظار تأیید؛ غیرقابل سفارش"}
           </p>
         )}
@@ -846,12 +941,16 @@ function App() {
         <div className="row">
           <span className="brand-label">
             {p.brand}
-            {p.brand === "Wondfo" ? " / Finecare" : " / CBC"}
+            {p.brand === "Wondfo"
+              ? " / Finecare"
+              : p.brand === "Ortanes"
+                ? " / اورتانیس"
+                : " / CBC"}
           </span>
           <Badge
             value={
               p.verified
-                ? "قابل سفارش"
+                ? "قابل سفارش آزمایشی"
                 : p.models.length
                   ? "معرفی‌شده سازنده"
                   : "نیازمند تأیید"
@@ -871,7 +970,9 @@ function App() {
         {!compact && (
           <>
             <p className="muted">
-              {p.models.length ? (
+              {p.family === "laboratory" ? (
+                "مصرفی عمومی آزمایشگاه؛ بدون نیاز به دستگاه"
+              ) : p.models.length ? (
                 <>
                   <bdi>{p.models.join(" / ")}</bdi>
                 </>
@@ -882,26 +983,34 @@ function App() {
             <details className="product-evidence">
               <summary>جزئیات بسته و منبع</summary>{" "}
               <small>
-                معرفی‌شده در منوی سازنده؛ عرضه واقعی سانا تأیید نشده
+                {p.sourceLabel ||
+                  "معرفی‌شده در منوی سازنده؛ تأیید عرضه نهایی با فروش"}
               </small>
               <small>
-                تعداد تست در بسته: {p.tests ?? "نیازمند تأیید"} · واحد سفارش:
-                بسته
+                {p.packLabel ||
+                  "تعداد تست در بسته: " + (p.tests ?? "نیازمند تأیید")}{" "}
+                · واحد سفارش: {p.unit || "بسته"}
               </small>
-              <a
-                className="source"
-                href={assetPath(p.source)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
-              </a>
+              {p.source && (
+                <a
+                  className="source"
+                  href={assetPath(p.source)}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
+                </a>
+              )}
             </details>
           </>
         )}
+        {p.demoPrice && (
+          <small className="catalog-demo-badge">قیمت و موجودی نمایشی</small>
+        )}
+        <p className="product-unit-note">{p.packLabel}</p>
         <div className="price-block">
           <span>
-            قیمت هر بسته <strong>{D.money(p.price)}</strong>
+            قیمت <strong>{D.money(p.price)}</strong>
           </span>
         </div>
         {(cart[p.id] || 0) > 0 && (
@@ -1222,7 +1331,7 @@ function App() {
                   جزئیات <ArrowLeft size={15} />
                 </button>
               </div>
-              {Forecast({ c: customer, limit: 3 })}
+              <ForecastTable state={state} />
               <p className="muted">
                 این برآورد موجودی یا مصرف واقعی مرکز را اندازه‌گیری نمی‌کند.
               </p>
@@ -1266,6 +1375,9 @@ function App() {
                     className="secondary"
                     onClick={() => {
                       setDeviceFilter(d.model);
+                      setFamilyFilter("poct");
+                      setCategoryFilter("");
+                      setPoctFilter("");
                       go("/customer/supplies");
                     }}
                   >
@@ -1282,7 +1394,66 @@ function App() {
       return (
         <>
           <h1>کیت‌ها و مواد مصرفی</h1>
-          <p className="muted">انتخابی متناسب با دستگاه‌های مرکز شما</p>
+          <p className="muted">
+            کیت‌های دستگاه و مصرفی‌های عمومی آزمایشگاه اورتانیس
+          </p>
+          <div
+            className="catalog-family-tabs"
+            role="group"
+            aria-label="نوع مصرفی"
+          >
+            {[
+              ["all", "همه مصرفی‌ها"],
+              ["poct", "کیت‌های POCT"],
+              ["ortanes", "مصرفی آزمایشگاه · اورتانیس"],
+            ].map(([id, label]) => (
+              <button
+                key={id}
+                aria-pressed={familyFilter === id}
+                className={familyFilter === id ? "selected" : ""}
+                onClick={() => {
+                  setFamilyFilter(id);
+                  setCategoryFilter("");
+                  setPoctFilter("");
+                  setDeviceFilter("");
+                  setSupplyLimit(6);
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          <CategoryCircles
+            family={familyFilter}
+            value={categoryFilter}
+            onChange={(id) => {
+              setCategoryFilter(id);
+              setPoctFilter("");
+              setSupplyLimit(6);
+            }}
+          />
+          {(familyFilter === "poct" || categoryFilter === "poct") && (
+            <div className="catalog-scope">
+              <label>
+                گروه تست
+                <select
+                  aria-label="گروه تست POCT"
+                  value={poctFilter}
+                  onChange={(e) => {
+                    setPoctFilter(e.target.value);
+                    setSupplyLimit(6);
+                  }}
+                >
+                  <option value="">همه گروه‌ها</option>
+                  {poctGroups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          )}
           <div className="filters supplies-filters">
             <label className="search">
               <Search size={19} />
@@ -1306,7 +1477,7 @@ function App() {
                   setSupplyLimit(6);
                 }}
               >
-                <option value="">همه دستگاه‌های من</option>
+                <option value="">همه مصرفی‌ها و دستگاه‌ها</option>
                 {customer.devices.map((d) => (
                   <option key={d.id}>{d.model}</option>
                 ))}
@@ -1325,7 +1496,14 @@ function App() {
                 <option value="">همه دسته‌ها</option>
                 {categories
                   .filter((c) =>
-                    state.products.some((p) => categoryFor(p.id).id === c.id),
+                    state.products.some(
+                      (p) =>
+                        isCatalogItem(p) &&
+                        categoryFor(p).id === c.id &&
+                        (familyFilter !== "ortanes" ||
+                          p.family === "laboratory") &&
+                        (familyFilter !== "poct" || p.family === "poct"),
+                    ),
                   )
                   .map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1636,41 +1814,20 @@ function App() {
       );
     if (tab === "customers" && admin)
       return (
-        <>
-          <h1>مشتریان و دستگاه‌ها</h1>
-
-          {CustomerEditor({})}
-          {state.customers.map((c) => (
-            <section key={c.id}>
-              {CustomerEditor({ c })}
-              {DeviceAdmin({ c })}
-            </section>
-          ))}
-        </>
+        <CustomersWorkspace
+          state={state}
+          mutate={mutate}
+          editor={(c) => CustomerEditor({ c })}
+          devices={(c) => DeviceAdmin({ c })}
+        />
       );
     if (tab === "products" && admin)
       return (
-        <>
-          <h1>محصولات، قیمت و موجودی</h1>
-          <p className="notice">
-            سفارش ثبت‌شده قیمت و نام زمان ثبت را حفظ می‌کند. اقلام جدید ابتدا
-            غیرقابل سفارش هستند؛ تأیید سازگاری و بسته‌بندی پیش از عرضه لازم است.
-          </p>
-          {ProductEditor({})}
-          {state.products.map((p) => (
-            <details className="card product-editor" key={p.id}>
-              <summary>
-                <strong>
-                  {p.name} <bdi>{p.english}</bdi>
-                </strong>
-                <span>
-                  {D.money(p.price)} · {p.stock} بسته
-                </span>
-              </summary>
-              {ProductEditor({ p })}
-            </details>
-          ))}
-        </>
+        <ProductsWorkspace
+          state={state}
+          mutate={mutate}
+          editor={(p) => ProductEditor({ p })}
+        />
       );
     if (tab === "forecast" && admin)
       return (
@@ -1682,33 +1839,16 @@ function App() {
             ناموفق یا تحویل‌نشده محاسبه نمی‌شود. برآورد تأمین است؛ سنجش مصرف
             نیست.
           </div>
-          {state.customers.map((c) => (
-            <section className="card" key={c.id}>
-              <h2>{c.name}</h2>
-              {Forecast({ c })}
-              <button
-                className="secondary"
-                onClick={() => {
-                  mutate((s) => {
-                    for (const p of s.products) {
-                      if (
-                        D.forecast(s, c, p.id)?.near &&
-                        !s.logs.some(
-                          (l) =>
-                            l.type === "replenishment.near" &&
-                            l.related === c.id + ":" + p.id,
-                        )
-                      )
-                        D.event(s, "replenishment.near", c.id + ":" + p.id);
-                    }
-                  });
-                  setToast("یادآورهای نزدیک به موعد، بدون تکرار ثبت شدند");
-                }}
-              >
-                ثبت رویداد یادآور نزدیک به موعد
-              </button>
-            </section>
-          ))}
+          <ForecastTable state={state} />
+          <button
+            className="secondary"
+            onClick={() => {
+              if (mutate(recordNearReminders))
+                setToast("یادآورهای نزدیک به موعد، بدون تکرار ثبت شدند");
+            }}
+          >
+            ثبت رویداد یادآور نزدیک به موعد
+          </button>
         </>
       );
     if (tab === "logs" && admin)
@@ -1946,6 +2086,34 @@ function App() {
           >
             {panel || path === "/login" ? (
               <Login state={state} login={login} setToast={setToast} />
+            ) : path.startsWith("/supplies") ? (
+              <SupplyCatalog
+                key={path}
+                products={state.products}
+                family={
+                  path.endsWith("/ortanes")
+                    ? "ortanes"
+                    : path.endsWith("/poct")
+                      ? "poct"
+                      : "all"
+                }
+                onChoose={(p) => {
+                  if (role === "customer") {
+                    if (D.compatible(p, customer) && p.stock > 0) {
+                      add(p);
+                      go("/customer/cart");
+                    } else {
+                      setFamilyFilter(
+                        p.family === "laboratory" ? "ortanes" : "poct",
+                      );
+                      go("/customer/supplies");
+                    }
+                  } else {
+                    sessionStorage.setItem("sana-catalog-intent", p.id);
+                    go("/login");
+                  }
+                }}
+              />
             ) : (
               <PublicSite path={path} items={state.products} />
             )}

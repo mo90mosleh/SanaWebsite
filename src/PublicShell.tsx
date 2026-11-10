@@ -138,6 +138,8 @@ export function PublicShell({
           <a href="#/devices?category=CBC">دستگاه‌های CBC</a>
           <a href="#/devices?category=POCT">دستگاه‌های POCT</a>
           <a href="#/consumables">مواد مصرفی آزمایشگاهی</a>
+          <a href="#/supplies/ortanes">مصرفی آزمایشگاه</a>
+          <a href="#/supplies/poct">کیت‌های POCT</a>
           <a href="#/services">خدمات و پشتیبانی</a>
         </div>
         <div>

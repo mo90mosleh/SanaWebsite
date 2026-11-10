@@ -1,3 +1,4 @@
+import { OrtanesLogo } from "./OrtanesLogo";
 import { useState } from "react";
 import type { Item } from "./domain";
 import { categories, categoryFor } from "./kitCategories";
@@ -298,7 +299,7 @@ function ProductCategories() {
         href="#/consumables"
       >
         <div>
-          <span className="sana-brand-name">ORTANES</span>
+          <OrtanesLogo />
           <h2>مواد مصرفی آزمایشگاهی</h2>
           <p>کیت‌ها و ملزومات آزمایشگاه</p>
           <span className="sana-card-arrow">
@@ -325,7 +326,8 @@ function Consumables({ items }: { items: Item[] }) {
   const [category, setCategory] = useState("");
   const filtered = items.filter(
     (p) =>
-      (!category || categoryFor(p.id).id === category) &&
+      !p.archived &&
+      (!category || categoryFor(p).id === category) &&
       (p.name + " " + p.english + " " + p.code)
         .toLowerCase()
         .includes(query.toLowerCase()),
@@ -337,6 +339,10 @@ function Consumables({ items }: { items: Item[] }) {
         <h1>مواد مصرفی آزمایشگاهی</h1>
         <p>انتخاب محصول براساس آزمون و دستگاه؛ سفارش از حساب آزمایشگاه شما.</p>
       </div>
+      <nav className="sana-category-tabs" aria-label="کاتالوگ‌های مواد مصرفی">
+        <a href="#/supplies/ortanes">مصرفی آزمایشگاه</a>
+        <a href="#/supplies/poct">کیت‌های POCT</a>
+      </nav>
       <div className="sana-consumable-toolbar">
         <label>
           جست‌وجوی کیت
@@ -355,7 +361,7 @@ function Consumables({ items }: { items: Item[] }) {
           >
             <option value="">همه دسته‌ها</option>
             {categories
-              .filter((c) => items.some((p) => categoryFor(p.id).id === c.id))
+              .filter((c) => items.some((p) => categoryFor(p).id === c.id))
               .map((c) => (
                 <option value={c.id} key={c.id}>
                   {c.label}

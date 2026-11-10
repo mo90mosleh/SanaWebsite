@@ -58,7 +58,7 @@ export function MobileNavigation({
       ] as const)
     : ([
         ["dashboard", "خانه", LayoutDashboard],
-        ["supplies", "کیت‌ها", Package],
+        ["supplies", "مصرفی‌ها", Package],
         ["orders", "سفارش‌ها", ClipboardList],
         ["tickets", "پشتیبانی", LifeBuoy],
         ["profile", "حساب من", UserRound],

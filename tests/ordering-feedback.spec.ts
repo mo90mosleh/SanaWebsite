@@ -77,7 +77,8 @@ test("catalog categories combine with search and device filter; non-orderable it
   await page.goto("/#/login");
   await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
   await page.goto("/#/customer/supplies");
-  await page.getByLabel("دسته‌بندی کیت‌ها").selectOption("thyroid");
+  await page.getByRole("group", { name: "نوع مصرفی" }).getByRole("button", { name: "کیت‌های POCT", exact: true }).click();
+  await page.getByLabel("گروه تست POCT").selectOption("thyroid");
   await expect(page.locator("article.supply")).toHaveCount(5);
   await expect(
     page.getByRole("region", { name: "فهرست کیت‌ها", exact: true }),
@@ -90,8 +91,10 @@ test("catalog categories combine with search and device filter; non-orderable it
     page.getByText("محصولی پیدا نشد.", { exact: true }),
   ).toBeVisible();
   await page.getByLabel("جست‌وجوی محصول").fill("");
-  await page.getByLabel("دسته‌بندی کیت‌ها").selectOption("cbc");
-  await expect(page.locator("article.supply")).toHaveCount(2);
+  await page.getByLabel("فیلتر دستگاه").selectOption("");
+  await page.getByLabel("گروه تست POCT").selectOption("fertility");
+  await page.getByLabel("جست‌وجوی محصول").fill("testosterone");
+  await expect(page.locator("article.supply")).toHaveCount(1);
   for (const button of await page
     .getByRole("button", { name: "افزودن به سبد", exact: true })
     .all())

@@ -504,6 +504,13 @@
   text-align: center;
   margin-top: 6px;
 }
+.sana-site .sana-category-card .ortanes-logo {
+  width: 108px;
+  height: 34px;
+  object-fit: contain;
+  object-position: right;
+  margin-bottom: 16px;
+}
 .sana-site .sana-brand-name {
   display: block;
   font-size: 21px;
@@ -1048,6 +1055,11 @@
   }
   .sana-site .sana-category-card p {
     font-size: 12px;
+  }
+  .sana-site .sana-category-card .ortanes-logo {
+    width: 82px;
+    height: 26px;
+    margin-bottom: 6px;
   }
   .sana-site .sana-brand-name {
     font-size: 17px;

@@ -949,3 +949,86 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
+
+/* Mobile catalogue and address updates: Ortanes + single pricing, 2026-11-04. */
+@media (max-width: 900px) {
+  .public-header > nav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    justify-content: flex-start;
+    max-width: 100%;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .public-header > nav > a { flex: 0 0 auto; min-height: 44px; }
+  .catalog-intro { margin: 8px 0 18px; gap: 12px; }
+  .catalog-intro h1 { font-size: 24px; line-height: 1.7; margin: 8px 0; }
+  .catalog-intro p { font-size: 14px; line-height: 1.9; margin: 6px 0; }
+  .catalog-family-tabs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: thin;
+    max-width: 100%;
+    min-width: 0;
+    gap: 4px;
+    margin: 16px 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  .catalog-family-tabs > a, .catalog-family-tabs > button {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 10px 14px;
+    white-space: nowrap;
+    font-size: 13px;
+  }
+  .category-circles {
+    gap: 12px;
+    margin: 8px 0 14px;
+    padding: 10px 5px 16px;
+    min-width: 0;
+    touch-action: pan-x pan-y;
+    -webkit-overflow-scrolling: touch;
+  }
+  .category-circle { width: 86px; min-width: 86px; flex-basis: 86px; gap: 9px; }
+  .category-circle .circle-image { width: 74px; height: 74px; }
+  .category-circle strong { font-size: 12px; line-height: 1.7; }
+  .catalog-tools { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 12px 0; }
+  .catalog-tools label { min-width: 0; max-width: none; width: 100%; font-size: 13px; }
+  .catalog-tools input, .catalog-tools select { font-size: 16px; min-height: 48px; width: 100%; min-width: 0; }
+  .catalog-tools > span { font-size: 13px; }
+  .catalog-scope label { display: grid; width: 100%; gap: 8px; }
+  .catalog-scope select { min-width: 0; width: 100%; min-height: 48px; font-size: 16px; }
+  .catalog-demo-note { font-size: 12px; line-height: 1.9; padding: 10px 12px; }
+  .catalog-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .catalog-grid .supply { padding: 12px 10px; margin: 0; border-radius: 14px; }
+  .catalog-grid .supply > .row { flex-wrap: wrap; gap: 4px; align-items: start; }
+  .catalog-grid .supply > .row > small { font-size: 11px; }
+  .catalog-grid .supply .brand-label,
+  .panel-page-supplies .supply .brand-label { display: block; font-size: 11px; overflow-wrap: anywhere; }
+  .catalog-grid .kit-photo { margin: 10px 0; padding-bottom: 20px; }
+  .catalog-grid .kit-photo svg { display: block; width: 100%; height: auto; }
+  .catalog-grid .kit-photo small { font-size: 10px; }
+  .catalog-grid .supply h2 { font-size: 14px; line-height: 1.8; margin: 0 0 8px; overflow-wrap: anywhere; }
+  .catalog-grid .supply p { font-size: 12px; line-height: 1.8; margin: 0 0 8px; overflow-wrap: anywhere; }
+  .catalog-grid .price-block { padding-top: 10px; margin: auto 0 10px; }
+  .catalog-grid .price-block > span { display: grid; gap: 5px; font-size: 12px; }
+  .catalog-grid .price-block strong { display: block; font-size: 14px; white-space: normal; }
+  .catalog-grid .supply > button { width: 100%; min-height: 46px; font-size: 13px; padding: 10px 6px; }
+  .panel-page-supplies .selected-total { display: grid; grid-template-columns: minmax(0, 1fr); gap: 4px; }
+  .location-search-field { width: 100%; min-width: 0; }
+  .location-search-field > label { margin: 0; }
+  .location-search-field input, .location-search-field select { width: 100%; min-width: 0; font-size: 16px; min-height: 48px; }
+  .location-search-field small { font-size: 13px; line-height: 1.8; }
+  .ortanes-home { padding: 22px 18px; gap: 18px; margin: 12px 0 24px; }
+  .ortanes-home .ortanes-logo { width: 156px; margin-bottom: 10px; }
+  .ortanes-home h2 { font-size: 23px; line-height: 1.8; }
+  .ortanes-home p { font-size: 14px; line-height: 1.9; }
+  .ortanes-home .button { width: 100%; }
+}
+@media (max-width: 359px) {
+  .catalog-grid { grid-template-columns: minmax(0, 1fr); }
+  .catalog-grid .kit-photo { max-width: 250px; margin-inline: auto; width: 100%; }
+  .catalog-intro h1 { font-size: 22px; }
+}

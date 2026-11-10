@@ -235,3 +235,19 @@ test("online and credit use the same fixed price while historical order snapshot
   pay(s, online.id, true);
   assert.equal(online.total, 3840000);
 });
+
+test("pricing migration updates unpaid pending quotes but never rewrites paid historical totals", async () => {
+  const { migratePresentation } = await import("../src/domain.ts");
+  const s = seed();
+  delete s.pricingRevision;
+  const paid = s.orders.find((o) => o.payment === "paid")!;
+  paid.total = 7680000;
+  const pending = createOrder(s, "c1", { crp: 2 }, "online", "old-quote");
+  pending.total = 3840000;
+  migratePresentation(s);
+  assert.equal(pending.total, 4800000);
+  assert.equal(paid.total, 7680000);
+  const once = JSON.stringify(s);
+  migratePresentation(s);
+  assert.equal(JSON.stringify(s), once);
+});
