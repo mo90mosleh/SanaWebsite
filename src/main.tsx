@@ -1962,15 +1962,19 @@ function App() {
                 ["/supplies/poct", "کیت‌های POCT"],
                 ["/services", "خدمات و پشتیبانی"],
                 ["/contact", "تماس با ما"],
-              ].map(([p, n]) => (
-                <a
-                  key={p}
-                  className={path === p ? "current" : ""}
-                  href={"#" + p}
-                >
-                  {n}
-                </a>
-              ))}
+              ].map(([p, n]) => {
+                const active = p === "/" ? path === "/" : path.split("?")[0] === p || path.startsWith(p + "/");
+                return (
+                  <a
+                    key={p}
+                    className={active ? "current" : ""}
+                    aria-current={active ? "page" : undefined}
+                    href={"#" + p}
+                  >
+                    {n}
+                  </a>
+                );
+              })}
             </nav>
             <AccountMenu
               role={role}
