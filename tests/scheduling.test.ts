@@ -2,6 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   todayInTehran,
+  addCalendarDays,
   earliestDeliveryDate,
   firstAvailableDelivery,
   validateDelivery,
@@ -75,7 +76,7 @@ test("service rejects missing/past/invalid dates and accepts only the three deli
 test("order snapshots delivery time and retry does not replace schedule or create another order", () => {
   const s = seed(),
     schedule = firstAvailableDelivery();
-  schedule.slot = "15-18";
+  schedule.slot = "12-15";
   const o = createOrder(
     s,
     "c1",
@@ -90,7 +91,7 @@ test("order snapshots delivery time and retry does not replace schedule or creat
   schedule.date = "2000-01-01";
   schedule.slot = "09-12";
   assert.equal(o.deliverySchedule!.date, date);
-  assert.equal(o.deliverySchedule!.slot, "15-18");
+  assert.equal(o.deliverySchedule!.slot, "12-15");
   assert.equal(
     createOrder(
       s,
@@ -180,6 +181,9 @@ test("Fridays and solar/lunar public holidays are rejected, Thursday has only tw
     firstAvailableDelivery(new Date("2027-03-20T08:00:00Z")).date,
     "2027-03-25",
   );
+  const futureFriday = Array.from({ length: 14 }, (_, i) =>
+    addCalendarDays(earliestDeliveryDate(), i),
+  ).find((date) => new Date(date + "T12:00:00Z").getUTCDay() === 5)!;
   assert.throws(
     () =>
       createOrder(
@@ -189,7 +193,7 @@ test("Fridays and solar/lunar public holidays are rejected, Thursday has only tw
         "online",
         "friday-order",
         undefined,
-        { date: "2026-11-06", slot: "09-12", timeZone: "Asia/Tehran" },
+        { date: futureFriday, slot: "09-12", timeZone: "Asia/Tehran" },
       ),
     /جمعه/,
   );

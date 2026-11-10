@@ -91,10 +91,14 @@ try {
     true,
   );
   await page.goto(url + "#/devices/bha3000");
-  const deviceImage = page.locator(".product-hero img.device-image");
+  const deviceImage = page.locator(".product-hero svg.device-image");
   await deviceImage.waitFor();
-  await deviceImage.evaluate((image) => image.decode());
-  assert.ok(await deviceImage.evaluate((image) => image.naturalWidth >= 1200));
+  assert.equal(await deviceImage.getAttribute("viewBox"), "220 240 360 365");
+  const photoHref = await deviceImage.locator("image").getAttribute("href");
+  assert.match(photoHref, /^\/SanaWebsite\/product-assets\/getein\/images\/bha3000\.webp$/);
+  const photoResponse = await page.request.get(new URL(photoHref, url).href);
+  assert.equal(photoResponse.status(), 200);
+  assert.ok((await photoResponse.body()).length > 1000);
   const link = page.getByRole("link", { name: "دریافت کاتالوگ" });
   assert.match(
     await link.getAttribute("href"),

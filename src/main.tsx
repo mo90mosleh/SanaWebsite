@@ -1,3 +1,4 @@
+import { PublicShell } from "./PublicShell";
 import { MobileNavigation } from "./MobileNavigation";
 import { TicketsPanel } from "./Tickets";
 import { categories, categoryFor } from "./kitCategories";
@@ -158,7 +159,7 @@ function App() {
     setCid(c);
     sessionStorage.setItem("sana-role", r);
     sessionStorage.setItem("sana-customer", c);
-    go("/" + r);
+    go(r === "customer" && path.startsWith("/customer/") ? path : "/" + r);
   };
   const customer =
     state.customers.find((c) => c.id === cid) || state.customers[0];
@@ -410,11 +411,7 @@ function App() {
                 <span>{D.money(l.price * l.qty)}</span>
               </div>
             ))}
-            <p>
-              جمع پایه:{" "}
-              {D.money(o.lines.reduce((a, l) => a + l.price * l.qty, 0))} ·
-              تخفیف آنلاین: {o.method === "online" ? "۲۰٪" : "ندارد"}
-            </p>
+            <p>مبلغ ثبت‌شده سفارش: {D.money(o.total)}</p>
             {o.note && <p className="notice">توضیح فروش: {o.note}</p>}
             {o.status === "pending" && (
               <button
@@ -904,22 +901,13 @@ function App() {
         )}
         <div className="price-block">
           <span>
-            پایه، چک سه‌ماهه <strong>{D.money(p.price)}</strong>
+            قیمت هر بسته <strong>{D.money(p.price)}</strong>
           </span>
-          <span className="online">
-            آنلاین، ۲۰٪ کمتر <strong>{D.money(D.onlinePrice(p.price))}</strong>
-          </span>
-          <small>
-            تخفیف خرید آنلاین: {D.money(p.price - D.onlinePrice(p.price))}
-          </small>
         </div>
         {(cart[p.id] || 0) > 0 && (
           <div className="selected-total" aria-live="polite">
             <span>جمع {(cart[p.id] || 0).toLocaleString("fa-IR")} بسته</span>
-            <strong>
-              آنلاین: {D.money(D.onlinePrice(p.price) * cart[p.id])}
-            </strong>
-            <span>چک سه‌ماهه: {D.money(p.price * cart[p.id])}</span>
+            <strong>{D.money(p.price * cart[p.id])}</strong>
           </div>
         )}
         {(cart[p.id] || 0) > 0 ? (
@@ -1512,7 +1500,7 @@ function App() {
                     checked={method === "online"}
                     onChange={() => setMethod("online")}
                   />
-                  پرداخت آنلاین <Badge value="۲۰٪ تخفیف" />
+                  پرداخت آنلاین
                 </label>
                 <label
                   className={"method " + (method === "credit" ? "chosen" : "")}
@@ -1527,14 +1515,6 @@ function App() {
                 <div className="line">
                   <span>جمع پایه</span>
                   <strong>{D.money(base)}</strong>
-                </div>
-                <div className="line green">
-                  <span>تخفیف خرید آنلاین</span>
-                  <strong>
-                    {D.money(
-                      method === "online" ? base - D.onlinePrice(base) : 0,
-                    )}
-                  </strong>
                 </div>
                 <div className="line">
                   <strong>مبلغ نهایی</strong>
@@ -1952,63 +1932,24 @@ function App() {
         </div>
       ) : (
         <>
-          <header className="public-header">
-            <a href="#/" className="public-brand">
-              <Logo />
-              <span>تجهیزات آزمایشگاهی</span>
-            </a>
-            <nav aria-label="ناوبری اصلی">
-              {[
-                ["/", "خانه"],
-                ["/devices", "دستگاه‌ها"],
-                ["/services", "خدمات و پشتیبانی"],
-                ["/contact", "تماس با ما"],
-              ].map(([p, n]) => (
-                <a
-                  key={p}
-                  className={path === p ? "current" : ""}
-                  href={"#" + p}
-                >
-                  {n}
-                </a>
-              ))}
-            </nav>
-            <AccountMenu
-              role={role}
-              cartCount={count}
-              customer={customer}
-              onLogout={() => {
-                setRole("");
-                sessionStorage.removeItem("sana-role");
-                go("/login");
-              }}
-            />
-          </header>
-          {panel || path === "/login" ? (
-            <Login state={state} login={login} setToast={setToast} />
-          ) : (
-            <PublicSite path={path} />
-          )}
-          <footer className="public-footer">
-            <div>
-              <Logo />
-              <p>همراه تجهیزات و نیازهای روزمره آزمایشگاه</p>
-            </div>
-            <div>
-              <h3>در ارتباط باشیم</h3>
-              <a href="tel:+982633107">
-                <bdi>۰۲۶ ۳۳۱۰۷</bdi>
-              </a>
-              <p>البرز، شهرک صنعتی بهارستان، فاز سه، نبش بهار دوم</p>
-            </div>
-            <div className="enamad">محل نمایش نماد اعتماد</div>
-            <div className="footer-bottom">
-              <span>سانا؛ همراه آزمایشگاه شما</span>
-              <button className="link" onClick={reset}>
-                بازنشانی داده‌ها
-              </button>
-            </div>
-          </footer>
+          <PublicShell
+            path={path}
+            role={role}
+            customer={customer}
+            cartCount={count}
+            onReset={reset}
+            onLogout={() => {
+              setRole("");
+              sessionStorage.removeItem("sana-role");
+              go("/login");
+            }}
+          >
+            {panel || path === "/login" ? (
+              <Login state={state} login={login} setToast={setToast} />
+            ) : (
+              <PublicSite path={path} items={state.products} />
+            )}
+          </PublicShell>
         </>
       )}
       <Feedback />

@@ -1,0 +1,1109 @@
+/* Shared public design system. Business panels retain their existing styles. */
+.sana-site {
+  --navy: #0b2554;
+  --blue: #173b72;
+  --ink: #182c49;
+  --muted: #526681;
+  --surface: #f7f9fc;
+  --soft: #eaf0f8;
+  --edge: #dce5f1;
+  background: #fff;
+  color: var(--ink);
+  direction: rtl;
+}
+.sana-site *,
+.sana-site *::before,
+.sana-site *::after {
+  box-sizing: border-box;
+}
+.sana-site .logo {
+  background: var(--navy);
+}
+.sana-site a,
+.sana-site button {
+  -webkit-tap-highlight-color: transparent;
+}
+.sana-site :is(a, button, input, select, textarea, summary):focus-visible {
+  outline: 3px solid #4779b8;
+  outline-offset: 4px;
+}
+.sana-site .button,
+.sana-site
+  button:not(.link):not(.account-trigger):not(.sana-menu-toggle):not(
+    .carousel-arrow
+  ):not(.carousel-dots button):not(.sana-nav-group button) {
+  background: var(--navy);
+  color: #fff;
+  border-color: var(--navy);
+}
+.sana-site .button {
+  display: inline-flex;
+  min-height: 48px;
+  border-radius: 12px;
+  padding: 11px 23px;
+  font-weight: 700;
+  gap: 12px;
+  box-shadow: none;
+}
+.sana-site .button:hover {
+  background: var(--blue);
+  border-color: var(--blue);
+  filter: none;
+}
+.sana-site .button.secondary {
+  background: #fff;
+  color: var(--navy);
+  border-color: var(--edge);
+}
+.sana-site .muted,
+.sana-site small {
+  color: var(--muted);
+}
+.sana-site .link,
+.sana-site .source,
+.sana-site .big-phone {
+  color: var(--blue);
+}
+.sana-site .public-main {
+  max-width: 1280px;
+  padding: 48px 40px;
+  margin: auto;
+}
+.sana-site .card {
+  border: 1px solid var(--edge);
+  border-radius: 18px;
+  box-shadow: 0 4px 16px #0b255403;
+  padding: 26px;
+}
+.sana-site .card.soft,
+.sana-site .notice {
+  background: var(--surface);
+  border-color: var(--edge);
+  color: var(--ink);
+}
+.sana-site .sana-overline,
+.sana-site .eyebrow {
+  color: var(--blue);
+  font-size: 13px;
+  letter-spacing: 0;
+}
+.sana-site .sana-header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  max-width: 1440px;
+  min-height: 88px;
+  padding: 14px 48px;
+  gap: 32px;
+  border-bottom: 1px solid var(--edge);
+  background: #fff;
+  position: relative;
+  z-index: 80;
+}
+.sana-site .sana-header .public-brand > .logo {
+  display: inline-block;
+}
+.sana-site .public-brand {
+  display: flex;
+  align-items: center;
+}
+.sana-site .public-brand .logo {
+  width: 180px;
+  height: 58px;
+}
+.sana-site .sana-header > nav {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 24px;
+  padding: 0;
+  width: auto;
+  border: 0;
+  border-radius: 0;
+  margin: 0;
+  background: none;
+  overflow: visible;
+}
+.sana-site .sana-header nav > a,
+.sana-site .sana-nav-group > a {
+  color: var(--ink);
+  padding: 10px 0;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  text-decoration: none;
+}
+.sana-site .sana-header nav a:hover {
+  color: var(--blue);
+  background: none;
+}
+.sana-site .sana-header nav a[aria-current="page"] {
+  color: var(--navy);
+  box-shadow: inset 0 -3px var(--navy);
+  font-weight: 700;
+}
+.sana-site .sana-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+}
+.sana-site .sana-nav-group > button {
+  background: none;
+  color: var(--ink);
+  border: 0;
+  padding: 4px;
+  min-height: 44px;
+  min-width: 28px;
+}
+.sana-site .sana-submenu {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 210px;
+  display: grid;
+  gap: 4px;
+  background: #fff;
+  border: 1px solid var(--edge);
+  border-radius: 14px;
+  box-shadow: 0 14px 40px #0b255412;
+  padding: 10px;
+}
+.sana-site .sana-submenu a {
+  padding: 10px;
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+.sana-site .sana-submenu a:hover {
+  background: var(--surface);
+}
+.sana-site .account-actions {
+  display: flex;
+  direction: rtl;
+  gap: 12px;
+  margin: 0;
+  justify-self: end;
+  align-items: center;
+}
+.sana-site .header-cart {
+  position: relative;
+  order: 0;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  min-height: 48px;
+  min-width: 48px;
+  background: var(--soft);
+  color: var(--navy);
+  border-radius: 13px;
+}
+.sana-site .header-cart > span {
+  position: absolute;
+  top: -4px;
+  right: -5px;
+  min-width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  background: var(--navy);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  line-height: 1;
+}
+.sana-site .account-menu {
+  order: 1;
+}
+.sana-site .account-trigger {
+  background: #fff;
+  color: var(--navy);
+  border-color: var(--edge);
+  border-radius: 12px;
+  min-height: 48px;
+  font-weight: 600;
+}
+.sana-site .account-trigger > span {
+  max-width: 130px;
+}
+.sana-site .account-dropdown {
+  color: var(--ink);
+  border-color: var(--edge);
+  box-shadow: 0 16px 40px #0b255410;
+}
+.sana-site .account-dropdown :is(a, button) {
+  color: var(--ink);
+  min-height: 44px;
+  background: none;
+}
+.sana-site .account-dropdown :is(a, button):hover {
+  background: var(--soft);
+  color: var(--blue);
+}
+.sana-site .sana-menu-toggle {
+  display: none;
+}
+/* The slide owns the complete model presentation, rather than a small image inset. */
+.sana-site .sana-hero {
+  position: relative;
+  background: linear-gradient(110deg, #f4f7fc, #eaf0f8);
+  min-height: 510px;
+  border-radius: 0 0 42px 42px;
+  padding: 24px 64px 58px;
+  overflow: hidden;
+}
+.sana-site .sana-hero-inner {
+  max-width: 1190px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  gap: 56px;
+  align-items: center;
+  animation: sana-slide-in 0.35s ease-out;
+}
+.sana-site .sana-hero-copy {
+  grid-column: 2;
+  grid-row: 1;
+  text-align: left;
+  min-width: 0;
+  padding: 10px 0;
+}
+.sana-site .sana-hero-copy .manufacturer-logo {
+  width: 128px;
+  height: 40px;
+  margin: 0 auto 12px 0;
+  object-position: left;
+}
+.sana-site .sana-hero-copy .sana-overline {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 8px;
+}
+.sana-site .sana-hero h1 {
+  font-size: clamp(48px, 5.2vw, 74px);
+  line-height: 1.2;
+  letter-spacing: -1.5px;
+  color: var(--navy);
+  margin: 0 0 12px;
+  direction: ltr;
+  text-align: left;
+}
+.sana-site .sana-hero h2 {
+  color: var(--ink);
+  font-size: clamp(22px, 2.2vw, 30px);
+  line-height: 1.7;
+  font-weight: 500;
+  margin: 0 0 18px;
+}
+.sana-site .sana-hero-facts {
+  padding: 0;
+  margin: 0 0 24px;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  direction: rtl;
+}
+.sana-site .sana-hero-facts li {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.8;
+  padding: 0 12px;
+  border-inline-start: 1px solid #cbd8e9;
+}
+.sana-site .sana-hero-facts li:first-child {
+  border-inline-start: 0;
+}
+.sana-site .sana-hero-facts svg {
+  color: var(--navy);
+  flex-shrink: 0;
+}
+.sana-site .sana-hero-image {
+  grid-template-rows: minmax(0, 1fr);
+  mix-blend-mode: multiply;
+  grid-column: 1;
+  grid-row: 1;
+  height: 390px;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  position: relative;
+  animation: none;
+}
+.sana-site .sana-hero-image .device-image {
+  min-height: 0;
+  max-height: 100%;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 16px 16px #0b255416);
+}
+.sana-site .sana-hero .carousel-arrow {
+  padding: 0;
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  background: #fff;
+  color: var(--navy);
+  border: 1px solid #e5ecf5;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 12px #0b255407;
+}
+.sana-site .sana-hero .sana-hero-prev,
+.sana-site .sana-hero .sana-hero-next {
+  position: absolute;
+  top: calc(50% - 22px);
+  z-index: 2;
+}
+.sana-site .sana-hero-prev {
+  right: 18px;
+}
+.sana-site .sana-hero-next {
+  left: 18px;
+}
+.sana-site .sana-hero-controls {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: auto;
+  direction: rtl;
+}
+.sana-site .carousel-dots {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.sana-site .carousel-dots button {
+  display: grid;
+  place-items: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  width: 44px;
+  height: 44px;
+}
+.sana-site .carousel-dots span {
+  background: #b5c0d0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.sana-site .carousel-dots button[aria-current="true"] span {
+  width: 12px;
+  height: 12px;
+  background: var(--navy);
+}
+.sana-site .sana-slide-count {
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+/* Three genuine, actionable categories. No public reorder promotion. */
+.sana-site .sana-product-categories {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 38px 40px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 22px;
+}
+.sana-site .sana-category-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  min-height: 222px;
+  padding: 24px;
+  border: 1px solid #e4eaf5;
+  border-radius: 26px;
+  background: linear-gradient(130deg, #f7f9fd, #eaf0f8);
+  color: var(--ink);
+  transition:
+    border-color 0.18s,
+    transform 0.18s;
+}
+.sana-site .sana-category-card:hover {
+  border-color: #b9cce3;
+  transform: translateY(-2px);
+}
+.sana-site .sana-category-card > div {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+.sana-site .sana-category-card .manufacturer-logo {
+  width: 108px;
+  height: 34px;
+  object-position: right;
+  margin-bottom: 16px;
+}
+.sana-site .sana-category-card h2 {
+  font-size: 20px;
+  line-height: 1.7;
+  color: var(--navy);
+  margin: 0 0 2px;
+}
+.sana-site .sana-category-card p {
+  font-size: 13px;
+  line-height: 1.8;
+  margin: 0;
+  color: var(--muted);
+}
+.sana-site .sana-card-arrow {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  margin-top: 14px;
+  border-radius: 50%;
+  background: #fff;
+  color: var(--navy);
+}
+.sana-site .sana-category-card > .device-image,
+.sana-site .sana-category-card > figure {
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  width: 100%;
+  height: 170px;
+  object-fit: contain;
+  margin: 0;
+}
+.sana-site .sana-category-card figure {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.sana-site .sana-category-card figure img {
+  width: 100%;
+  height: 140px;
+  object-fit: contain;
+}
+.sana-site .sana-category-card figcaption {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  margin-top: 6px;
+}
+.sana-site .sana-brand-name {
+  display: block;
+  font-size: 21px;
+  color: var(--navy);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin: 0 0 16px;
+}
+.sana-site .sana-category-card .device-image,
+.sana-site .sana-category-card figure img {
+  mix-blend-mode: multiply;
+}
+.sana-site .sana-assurance {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 28px;
+  padding: 4px 24px 30px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.sana-site .sana-assurance span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sana-site .sana-assurance svg {
+  color: var(--blue);
+}
+.sana-site .sana-page-heading {
+  margin-bottom: 28px;
+}
+.sana-site .sana-page-heading h1 {
+  font-size: 36px;
+  color: var(--navy);
+  margin: 8px 0;
+  line-height: 1.6;
+}
+.sana-site .sana-page-heading p {
+  color: var(--muted);
+}
+.sana-site .sana-category-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.sana-site .sana-category-tabs a {
+  padding: 10px 20px;
+  min-height: 44px;
+  border: 1px solid var(--edge);
+  border-radius: 24px;
+  font-size: 14px;
+}
+.sana-site .sana-category-tabs a[aria-current] {
+  background: var(--navy);
+  border-color: var(--navy);
+  color: #fff;
+}
+.sana-site .device-family {
+  background: var(--surface);
+  border-color: var(--edge);
+  padding: 24px;
+  border-radius: 22px;
+}
+.sana-site .family-heading {
+  border-color: var(--edge);
+}
+.sana-site .family-heading h2 {
+  font-size: 25px;
+  margin: 0;
+}
+.sana-site .device-tile {
+  background: #fff;
+  border-color: var(--edge);
+  padding: 22px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+}
+.sana-site .device-tile:hover {
+  border-color: #b9cce3;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px #0b255407;
+}
+.sana-site .device-tile h3 {
+  color: var(--navy);
+}
+.sana-site .device-tile p {
+  color: var(--muted);
+}
+.sana-site .device-tile .device-image {
+  width: 100%;
+  height: 220px;
+  object-fit: contain;
+  margin: 20px 0;
+}
+.sana-site .device-tile .manufacturer-logo {
+  height: 28px;
+  width: 95px;
+  margin: 0;
+}
+.sana-site .tile-link {
+  color: var(--blue);
+  border-color: var(--edge);
+  min-height: 44px;
+  margin-top: auto;
+}
+.sana-site .product-hero {
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-radius: 26px;
+  padding: 36px;
+}
+.sana-site .product-hero h1 {
+  color: var(--navy);
+}
+.sana-site .product-hero .device-image {
+  object-fit: contain;
+  background: transparent;
+}
+.sana-site .sana-consumable-toolbar {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 18px;
+}
+.sana-site .sana-consumable-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.sana-site .sana-consumable-grid .card {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sana-site .sana-consumable-grid h2 {
+  font-size: 19px;
+  margin: 4px 0;
+}
+.sana-site .sana-consumable-grid p {
+  font-size: 14px;
+  margin: 0;
+}
+.sana-site .sana-consumable-grid .source {
+  font-size: 13px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.sana-site .sana-consumable-grid .button {
+  font-size: 13px;
+  padding-inline: 12px;
+  margin-top: auto;
+}
+.sana-site .sana-footer {
+  max-width: none;
+  background: var(--surface);
+  border-color: var(--edge);
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1.2fr;
+  padding: 40px max(40px, calc((100vw - 1280px) / 2));
+  gap: 32px;
+}
+.sana-site .sana-footer .logo {
+  width: 120px;
+}
+.sana-site .sana-footer h2 {
+  font-size: 15px;
+  color: var(--navy);
+  margin: 0 0 12px;
+}
+.sana-site .sana-footer a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  font-size: 13px;
+}
+.sana-site .sana-footer p,
+.sana-site .sana-footer small {
+  font-size: 13px;
+  line-height: 1.9;
+  color: var(--muted);
+}
+.sana-site .footer-bottom {
+  grid-column: 1/-1;
+  border-color: var(--edge);
+  color: var(--muted);
+  font-size: 12px;
+}
+.sana-site .login-page {
+  min-height: 65vh;
+  background: var(--surface);
+}
+.sana-site .login-story {
+  background: none;
+  color: var(--navy);
+}
+.sana-site .login-card {
+  border-color: var(--edge);
+  border-radius: 22px;
+  box-shadow: 0 10px 36px #0b255409;
+}
+.sana-site .login-card input:focus {
+  border-color: var(--blue);
+}
+.sana-site .login-card .link {
+  color: var(--blue);
+}
+.sana-site .login-card .demo-logins {
+  background: #f5f8fc;
+  border-color: #bccce1;
+}
+.sana-site .login-card .demo-logins span {
+  color: var(--blue);
+}
+@keyframes sana-slide-in {
+  from {
+    opacity: 0.55;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@media (max-width: 1150px) {
+  .sana-site .sana-header {
+    padding-inline: 28px;
+    gap: 20px;
+  }
+  .sana-site .sana-header > nav {
+    gap: 14px;
+  }
+  .sana-site .sana-header nav > a,
+  .sana-site .sana-nav-group > a {
+    font-size: 13px;
+  }
+  .sana-site .public-brand .logo {
+    width: 112px;
+  }
+  .sana-site .account-trigger > span {
+    max-width: 90px;
+  }
+  .sana-site .sana-hero-inner {
+    gap: 30px;
+  }
+  .sana-site .sana-product-categories {
+    padding: 28px;
+    gap: 16px;
+  }
+  .sana-site .sana-category-card {
+    padding: 18px;
+  }
+  .sana-site .sana-category-card h2 {
+    font-size: 18px;
+  }
+}
+@media (max-width: 1024px) {
+  .sana-site .sana-header {
+    grid-template-columns: auto 44px minmax(0, 1fr);
+    padding: 10px 24px;
+    gap: 12px;
+  }
+  .sana-site .sana-menu-toggle {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    min-height: 44px;
+    padding: 8px;
+    color: var(--navy);
+    background: var(--surface);
+    border: 1px solid var(--edge);
+    border-radius: 12px;
+  }
+  .sana-site .sana-header > nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 16px;
+    left: 16px;
+    width: auto;
+    flex-direction: column;
+    align-items: stretch;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid var(--edge);
+    border-radius: 16px;
+    box-shadow: 0 12px 32px #0b255414;
+  }
+  .sana-site .sana-header > nav.is-open {
+    display: flex;
+  }
+  .sana-site .sana-header nav > a,
+  .sana-site .sana-nav-group > a {
+    font-size: 15px;
+    padding: 8px 12px;
+  }
+  .sana-site .sana-nav-group {
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .sana-site .sana-submenu {
+    position: static;
+    width: 100%;
+    box-shadow: none;
+  }
+  .sana-site .sana-nav-group > button {
+    width: 44px;
+  }
+  .sana-site .account-trigger > span {
+    max-width: 160px;
+  }
+  .sana-site .sana-hero {
+    padding-inline: 58px;
+  }
+  .sana-site .sana-hero h1 {
+    font-size: 54px;
+  }
+  .sana-site .sana-hero h2 {
+    font-size: 24px;
+  }
+  .sana-site .sana-hero-image {
+    height: 350px;
+  }
+  .sana-site .sana-hero-facts li {
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+  .sana-site .sana-product-categories {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .sana-site .sana-category-card {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .sana-site .sana-category-card > div {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .sana-site .sana-category-card > .device-image,
+  .sana-site .sana-category-card > figure {
+    grid-column: 1;
+    grid-row: 2;
+    height: 150px;
+  }
+  .sana-site .sana-card-arrow {
+    margin-top: 10px;
+  }
+  .sana-site .sana-consumable-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .sana-site .sana-header {
+    padding: 8px 14px;
+    gap: 6px;
+    min-height: 72px;
+  }
+  .sana-site .public-brand .logo {
+    width: 86px;
+    height: 44px;
+  }
+  .sana-site .account-actions {
+    gap: 6px;
+  }
+  .sana-site .account-actions > .button {
+    padding: 8px 12px;
+    min-height: 44px;
+    font-size: 14px;
+    gap: 6px;
+  }
+  .sana-site .header-cart {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+  }
+  .sana-site .account-trigger {
+    padding: 8px;
+    min-height: 44px;
+  }
+  .sana-site .account-trigger > span {
+    display: none;
+  }
+  .sana-site .account-trigger > svg:last-child {
+    display: none;
+  }
+  .sana-site .account-dropdown {
+    max-width: calc(100vw - 28px);
+    left: 0;
+    right: auto;
+  }
+  .sana-site .sana-hero {
+    padding: 26px 20px 76px;
+    border-radius: 0 0 28px 28px;
+  }
+  .sana-site .sana-hero-inner {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 18px;
+  }
+  .sana-site .sana-hero-copy {
+    grid-column: 1;
+    grid-row: 1;
+    text-align: right;
+    padding: 0;
+  }
+  .sana-site .sana-hero-copy .manufacturer-logo {
+    width: 105px;
+    height: 32px;
+    margin: 0 0 8px auto;
+    object-position: right;
+  }
+  .sana-site .sana-hero h1 {
+    font-size: 48px;
+    text-align: right;
+    letter-spacing: -1px;
+    margin-bottom: 6px;
+  }
+  .sana-site .sana-hero h2 {
+    font-size: 22px;
+    line-height: 1.65;
+    margin-bottom: 16px;
+  }
+  .sana-site .sana-hero-facts {
+    margin-bottom: 18px;
+  }
+  .sana-site .sana-hero-facts li {
+    font-size: 12px;
+    padding-inline: 6px;
+    gap: 6px;
+  }
+  .sana-site .sana-hero-facts svg {
+    width: 24px;
+    height: 24px;
+  }
+  .sana-site .sana-hero-copy .button {
+    min-height: 46px;
+    width: 100%;
+    font-size: 15px;
+  }
+  .sana-site .sana-hero-image {
+    grid-column: 1;
+    grid-row: 2;
+    height: 270px;
+    margin: 0 auto;
+    max-width: 380px;
+  }
+  .sana-site .sana-hero .sana-hero-prev,
+  .sana-site .sana-hero .sana-hero-next {
+    top: auto;
+    bottom: 189px;
+    width: 44px;
+    height: 44px;
+  }
+  .sana-site .sana-hero-prev {
+    right: 12px;
+  }
+  .sana-site .sana-hero-next {
+    left: 12px;
+  }
+  .sana-site .sana-hero-controls {
+    gap: 2px;
+    bottom: 12px;
+  }
+  .sana-site .carousel-dots button {
+    width: 44px;
+    height: 44px;
+  }
+  .sana-site .sana-slide-count {
+    display: none;
+  }
+  .sana-site .sana-hero-controls > .carousel-arrow {
+    width: 44px;
+    min-width: 44px;
+    box-shadow: none;
+  }
+  .sana-site .sana-product-categories {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 24px 16px;
+    gap: 14px;
+  }
+  .sana-site .sana-category-card {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 200px;
+    padding: 20px;
+    border-radius: 22px;
+    gap: 14px;
+  }
+  .sana-site .sana-category-card > div {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .sana-site .sana-category-card > .device-image,
+  .sana-site .sana-category-card > figure {
+    grid-column: 1;
+    grid-row: 1;
+    height: 150px;
+  }
+  .sana-site .sana-category-card .manufacturer-logo {
+    width: 100px;
+    height: 32px;
+    margin-bottom: 10px;
+  }
+  .sana-site .sana-category-card h2 {
+    font-size: 19px;
+  }
+  .sana-site .sana-category-card p {
+    font-size: 12px;
+  }
+  .sana-site .sana-brand-name {
+    font-size: 20px;
+    margin-bottom: 10px;
+  }
+  .sana-site .sana-assurance {
+    display: grid;
+    gap: 14px;
+    padding: 0 24px 28px;
+    font-size: 13px;
+  }
+  .sana-site .public-main {
+    padding: 28px 16px;
+  }
+  .sana-site .sana-page-heading h1 {
+    font-size: 28px;
+  }
+  .sana-site .sana-page-heading p {
+    font-size: 14px;
+  }
+  .sana-site .sana-category-tabs {
+    gap: 6px;
+  }
+  .sana-site .sana-category-tabs a {
+    font-size: 13px;
+    padding: 9px 12px;
+  }
+  .sana-site .device-family {
+    padding: 18px 12px;
+  }
+  .sana-site .device-family .device-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .sana-site .device-tile .device-image {
+    height: 210px;
+  }
+  .sana-site .product-hero {
+    padding: 24px 18px;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .sana-site .product-hero h1 {
+    font-size: 26px;
+  }
+  .sana-site .product-hero h2 {
+    font-size: 21px;
+  }
+  .sana-site .sana-consumable-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .sana-site .sana-consumable-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+  .sana-site .sana-footer {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 28px 24px;
+    gap: 24px;
+  }
+  .sana-site .sana-footer a {
+    min-height: 44px;
+  }
+  .sana-site .footer-bottom {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .sana-site .login-page {
+    padding: 24px 16px;
+  }
+  .sana-site .login-card {
+    max-width: 440px;
+    padding: 24px 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sana-site .sana-hero-inner {
+    animation: none;
+  }
+  .sana-site :is(a, button) {
+    transition: none;
+  }
+  .sana-site .sana-category-card:hover,
+  .sana-site .device-tile:hover {
+    transform: none;
+  }
+}

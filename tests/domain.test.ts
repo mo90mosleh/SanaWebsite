@@ -22,16 +22,16 @@ const createOrder: typeof baseCreateOrder = (
   addressId,
   schedule = firstAvailableDelivery(),
 ) => baseCreateOrder(s, c, cart, method, key, addressId, schedule);
-test("online price is exactly 80 percent of integer base", () => {
-  assert.equal(onlinePrice(2400000), 1920000);
-  assert.equal(onlinePrice(9600000), 7680000);
+test("online price equals the fixed catalog price", () => {
+  assert.equal(onlinePrice(2400000), 2400000);
+  assert.equal(onlinePrice(9600000), 9600000);
 });
 test("creation and successful payment are idempotent; failure never marks paid", () => {
   const s = seed();
   const n = s.orders.length;
   const stock = s.products[0].stock;
   const o = createOrder(s, "c1", { crp: 2 }, "online", "same-key");
-  assert.equal(o.total, 3840000);
+  assert.equal(o.total, 4800000);
   assert.equal(createOrder(s, "c1", { crp: 2 }, "online", "same-key").id, o.id);
   assert.equal(s.orders.length, n + 1);
   pay(s, o.id, false);
@@ -88,7 +88,7 @@ test("snapshots survive catalog edits; reorder uses current availability", () =>
   const o = createOrder(s, "c1", { crp: 2 }, "online", "snapshot");
   s.products[0].price = 9900000;
   assert.equal(o.lines[0].price, 2400000);
-  assert.equal(o.total, 3840000);
+  assert.equal(o.total, 4800000);
   assert.deepEqual(reorder(s, o).cart, { crp: 2 });
   s.products[0].stock = 1;
   assert.deepEqual(reorder(s, o).cart, {});
@@ -120,8 +120,8 @@ test("log retry changes delivery evidence only, no orders or inventory duplicate
     quantities,
   );
 });
-test("discount has no rounding drift for unusual base prices", () => {
-  assert.equal(onlinePrice(1001), 800.8);
+test("fixed price keeps unusual amounts without rounding drift", () => {
+  assert.equal(onlinePrice(1001), 1001);
 });
 test("Jalali dates accept Persian digits and reject nonexistent dates", async () => {
   const { jalaliToISO } = await import("../src/domain.ts");
@@ -223,4 +223,15 @@ test("profile validates unique mobile and order journey separates closed orders"
   assert.equal(orderStage(o), "sent");
   o.status = "cancelled";
   assert.equal(orderStage(o), "closed");
+});
+
+test("online and credit use the same fixed price while historical order snapshots survive", () => {
+  const s = seed();
+  const online = createOrder(s, "c1", { crp: 2 }, "online", "fixed-online"),
+    credit = createOrder(s, "c1", { crp: 2 }, "credit", "fixed-credit");
+  assert.equal(online.total, 4800000);
+  assert.equal(credit.total, 4800000);
+  online.total = 3840000; // An existing historical snapshot, not a newly calculated price.
+  pay(s, online.id, true);
+  assert.equal(online.total, 3840000);
 });

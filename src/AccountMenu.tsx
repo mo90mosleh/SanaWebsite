@@ -38,10 +38,20 @@ export function AccountMenu({
   }, []);
   if (!role)
     return (
-      <a className="button small-button" href="#/login">
-        <UserRound size={17} />
-        ورود
-      </a>
+      <div className="account-actions">
+        <a
+          className="header-cart"
+          href="#/customer/cart"
+          aria-label="سبد خرید؛ ورود به حساب"
+        >
+          <ShoppingCart size={22} />
+          <span>۰</span>
+        </a>
+        <a className="button small-button" href="#/login">
+          <UserRound size={17} />
+          ورود
+        </a>
+      </div>
     );
   const prefix = role === "admin" ? "/admin" : "/customer";
   return (

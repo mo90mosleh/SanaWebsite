@@ -198,7 +198,7 @@ test("one-click selection supports consecutive notes, collapses after each save 
   await page.goto("/");
   for (const [index, target] of [
     page.getByRole("heading", { level: 1 }),
-    page.locator(".hero-copy > p"),
+    page.locator(".sana-hero-copy h2"),
   ].entries()) {
     await page.getByRole("button", { name: "بازخورد", exact: true }).click();
     await expect(page.getByRole("dialog")).toHaveCount(0);

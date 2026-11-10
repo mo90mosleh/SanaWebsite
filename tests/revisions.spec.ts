@@ -7,18 +7,18 @@ test("hero auto-slides, pauses, supports manual navigation and manufacturer grou
   await page.goto("/");
   const carousel = page.getByLabel("اسلایدر دستگاه‌های سانا");
   await expect(
-    carousel.getByRole("button", { name: "نمایش FS-205", exact: true }),
+    carousel.getByRole("button", { name: "نمایش BHA5100", exact: true }),
   ).toHaveAttribute("aria-current", "true");
   await page.clock.runFor(5600);
   await expect(
-    carousel.getByRole("button", { name: "نمایش FS-114", exact: true }),
+    carousel.getByRole("button", { name: "نمایش BHA5000", exact: true }),
   ).toHaveAttribute("aria-current", "true");
   await carousel
     .getByRole("button", { name: "توقف پخش خودکار اسلایدر" })
     .click();
   await page.clock.runFor(12000);
   await expect(
-    carousel.getByRole("button", { name: "نمایش FS-114", exact: true }),
+    carousel.getByRole("button", { name: "نمایش BHA5000", exact: true }),
   ).toHaveAttribute("aria-current", "true");
   await carousel
     .getByRole("button", { name: "نمایش BHA5000", exact: true })

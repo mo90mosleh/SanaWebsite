@@ -368,9 +368,7 @@ const content: ProductContent[] = [
 ];
 export const products: Product[] = content.map((p) => ({
   ...p,
-  image: p.id === "bha3000"
-    ? "/product-assets/getein/images/bha3000-enhanced.png"
-    : `/product-assets/${p.manufacturer.toLowerCase()}/images/${p.id}.webp`,
+  image: `/product-assets/${p.manufacturer.toLowerCase()}/images/${p.id}.webp`,
   catalog:
     p.category === "CBC"
       ? `/product-assets/getein/catalogs/GETEIN-${p.model}-Catalog.pdf`

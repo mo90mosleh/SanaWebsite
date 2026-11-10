@@ -56,6 +56,10 @@ test("Jalali calendar forbids today/tomorrow, stores chosen date and all three w
 test("calendar refreshes minimum across Tehran midnight without reloading the checkout", async ({
   page,
 }) => {
+  await page.route(
+    "https://cdn.jsdelivr.net/npm/@avan-persian/holidays*/**",
+    (route) => route.abort(),
+  );
   await page.clock.install({ time: new Date("2026-11-02T20:29:50Z") });
   await page.goto("/#/login");
   await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
@@ -213,7 +217,7 @@ test("offline calendar blocks Fridays and religious holidays, and Thursday remov
   ).toBeVisible();
   await expect(
     page.getByText("تخفیف خرید آنلاین", { exact: true }),
-  ).toBeVisible();
+  ).toHaveCount(0);
 });
 
 test("a newly received API holiday invalidates the selected date before checkout", async ({

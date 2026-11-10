@@ -105,7 +105,8 @@ export const money = (n: number) =>
   new Intl.NumberFormat("fa-IR").format(n) + " تومان";
 export const date = (s: string) =>
   new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(s));
-export const onlinePrice = (n: number) => (n * 4) / 5;
+/** Compatibility helper: payment method never changes the current catalog price. */
+export const onlinePrice = (n: number) => n;
 export const uid = () => crypto.randomUUID();
 const day = (n: number) => new Date(Date.now() - n * 86400000).toISOString();
 const kitSource = "/product-assets/wondfo/catalogs/fs-114-catalog.pdf";
@@ -377,7 +378,7 @@ export function createOrder(
     created: new Date().toISOString(),
     lines,
     method,
-    total: method === "online" ? onlinePrice(base) : base,
+    total: base,
     status: "pending",
     payment: "unpaid",
     shipping: "waiting",
