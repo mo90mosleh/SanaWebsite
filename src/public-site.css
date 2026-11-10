@@ -862,10 +862,32 @@
   }
 }
 @media (max-width: 700px) {
+  .sana-site {
+    font-size: 14px;
+    overflow-wrap: anywhere;
+  }
+  .sana-site :is(.card, .product-hero, .device-family, .sana-consumable-grid > article) {
+    min-width: 0;
+  }
+  .sana-site .card {
+    padding: 18px 14px;
+  }
+  .sana-site .sana-page-heading {
+    margin-bottom: 18px;
+  }
+  .sana-site .sana-category-tabs {
+    margin-bottom: 18px;
+  }
+  .sana-site .sana-consumable-grid h2 {
+    font-size: 17px;
+  }
+  .sana-site .sana-consumable-grid p {
+    font-size: 13px;
+  }
   .sana-site .sana-header {
     padding: 8px 14px;
     gap: 6px;
-    min-height: 72px;
+    min-height: 64px;
   }
   .sana-site .public-brand .logo {
     width: 86px;
@@ -903,12 +925,12 @@
     right: auto;
   }
   .sana-site .sana-hero {
-    padding: 26px 20px 76px;
+    padding: 18px 16px 62px;
     border-radius: 0 0 28px 28px;
   }
   .sana-site .sana-hero-inner {
     grid-template-columns: minmax(0, 1fr);
-    gap: 18px;
+    gap: 12px;
   }
   .sana-site .sana-hero-copy {
     grid-column: 1;
@@ -917,24 +939,24 @@
     padding: 0;
   }
   .sana-site .sana-hero-copy .manufacturer-logo {
-    width: 105px;
-    height: 32px;
+    width: 86px;
+    height: 26px;
     margin: 0 0 8px auto;
     object-position: right;
   }
   .sana-site .sana-hero h1 {
-    font-size: 48px;
+    font-size: 34px;
     text-align: right;
     letter-spacing: -1px;
     margin-bottom: 6px;
   }
   .sana-site .sana-hero h2 {
-    font-size: 22px;
-    line-height: 1.65;
-    margin-bottom: 16px;
+    font-size: 17px;
+    line-height: 1.7;
+    margin-bottom: 12px;
   }
   .sana-site .sana-hero-facts {
-    margin-bottom: 18px;
+    margin-bottom: 12px;
   }
   .sana-site .sana-hero-facts li {
     font-size: 12px;
@@ -942,25 +964,25 @@
     gap: 6px;
   }
   .sana-site .sana-hero-facts svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
   .sana-site .sana-hero-copy .button {
-    min-height: 46px;
+    min-height: 44px;
     width: 100%;
-    font-size: 15px;
+    font-size: 14px;
   }
   .sana-site .sana-hero-image {
     grid-column: 1;
     grid-row: 2;
-    height: 270px;
+    height: 164px;
     margin: 0 auto;
-    max-width: 380px;
+    max-width: 270px;
   }
   .sana-site .sana-hero .sana-hero-prev,
   .sana-site .sana-hero .sana-hero-next {
     top: auto;
-    bottom: 189px;
+    bottom: 122px;
     width: 44px;
     height: 44px;
   }
@@ -988,15 +1010,23 @@
   }
   .sana-site .sana-product-categories {
     grid-template-columns: minmax(0, 1fr);
-    padding: 24px 16px;
-    gap: 14px;
+    padding: 18px 14px;
+    gap: 10px;
   }
   .sana-site .sana-category-card {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    min-height: 200px;
-    padding: 20px;
-    border-radius: 22px;
-    gap: 14px;
+    min-height: 140px;
+    padding: 14px;
+    border-radius: 16px;
+    gap: 10px;
+  }
+  .sana-site .sana-category-card figure img {
+    height: 80px;
+  }
+  .sana-site .sana-card-arrow {
+    width: 32px;
+    height: 32px;
+    margin-top: 6px;
   }
   .sana-site .sana-category-card > div {
     grid-column: 2;
@@ -1006,34 +1036,34 @@
   .sana-site .sana-category-card > figure {
     grid-column: 1;
     grid-row: 1;
-    height: 150px;
+    height: 108px;
   }
   .sana-site .sana-category-card .manufacturer-logo {
-    width: 100px;
-    height: 32px;
-    margin-bottom: 10px;
+    width: 82px;
+    height: 26px;
+    margin-bottom: 6px;
   }
   .sana-site .sana-category-card h2 {
-    font-size: 19px;
+    font-size: 16px;
   }
   .sana-site .sana-category-card p {
     font-size: 12px;
   }
   .sana-site .sana-brand-name {
-    font-size: 20px;
-    margin-bottom: 10px;
+    font-size: 17px;
+    margin-bottom: 6px;
   }
   .sana-site .sana-assurance {
     display: grid;
-    gap: 14px;
+    gap: 10px;
     padding: 0 24px 28px;
     font-size: 13px;
   }
   .sana-site .public-main {
-    padding: 28px 16px;
+    padding: 20px 14px;
   }
   .sana-site .sana-page-heading h1 {
-    font-size: 28px;
+    font-size: 24px;
   }
   .sana-site .sana-page-heading p {
     font-size: 14px;
@@ -1046,24 +1076,58 @@
     padding: 9px 12px;
   }
   .sana-site .device-family {
-    padding: 18px 12px;
+    padding: 14px 10px;
   }
-  .sana-site .device-family .device-grid {
+  .sana-site .device-family .device-grid,
+  .sana-site .device-family.brand-wondfo .device-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
+    gap: 10px;
   }
-  .sana-site .device-tile .device-image {
-    height: 210px;
+  .sana-site .device-family .device-tile,
+  .sana-site .device-family .device-tile:last-child {
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr);
+    gap: 4px 12px;
+    padding: 14px;
+  }
+  .sana-site .device-family .device-tile > :not(.device-image) {
+    grid-column: 2;
+    min-width: 0;
+  }
+  .sana-site .device-family .device-tile .device-image,
+  .sana-site .device-family .device-tile:last-child .device-image {
+    grid-column: 1;
+    grid-row: 1 / 5;
+    align-self: center;
+    height: 116px;
+    margin: 0;
+  }
+  .sana-site .device-tile h3 {
+    font-size: 18px;
+    margin: 4px 0;
+  }
+  .sana-site .device-tile p {
+    font-size: 12px;
+    margin: 0;
+    line-height: 1.8;
+  }
+  .sana-site .device-tile .manufacturer-logo {
+    width: 76px;
+    height: 22px;
+  }
+  .sana-site .device-tile .tile-link {
+    font-size: 12px;
+    min-height: 44px;
   }
   .sana-site .product-hero {
     padding: 24px 18px;
     grid-template-columns: minmax(0, 1fr);
   }
   .sana-site .product-hero h1 {
-    font-size: 26px;
+    font-size: 24px;
   }
   .sana-site .product-hero h2 {
-    font-size: 21px;
+    font-size: 18px;
   }
   .sana-site .sana-consumable-toolbar {
     grid-template-columns: minmax(0, 1fr);
@@ -1071,15 +1135,19 @@
   }
   .sana-site .sana-consumable-grid {
     grid-template-columns: minmax(0, 1fr);
-    gap: 14px;
+    gap: 10px;
   }
   .sana-site .sana-footer {
-    grid-template-columns: minmax(0, 1fr);
-    padding: 28px 24px;
-    gap: 24px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 24px 18px;
+    gap: 18px;
+  }
+  .sana-site .sana-footer > div:first-child {
+    grid-column: 1 / -1;
   }
   .sana-site .sana-footer a {
     min-height: 44px;
+    font-size: 12px;
   }
   .sana-site .footer-bottom {
     display: flex;
@@ -1088,7 +1156,7 @@
     flex-wrap: wrap;
   }
   .sana-site .login-page {
-    padding: 24px 16px;
+    padding: 18px 14px;
   }
   .sana-site .login-card {
     max-width: 440px;

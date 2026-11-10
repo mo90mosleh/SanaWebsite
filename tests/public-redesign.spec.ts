@@ -105,6 +105,24 @@ test("public pages fit phones, tablets and desktop and preserve a visible mobile
         `${route} at ${width}`,
       ).toBe(true);
       await expect(page.locator(".sana-header .logo")).toBeVisible();
+      if (width <= 430 && route === "/devices") {
+        const cards = await page.locator(".device-tile").evaluateAll((elements) =>
+          elements.map((element) => ({
+            height: element.getBoundingClientRect().height,
+            width: element.getBoundingClientRect().width,
+            layout: getComputedStyle(element).display,
+          })),
+        );
+        expect(cards).toHaveLength(5);
+        for (const card of cards) {
+          expect(card.layout).toBe("grid");
+          expect(card.height).toBeLessThan(270);
+          expect(card.width).toBeGreaterThan(200);
+        }
+      }
+      if (width <= 430 && route === "/") {
+        expect(await page.locator(".sana-hero").evaluate((el) => el.clientHeight)).toBeLessThan(620);
+      }
     }
     if (width <= 1024) {
       await page
