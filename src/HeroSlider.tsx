@@ -5,126 +5,90 @@ import {
   ChevronRight,
   Pause,
   Play,
-  Activity,
-  Gauge,
-  Touchpad,
 } from "lucide-react";
 import { products } from "./devices";
 import { DeviceImage, BrandLogo } from "./ui";
-const slides = ["bha5100", "bha5000", "bha3000", "fs-205", "fs-114"].map((id) =>
-  products.find((p) => p.id === id)!,
-);
+const slides = [
+  products.find((p) => p.id === "fs-205")!,
+  products.find((p) => p.id === "fs-114")!,
+  ...products.filter((p) => p.category === "CBC"),
+];
 export function HeroSlider() {
-  const [index, setIndex] = useState(0),
-    [paused, setPaused] = useState(false),
-    [engaged, setEngaged] = useState(false),
-    [visible, setVisible] = useState(!document.hidden),
-    [reduced, setReduced] = useState(
-      () => matchMedia("(prefers-reduced-motion: reduce)").matches,
-    );
+  const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [hover, setHover] = useState(false);
+  const [reduced, setReduced] = useState(
+    () => matchMedia("(prefers-reduced-motion: reduce)").matches,
+  );
   useEffect(() => {
     const media = matchMedia("(prefers-reduced-motion: reduce)");
-    const change = () => setReduced(media.matches);
-    const visibility = () => setVisible(!document.hidden);
-    media.addEventListener("change", change);
-    document.addEventListener("visibilitychange", visibility);
-    return () => {
-      media.removeEventListener("change", change);
-      document.removeEventListener("visibilitychange", visibility);
-    };
+    const changed = () => setReduced(media.matches);
+    media.addEventListener("change", changed);
+    return () => media.removeEventListener("change", changed);
   }, []);
   useEffect(() => {
-    if (paused || engaged || reduced || !visible) return;
-    const timer = setInterval(
+    if (paused || hover || reduced || document.hidden) return;
+    const id = setInterval(
       () => setIndex((i) => (i + 1) % slides.length),
       5500,
     );
-    return () => clearInterval(timer);
-  }, [paused, engaged, reduced, visible]);
-  const product = slides[index];
+    return () => clearInterval(id);
+  }, [paused, hover, reduced]);
+  const p = slides[index];
   return (
-    <section
-      className="hero-carousel sana-hero"
+    <div
+      className={
+        "hero-visual hero-carousel brand-" + p.manufacturer.toLowerCase()
+      }
       aria-label="اسلایدر دستگاه‌های سانا"
       aria-roledescription="اسلایدر"
-      onPointerEnter={(e) => {
-        if (e.pointerType === "mouse") setEngaged(true);
-      }}
-      onPointerLeave={() => setEngaged(false)}
-      onFocusCapture={() => setEngaged(true)}
+      onPointerEnter={() => setHover(true)}
+      onPointerLeave={() => setHover(false)}
+      onFocusCapture={() => setHover(true)}
       onBlurCapture={(e) => {
-        if (!e.currentTarget.contains(e.relatedTarget)) setEngaged(false);
-      }}
-      onKeyDown={(e) => {
-        if (e.key === "ArrowLeft") {
-          e.preventDefault();
-          setIndex((i) => (i + 1) % slides.length);
-        }
-        if (e.key === "ArrowRight") {
-          e.preventDefault();
-          setIndex((i) => (i + slides.length - 1) % slides.length);
-        }
+        if (!e.currentTarget.contains(e.relatedTarget)) setHover(false);
       }}
     >
-      <div className="sana-hero-inner" key={product.id}>
-        <div
-          className="sana-hero-copy"
-          aria-live={paused || engaged ? "polite" : "off"}
-        >
-          <BrandLogo brand={product.manufacturer} />
-          <span className="sana-overline">
-            {product.category === "CBC"
-              ? "آنالایزر هماتولوژی"
-              : "ایمونوفلورسانس"}{" "}
-            · <bdi>{product.manufacturer}</bdi>
-          </span>
-          <h1>
-            <bdi>{product.model}</bdi>
-          </h1>
-          <h2>{product.headline}</h2>
-          <ul className="sana-hero-facts">
-            {product.highlights.slice(0, 3).map((text, i) => {
-              const Icon = [Activity, Gauge, Touchpad][i];
-              return (
-                <li key={text}>
-                  <Icon size={27} strokeWidth={1.6} />
-                  <span>{text}</span>
-                </li>
-              );
-            })}
-          </ul>
-          <a className="button sana-primary" href={"#/devices/" + product.id}>
-            مشاهده محصول <ArrowLeft size={20} />
-          </a>
+      <span className="orb orb1" />
+      <span className="orb orb2" />
+      <div className="visual-label">
+        <BrandLogo brand={p.manufacturer} />
+        <span>{p.category}</span>
+      </div>
+      <a
+        className="hero-slide"
+        key={p.id}
+        href={"#/devices/" + p.id}
+        aria-label={"مشخصات " + p.name}
+      >
+        <DeviceImage model={p} priority />
+      </a>
+      <div className="floating-label">
+        <div>
+          <strong>
+            <bdi>{p.name}</bdi>
+          </strong>
+          <small>{p.highlights[0]}</small>
         </div>
-        <a
-          className="hero-slide sana-hero-image"
-          href={"#/devices/" + product.id}
-          aria-label={"مشخصات " + product.name}
-        >
-          <DeviceImage model={product} priority />
+        <a href={"#/devices/" + p.id} aria-label={"بیشتر درباره " + p.model}>
+          <ArrowLeft size={18} />
         </a>
       </div>
-      <button
-        className="carousel-arrow sana-hero-prev"
-        aria-label="دستگاه قبلی"
-        onClick={() => setIndex((i) => (i + slides.length - 1) % slides.length)}
-      >
-        <ChevronRight size={22} />
-      </button>
-      <button
-        className="carousel-arrow sana-hero-next"
-        aria-label="دستگاه بعدی"
-        onClick={() => setIndex((i) => (i + 1) % slides.length)}
-      >
-        <ChevronLeft size={22} />
-      </button>
-      <div className="carousel-controls sana-hero-controls">
+      <div className="carousel-controls">
+        <button
+          className="carousel-arrow"
+          aria-label="دستگاه قبلی"
+          onClick={() =>
+            setIndex((i) => (i + slides.length - 1) % slides.length)
+          }
+        >
+          <ChevronRight size={17} />
+        </button>
         <div className="carousel-dots">
-          {slides.map((slide, i) => (
+          {slides.map((s, i) => (
             <button
-              key={slide.id}
-              aria-label={"نمایش " + slide.model}
+              key={s.id}
+              aria-label={"نمایش " + s.model}
               aria-current={i === index ? "true" : undefined}
               onClick={() => setIndex(i)}
             >
@@ -134,15 +98,19 @@ export function HeroSlider() {
         </div>
         <button
           className="carousel-arrow"
+          aria-label="دستگاه بعدی"
+          onClick={() => setIndex((i) => (i + 1) % slides.length)}
+        >
+          <ChevronLeft size={17} />
+        </button>
+        <button
+          className="carousel-arrow"
           aria-label={paused ? "پخش خودکار اسلایدر" : "توقف پخش خودکار اسلایدر"}
           onClick={() => setPaused((v) => !v)}
         >
-          {paused ? <Play size={15} /> : <Pause size={15} />}
+          {paused ? <Play size={14} /> : <Pause size={14} />}
         </button>
-        <span className="sana-slide-count" aria-hidden="true">
-          {(index + 1).toLocaleString("fa-IR")} / ۵
-        </span>
       </div>
-    </section>
+    </div>
   );
 }

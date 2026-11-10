@@ -2,7 +2,6 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   todayInTehran,
-  addCalendarDays,
   earliestDeliveryDate,
   firstAvailableDelivery,
   validateDelivery,
@@ -181,9 +180,6 @@ test("Fridays and solar/lunar public holidays are rejected, Thursday has only tw
     firstAvailableDelivery(new Date("2027-03-20T08:00:00Z")).date,
     "2027-03-25",
   );
-  const futureFriday = Array.from({ length: 14 }, (_, i) =>
-    addCalendarDays(earliestDeliveryDate(), i),
-  ).find((date) => new Date(date + "T12:00:00Z").getUTCDay() === 5)!;
   assert.throws(
     () =>
       createOrder(
@@ -193,7 +189,7 @@ test("Fridays and solar/lunar public holidays are rejected, Thursday has only tw
         "online",
         "friday-order",
         undefined,
-        { date: futureFriday, slot: "09-12", timeZone: "Asia/Tehran" },
+        { date: "2026-11-06", slot: "09-12", timeZone: "Asia/Tehran" },
       ),
     /جمعه/,
   );

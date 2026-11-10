@@ -30,7 +30,7 @@ test("dashboard recommendations, live totals, header counter and both delete con
   });
   await crp.getByRole("button", { name: "افزودن به سبد", exact: true }).click();
   await crp.getByRole("button", { name: "افزایش CRP", exact: true }).click();
-  await expect(crp.locator(".selected-total")).toContainText("۴٬۸۰۰٬۰۰۰ تومان");
+  await expect(crp.locator(".selected-total")).toContainText("۳٬۸۴۰٬۰۰۰ تومان");
   await expect(crp.locator(".selected-total")).toContainText("۴٬۸۰۰٬۰۰۰ تومان");
   await expect(page.locator(".header-cart")).toHaveText("۲");
   await recommendations
@@ -52,9 +52,9 @@ test("dashboard recommendations, live totals, header counter and both delete con
   await page.locator(".header-cart").click();
   const row = page.locator(".cart-table tbody tr");
   await expect(row).toHaveCount(1);
-  await expect(row.locator("td").nth(1)).toHaveText("۲٬۴۰۰٬۰۰۰ تومان");
+  await expect(row.locator("td").nth(1)).toHaveText("۱٬۹۲۰٬۰۰۰ تومان");
   await page.getByRole("button", { name: "افزایش CRP", exact: true }).click();
-  await expect(row.locator("td").nth(2)).toHaveText("۴٬۸۰۰٬۰۰۰ تومان");
+  await expect(row.locator("td").nth(2)).toHaveText("۳٬۸۴۰٬۰۰۰ تومان");
   await page
     .getByRole("radio", { name: "چک سه‌ماهه؛ نیازمند تأیید فروش", exact: true })
     .check();
@@ -77,8 +77,7 @@ test("catalog categories combine with search and device filter; non-orderable it
   await page.goto("/#/login");
   await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
   await page.goto("/#/customer/supplies");
-  await page.getByRole("group", { name: "نوع مصرفی" }).getByRole("button", { name: "کیت‌های POCT", exact: true }).click();
-  await page.getByLabel("گروه تست POCT").selectOption("thyroid");
+  await page.getByLabel("دسته‌بندی کیت‌ها").selectOption("thyroid");
   await expect(page.locator("article.supply")).toHaveCount(5);
   await expect(
     page.getByRole("region", { name: "فهرست کیت‌ها", exact: true }),
@@ -91,10 +90,8 @@ test("catalog categories combine with search and device filter; non-orderable it
     page.getByText("محصولی پیدا نشد.", { exact: true }),
   ).toBeVisible();
   await page.getByLabel("جست‌وجوی محصول").fill("");
-  await page.getByLabel("فیلتر دستگاه").selectOption("");
-  await page.getByLabel("گروه تست POCT").selectOption("fertility");
-  await page.getByLabel("جست‌وجوی محصول").fill("testosterone");
-  await expect(page.locator("article.supply")).toHaveCount(1);
+  await page.getByLabel("دسته‌بندی کیت‌ها").selectOption("cbc");
+  await expect(page.locator("article.supply")).toHaveCount(2);
   for (const button of await page
     .getByRole("button", { name: "افزودن به سبد", exact: true })
     .all())
@@ -130,7 +127,7 @@ test("mobile populated cart and dashboard remain readable without page overflow;
       .evaluate((el) => parseFloat(getComputedStyle(el).fontSize)),
   ).toBeGreaterThanOrEqual(14);
   await page.goto("/#/");
-  await expect(page.locator(".sana-assurance > span svg")).toHaveCount(3);
+  await expect(page.locator(".trust-strip > span svg")).toHaveCount(4);
   await expect(page.locator(".header-cart")).toHaveText("۱");
   await page.getByRole("button", { name: "آرمان بهرامی", exact: true }).click();
   await expect(

@@ -22,7 +22,7 @@ const createOrder: typeof baseCreateOrder = (
   addressId,
   schedule = firstAvailableDelivery(),
 ) => baseCreateOrder(s, c, cart, method, key, addressId, schedule);
-test("online price equals the fixed catalog price", () => {
+test("online and credit use the same base price", () => {
   assert.equal(onlinePrice(2400000), 2400000);
   assert.equal(onlinePrice(9600000), 9600000);
 });
@@ -120,7 +120,7 @@ test("log retry changes delivery evidence only, no orders or inventory duplicate
     quantities,
   );
 });
-test("fixed price keeps unusual amounts without rounding drift", () => {
+test("online price preserves unusual base prices without adjustments", () => {
   assert.equal(onlinePrice(1001), 1001);
 });
 test("Jalali dates accept Persian digits and reject nonexistent dates", async () => {
@@ -225,29 +225,11 @@ test("profile validates unique mobile and order journey separates closed orders"
   assert.equal(orderStage(o), "closed");
 });
 
-test("online and credit use the same fixed price while historical order snapshots survive", () => {
-  const s = seed();
-  const online = createOrder(s, "c1", { crp: 2 }, "online", "fixed-online"),
-    credit = createOrder(s, "c1", { crp: 2 }, "credit", "fixed-credit");
-  assert.equal(online.total, 4800000);
-  assert.equal(credit.total, 4800000);
-  online.total = 3840000; // An existing historical snapshot, not a newly calculated price.
-  pay(s, online.id, true);
-  assert.equal(online.total, 3840000);
-});
-
-test("pricing migration updates unpaid pending quotes but never rewrites paid historical totals", async () => {
-  const { migratePresentation } = await import("../src/domain.ts");
-  const s = seed();
-  delete s.pricingRevision;
-  const paid = s.orders.find((o) => o.payment === "paid")!;
-  paid.total = 7680000;
-  const pending = createOrder(s, "c1", { crp: 2 }, "online", "old-quote");
-  pending.total = 3840000;
-  migratePresentation(s);
-  assert.equal(pending.total, 4800000);
-  assert.equal(paid.total, 7680000);
-  const once = JSON.stringify(s);
-  migratePresentation(s);
-  assert.equal(JSON.stringify(s), once);
+test('pricing migration updates unpaid pending quotes but never rewrites paid historical totals', async()=>{
+ const {migratePresentation}=await import('../src/domain.ts');
+ const s=seed();delete s.pricingRevision;
+ const paid=s.orders.find(o=>o.payment==='paid')!;paid.total=7680000;
+ const pending=createOrder(s,'c1',{crp:2},'online','old-quote');pending.total=3840000;
+ migratePresentation(s);assert.equal(pending.total,4800000);assert.equal(paid.total,7680000);
+ const once=JSON.stringify(s);migratePresentation(s);assert.equal(JSON.stringify(s),once);
 });

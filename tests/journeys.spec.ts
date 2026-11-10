@@ -55,8 +55,8 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   await expect(p.locator("article.supply")).toHaveCount(1);
   await p.getByRole("button", { name: "افزودن به سبد", exact: true }).click();
   await nav(p, "/customer/cart");
-  await expect(p.locator("main")).toContainText("۲٬۴۰۰٬۰۰۰ تومان");
-  await expect(p.locator("main")).not.toContainText("تخفیف خرید آنلاین");
+  await expect(p.locator("main")).toContainText("۱٬۹۲۰٬۰۰۰ تومان");
+  await expect(p.locator("main")).toContainText("۴۸۰٬۰۰۰ تومان");
   await p
     .getByRole("button", { name: "ثبت سفارش و پرداخت", exact: true })
     .click();

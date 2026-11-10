@@ -105,7 +105,7 @@ test("mobile navigation, drawer focus, catalog columns and cart shortcut work ac
   await expect(
     page.getByRole("heading", { name: "دستگاه‌های من", exact: true }),
   ).toBeVisible();
-  await bottom.getByRole("link", { name: "مصرفی‌ها", exact: true }).click();
+  await bottom.getByRole("link", { name: "کیت‌ها", exact: true }).click();
   for (const width of [320, 390, 768]) {
     await page.setViewportSize({ width, height: 844 });
     await expect(bottom).toBeVisible();

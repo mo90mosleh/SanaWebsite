@@ -1,4 +1,4 @@
-import { buildCatalog, migrateCatalog } from "./catalog-data";
+import { buildCatalog, migrateCatalog } from './catalog-data';
 import {
   firstAvailableDelivery,
   validateDelivery,
@@ -20,7 +20,7 @@ export type Item = {
   sourcePage?: number;
   tests: number | null;
   image: string;
-  family?: "poct" | "laboratory";
+  family?: 'poct'|'laboratory';
   categoryId?: string;
   archived?: boolean;
   sourceLabel?: string;
@@ -116,7 +116,7 @@ export const money = (n: number) =>
   new Intl.NumberFormat("fa-IR").format(n) + " تومان";
 export const date = (s: string) =>
   new Intl.DateTimeFormat("fa-IR", { dateStyle: "medium" }).format(new Date(s));
-/** Compatibility helper: payment method never changes the current catalog price. */
+// Payment method does not change the price.
 export const onlinePrice = (n: number) => n;
 export const uid = () => crypto.randomUUID();
 const day = (n: number) => new Date(Date.now() - n * 86400000).toISOString();
@@ -339,13 +339,7 @@ export function seed(): State {
   };
 }
 export function compatible(p: Item | undefined, c: Customer) {
-  return (
-    !!p &&
-    !p.archived &&
-    p.verified &&
-    (p.family === "laboratory" ||
-      c.devices.some((d) => p.models.includes(d.model)))
-  );
+  return !!p && !p.archived && p.verified && (p.family === "laboratory" || c.devices.some((d) => p.models.includes(d.model)));
 }
 export function event(s: State, type: string, related: string) {
   s.logs.unshift({
@@ -397,7 +391,7 @@ export function createOrder(
     created: new Date().toISOString(),
     lines,
     method,
-    total: base,
+    total: method === "online" ? onlinePrice(base) : base,
     status: "pending",
     payment: "unpaid",
     shipping: "waiting",
@@ -633,14 +627,10 @@ export function migratePresentation(s: State): State {
   }
   if ((s.pricingRevision ?? 0) < 1) {
     for (const o of s.orders) {
-      if (
-        o.method === "online" &&
-        o.status === "pending" &&
-        o.payment !== "paid"
-      )
-        o.total = o.lines.reduce((sum, line) => sum + line.price * line.qty, 0);
+      if(o.method === 'online' && o.status === 'pending' && o.payment !== 'paid')
+        o.total=o.lines.reduce((sum,line)=>sum+line.price*line.qty,0);
     }
-    s.pricingRevision = 1;
+    s.pricingRevision=1;
   }
   return migrateCatalog(s);
 }

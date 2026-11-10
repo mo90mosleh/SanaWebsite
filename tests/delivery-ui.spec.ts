@@ -43,10 +43,10 @@ test("Jalali calendar forbids today/tomorrow, stores chosen date and all three w
     timeZone: "Asia/Tehran",
   });
   await page.getByRole("button", { name: "جزئیات و پیگیری" }).first().click();
-  await expect(page.locator(".order-meta-table")).toContainText("۱۵ تا ۱۸");
+  await expect(page.locator(".order-delivery-time")).toContainText("۱۵ تا ۱۸");
   await page.reload();
   await page.getByRole("button", { name: "جزئیات و پیگیری" }).first().click();
-  await expect(page.locator(".order-meta-table")).toContainText("۱۵ تا ۱۸");
+  await expect(page.locator(".order-delivery-time")).toContainText("۱۵ تا ۱۸");
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= innerWidth,
@@ -56,10 +56,6 @@ test("Jalali calendar forbids today/tomorrow, stores chosen date and all three w
 test("calendar refreshes minimum across Tehran midnight without reloading the checkout", async ({
   page,
 }) => {
-  await page.route(
-    "https://cdn.jsdelivr.net/npm/@avan-persian/holidays*/**",
-    (route) => route.abort(),
-  );
   await page.clock.install({ time: new Date("2026-11-02T20:29:50Z") });
   await page.goto("/#/login");
   await page.getByRole("button", { name: "ورود مشتری", exact: true }).click();
@@ -216,8 +212,8 @@ test("offline calendar blocks Fridays and religious holidays, and Thursday remov
     }),
   ).toBeVisible();
   await expect(
-    page.getByText("تخفیف خرید آنلاین", { exact: true }),
-  ).toHaveCount(0);
+    page.getByText("مبلغ نهایی", { exact: true }),
+  ).toBeVisible();
 });
 
 test("a newly received API holiday invalidates the selected date before checkout", async ({

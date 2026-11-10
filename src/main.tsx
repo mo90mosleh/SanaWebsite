@@ -1,4 +1,3 @@
-import { PublicShell } from "./PublicShell";
 import { CategoryCircles } from "./CategoryCircles";
 import { SupplyCatalog } from "./SupplyCatalog";
 import { isCatalogItem } from "./catalog-data";
@@ -114,8 +113,8 @@ function App() {
   const [query, setQuery] = useState("");
   const [deviceFilter, setDeviceFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [familyFilter, setFamilyFilter] = useState("all");
-  const [poctFilter, setPoctFilter] = useState("");
+  const [familyFilter,setFamilyFilter] = useState("all");
+  const [poctFilter,setPoctFilter] = useState("");
   useEffect(() => {
     const nav = () => {
       setPath(location.hash.slice(1) || "/");
@@ -174,21 +173,11 @@ function App() {
     setCid(c);
     sessionStorage.setItem("sana-role", r);
     sessionStorage.setItem("sana-customer", c);
-    const intent = sessionStorage.getItem("sana-catalog-intent");
-    sessionStorage.removeItem("sana-catalog-intent");
-    const chosen = state.products.find((p) => p.id === intent),
-      center = state.customers.find((x) => x.id === c);
-    if (
-      r === "customer" &&
-      chosen &&
-      center &&
-      D.compatible(chosen, center) &&
-      chosen.stock > 0
-    ) {
-      setCart((prev) => ({ ...prev, [chosen.id]: (prev[chosen.id] || 0) + 1 }));
-      go("/customer/cart");
-    } else
-      go(r === "customer" && path.startsWith("/customer/") ? path : "/" + r);
+    const intent=sessionStorage.getItem('sana-catalog-intent');
+    sessionStorage.removeItem('sana-catalog-intent');
+    const chosen=state.products.find(p=>p.id===intent), center=state.customers.find(x=>x.id===c);
+    if(r==='customer' && chosen && center && D.compatible(chosen,center) && chosen.stock>0){setCart(prev=>({...prev,[chosen.id]:(prev[chosen.id]||0)+1}));go('/customer/cart');}
+    else go('/'+r);
   };
   const customer =
     state.customers.find((c) => c.id === cid) || state.customers[0];
@@ -209,12 +198,10 @@ function App() {
       return next;
     });
   const filteredProducts = state.products.filter(
-    (p) =>
-      isCatalogItem(p) &&
+    (p) => isCatalogItem(p) &&
       (familyFilter !== "ortanes" || p.family === "laboratory") &&
       (familyFilter !== "poct" || p.family === "poct") &&
-      (!poctFilter ||
-        poctGroups.find((g) => g.id === poctFilter)?.products.includes(p.id)) &&
+      (!poctFilter || poctGroups.find(g=>g.id===poctFilter)?.products.includes(p.id)) &&
       (p.name + " " + p.english + " " + p.code)
         .toLowerCase()
         .includes(query.toLowerCase()) &&
@@ -457,23 +444,10 @@ function App() {
                       )}
                     </td>
                   </tr>
-                  {o.total !==
-                    o.lines.reduce((sum, l) => sum + l.price * l.qty, 0) && (
-                    <tr>
-                      <th scope="row" colSpan={3}>
-                        تعدیلات ثبت‌شده سفارش
-                      </th>
-                      <td>
-                        {D.money(
-                          o.total -
-                            o.lines.reduce(
-                              (sum, l) => sum + l.price * l.qty,
-                              0,
-                            ),
-                        )}
-                      </td>
-                    </tr>
-                  )}
+                  {o.total !== o.lines.reduce((sum,l)=>sum+l.price*l.qty,0) && <tr>
+                    <th scope="row" colSpan={3}>تعدیلات ثبت‌شده سفارش</th>
+                    <td>{D.money(o.total-o.lines.reduce((sum,l)=>sum+l.price*l.qty,0))}</td>
+                  </tr>}
                   <tr>
                     <th scope="row" colSpan={3}>
                       مبلغ نهایی
@@ -800,9 +774,9 @@ function App() {
                 name: String(f.get("name")),
                 english: String(f.get("english")),
                 brand: String(f.get("brand")),
-                family: String(f.get("family")) as "poct" | "laboratory",
-                categoryId: String(f.get("categoryId")),
-                packLabel: String(f.get("packLabel")),
+                family: String(f.get('family')) as 'poct'|'laboratory',
+                categoryId: String(f.get('categoryId')),
+                packLabel: String(f.get('packLabel')),
                 code: String(f.get("code")),
                 price: numeric(f.get("price")),
               };
@@ -874,31 +848,9 @@ function App() {
               ))}
             </select>
           </label>
-          <label>
-            خانواده محصول
-            <select name="family" defaultValue={p?.family || "poct"}>
-              <option value="poct">کیت دستگاه POCT</option>
-              <option value="laboratory">مصرفی عمومی آزمایشگاه</option>
-            </select>
-          </label>
-          <label>
-            دسته‌بندی
-            <select name="categoryId" defaultValue={p?.categoryId || "poct"}>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            بسته‌بندی
-            <input
-              name="packLabel"
-              defaultValue={p?.packLabel || ""}
-              placeholder="مثلاً ۷۲ عدد در بسته"
-            />
-          </label>
+          <label>خانواده محصول<select name="family" defaultValue={p?.family || 'poct'}><option value="poct">کیت دستگاه POCT</option><option value="laboratory">مصرفی عمومی آزمایشگاه</option></select></label>
+          <label>دسته‌بندی<select name="categoryId" defaultValue={p?.categoryId || 'poct'}>{categories.map(c=><option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
+          <label>بسته‌بندی<input name="packLabel" defaultValue={p?.packLabel || ''} placeholder="مثلاً ۷۲ عدد در بسته"/></label>
           <label>
             کد کاتالوگی
             <input
@@ -941,11 +893,7 @@ function App() {
         <div className="row">
           <span className="brand-label">
             {p.brand}
-            {p.brand === "Wondfo"
-              ? " / Finecare"
-              : p.brand === "Ortanes"
-                ? " / اورتانیس"
-                : " / CBC"}
+            {p.brand === "Wondfo" ? " / Finecare" : p.brand === "Ortanes" ? " / اورتانیس" : " / CBC"}
           </span>
           <Badge
             value={
@@ -970,9 +918,7 @@ function App() {
         {!compact && (
           <>
             <p className="muted">
-              {p.family === "laboratory" ? (
-                "مصرفی عمومی آزمایشگاه؛ بدون نیاز به دستگاه"
-              ) : p.models.length ? (
+              {p.family==='laboratory' ? 'مصرفی عمومی آزمایشگاه؛ بدون نیاز به دستگاه' : p.models.length ? (
                 <>
                   <bdi>{p.models.join(" / ")}</bdi>
                 </>
@@ -983,30 +929,23 @@ function App() {
             <details className="product-evidence">
               <summary>جزئیات بسته و منبع</summary>{" "}
               <small>
-                {p.sourceLabel ||
-                  "معرفی‌شده در منوی سازنده؛ تأیید عرضه نهایی با فروش"}
+                {p.sourceLabel || 'معرفی‌شده در منوی سازنده؛ تأیید عرضه نهایی با فروش'}
               </small>
               <small>
-                {p.packLabel ||
-                  "تعداد تست در بسته: " + (p.tests ?? "نیازمند تأیید")}{" "}
-                · واحد سفارش: {p.unit || "بسته"}
+                {p.packLabel || ('تعداد تست در بسته: '+(p.tests ?? 'نیازمند تأیید'))} · واحد سفارش: {p.unit || 'بسته'}
               </small>
-              {p.source && (
-                <a
-                  className="source"
-                  href={assetPath(p.source)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
-                </a>
-              )}
+              {p.source && <a
+                className="source"
+                href={assetPath(p.source)}
+                target="_blank"
+                rel="noreferrer"
+              >
+                منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
+              </a>}
             </details>
           </>
         )}
-        {p.demoPrice && (
-          <small className="catalog-demo-badge">قیمت و موجودی نمایشی</small>
-        )}
+        {p.demoPrice && <small className="catalog-demo-badge">قیمت و موجودی نمایشی</small>}
         <p className="product-unit-note">{p.packLabel}</p>
         <div className="price-block">
           <span>
@@ -1016,7 +955,9 @@ function App() {
         {(cart[p.id] || 0) > 0 && (
           <div className="selected-total" aria-live="polite">
             <span>جمع {(cart[p.id] || 0).toLocaleString("fa-IR")} بسته</span>
-            <strong>{D.money(p.price * cart[p.id])}</strong>
+            <strong>
+              {D.money(p.price * cart[p.id])}
+            </strong>
           </div>
         )}
         {(cart[p.id] || 0) > 0 ? (
@@ -1375,9 +1316,7 @@ function App() {
                     className="secondary"
                     onClick={() => {
                       setDeviceFilter(d.model);
-                      setFamilyFilter("poct");
-                      setCategoryFilter("");
-                      setPoctFilter("");
+                      setFamilyFilter('poct');setCategoryFilter('');setPoctFilter('');
                       go("/customer/supplies");
                     }}
                   >
@@ -1394,66 +1333,10 @@ function App() {
       return (
         <>
           <h1>کیت‌ها و مواد مصرفی</h1>
-          <p className="muted">
-            کیت‌های دستگاه و مصرفی‌های عمومی آزمایشگاه اورتانیس
-          </p>
-          <div
-            className="catalog-family-tabs"
-            role="group"
-            aria-label="نوع مصرفی"
-          >
-            {[
-              ["all", "همه مصرفی‌ها"],
-              ["poct", "کیت‌های POCT"],
-              ["ortanes", "مصرفی آزمایشگاه · اورتانیس"],
-            ].map(([id, label]) => (
-              <button
-                key={id}
-                aria-pressed={familyFilter === id}
-                className={familyFilter === id ? "selected" : ""}
-                onClick={() => {
-                  setFamilyFilter(id);
-                  setCategoryFilter("");
-                  setPoctFilter("");
-                  setDeviceFilter("");
-                  setSupplyLimit(6);
-                }}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <CategoryCircles
-            family={familyFilter}
-            value={categoryFilter}
-            onChange={(id) => {
-              setCategoryFilter(id);
-              setPoctFilter("");
-              setSupplyLimit(6);
-            }}
-          />
-          {(familyFilter === "poct" || categoryFilter === "poct") && (
-            <div className="catalog-scope">
-              <label>
-                گروه تست
-                <select
-                  aria-label="گروه تست POCT"
-                  value={poctFilter}
-                  onChange={(e) => {
-                    setPoctFilter(e.target.value);
-                    setSupplyLimit(6);
-                  }}
-                >
-                  <option value="">همه گروه‌ها</option>
-                  {poctGroups.map((g) => (
-                    <option key={g.id} value={g.id}>
-                      {g.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-          )}
+          <p className="muted">کیت‌های دستگاه و مصرفی‌های عمومی آزمایشگاه اورتانیس</p>
+          <div className="catalog-family-tabs" role="group" aria-label="نوع مصرفی">{[['all','همه مصرفی‌ها'],['poct','کیت‌های POCT'],['ortanes','مصرفی آزمایشگاه · اورتانیس']].map(([id,label])=><button key={id} aria-pressed={familyFilter===id} className={familyFilter===id?'selected':''} onClick={()=>{setFamilyFilter(id);setCategoryFilter('');setPoctFilter('');setDeviceFilter('');setSupplyLimit(6)}}>{label}</button>)}</div>
+          <CategoryCircles family={familyFilter} value={categoryFilter} onChange={id=>{setCategoryFilter(id);setPoctFilter('');setSupplyLimit(6)}}/>
+          {(familyFilter==='poct'||categoryFilter==='poct')&&<div className="catalog-scope"><label>گروه تست<select aria-label="گروه تست POCT" value={poctFilter} onChange={e=>{setPoctFilter(e.target.value);setSupplyLimit(6)}}><option value="">همه گروه‌ها</option>{poctGroups.map(g=><option key={g.id} value={g.id}>{g.label}</option>)}</select></label></div>}
           <div className="filters supplies-filters">
             <label className="search">
               <Search size={19} />
@@ -1496,14 +1379,7 @@ function App() {
                 <option value="">همه دسته‌ها</option>
                 {categories
                   .filter((c) =>
-                    state.products.some(
-                      (p) =>
-                        isCatalogItem(p) &&
-                        categoryFor(p).id === c.id &&
-                        (familyFilter !== "ortanes" ||
-                          p.family === "laboratory") &&
-                        (familyFilter !== "poct" || p.family === "poct"),
-                    ),
+                    state.products.some((p) => isCatalogItem(p) && categoryFor(p).id === c.id && (familyFilter!=='ortanes'||p.family==='laboratory') && (familyFilter!=='poct'||p.family==='poct')),
                   )
                   .map((c) => (
                     <option key={c.id} value={c.id}>
@@ -1694,6 +1570,7 @@ function App() {
                   <span>جمع پایه</span>
                   <strong>{D.money(base)}</strong>
                 </div>
+
                 <div className="line">
                   <strong>مبلغ نهایی</strong>
                   <strong>
@@ -2072,52 +1949,65 @@ function App() {
         </div>
       ) : (
         <>
-          <PublicShell
-            path={path}
-            role={role}
-            customer={customer}
-            cartCount={count}
-            onReset={reset}
-            onLogout={() => {
-              setRole("");
-              sessionStorage.removeItem("sana-role");
-              go("/login");
-            }}
-          >
-            {panel || path === "/login" ? (
-              <Login state={state} login={login} setToast={setToast} />
-            ) : path.startsWith("/supplies") ? (
-              <SupplyCatalog
-                key={path}
-                products={state.products}
-                family={
-                  path.endsWith("/ortanes")
-                    ? "ortanes"
-                    : path.endsWith("/poct")
-                      ? "poct"
-                      : "all"
-                }
-                onChoose={(p) => {
-                  if (role === "customer") {
-                    if (D.compatible(p, customer) && p.stock > 0) {
-                      add(p);
-                      go("/customer/cart");
-                    } else {
-                      setFamilyFilter(
-                        p.family === "laboratory" ? "ortanes" : "poct",
-                      );
-                      go("/customer/supplies");
-                    }
-                  } else {
-                    sessionStorage.setItem("sana-catalog-intent", p.id);
-                    go("/login");
-                  }
-                }}
-              />
-            ) : (
-              <PublicSite path={path} items={state.products} />
-            )}
-          </PublicShell>
+          <header className="public-header">
+            <a href="#/" className="public-brand">
+              <Logo />
+              <span>تجهیزات آزمایشگاهی</span>
+            </a>
+            <nav aria-label="ناوبری اصلی">
+              {[
+                ["/", "خانه"],
+                ["/devices", "دستگاه‌ها"],
+                ["/supplies/ortanes", "مصرفی آزمایشگاه"],
+                ["/supplies/poct", "کیت‌های POCT"],
+                ["/services", "خدمات و پشتیبانی"],
+                ["/contact", "تماس با ما"],
+              ].map(([p, n]) => (
+                <a
+                  key={p}
+                  className={path === p ? "current" : ""}
+                  href={"#" + p}
+                >
+                  {n}
+                </a>
+              ))}
+            </nav>
+            <AccountMenu
+              role={role}
+              cartCount={count}
+              customer={customer}
+              onLogout={() => {
+                setRole("");
+                sessionStorage.removeItem("sana-role");
+                go("/login");
+              }}
+            />
+          </header>
+          {panel || path === "/login" ? (
+            <Login state={state} login={login} setToast={setToast} />
+          ) : (
+            path.startsWith('/supplies') ? <SupplyCatalog key={path} products={state.products} family={path.endsWith('/ortanes')?'ortanes':path.endsWith('/poct')?'poct':'all'} onChoose={p=>{if(role==='customer'){if(D.compatible(p,customer)&&p.stock>0){add(p);go('/customer/cart')}else {setFamilyFilter(p.family==='laboratory'?'ortanes':'poct');go('/customer/supplies')}}else{sessionStorage.setItem('sana-catalog-intent',p.id);go('/login')}}}/> : <PublicSite path={path} />
+          )}
+          <footer className="public-footer">
+            <div>
+              <Logo />
+              <p>همراه تجهیزات و نیازهای روزمره آزمایشگاه</p>
+            </div>
+            <div>
+              <h3>در ارتباط باشیم</h3>
+              <a href="tel:+982633107">
+                <bdi>۰۲۶ ۳۳۱۰۷</bdi>
+              </a>
+              <p>البرز، شهرک صنعتی بهارستان، فاز سه، نبش بهار دوم</p>
+            </div>
+            <div className="enamad">محل نمایش نماد اعتماد</div>
+            <div className="footer-bottom">
+              <span>سانا؛ همراه آزمایشگاه شما</span>
+              <button className="link" onClick={reset}>
+                بازنشانی داده‌ها
+              </button>
+            </div>
+          </footer>
         </>
       )}
       <Feedback />
