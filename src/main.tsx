@@ -25,6 +25,7 @@ import { AccountMenu } from "./AccountMenu";
 import { Profile } from "./Profile";
 import { OrderJourney } from "./OrderJourney";
 import { Feedback } from "./Feedback";
+import { Sanayar } from "./Sanayar";
 import { assetPath } from "./assets";
 import React, { useState, useEffect, type FormEvent } from "react";
 import { createRoot } from "react-dom/client";
@@ -2015,6 +2016,7 @@ function App() {
         </>
       )}
       <Feedback />
+      <Sanayar items={state.products} />
       {toast && (
         <div role="status" className="toast">
           <Check size={18} />
