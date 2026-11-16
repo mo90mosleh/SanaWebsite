@@ -1,6 +1,6 @@
 # Sanayar on Cloudflare
 
-The public assistant uses `POST /api/sanayar/chat`. It sends only the question and six recent chat messages. The Worker supplies its own public device and consumable catalogue; it never sends customer, order, address or account records to Gemini.
+The public assistant uses `POST /api/sanayar/chat` with `stream: true`. It sends only the question and recent chat messages, bounded to 7,500 UTF-8 bytes. The Worker supplies its own public device and consumable catalogue; it never sends customer, order, address or account records to Gemini. Gemini output is forwarded incrementally from `streamGenerateContent` as SSE (`meta`, `delta`, `done` or `error` events). Legacy non-streaming requests still return JSON.
 
 Set `GEMINI_API_KEY` as a **Secret** on the `sanawebsite` Worker and deploy the change. Never place this key in a `VITE_` variable, source code or a client request. Optional plain variable `GEMINI_MODEL` selects the model; the default is `gemini-3.1-flash-lite`.
 
@@ -18,6 +18,7 @@ node scripts/build-sanayar-worker.mjs
 node --test tests/sanayar-worker.test.mjs
 npm run build
 node scripts/check-sanayar-gemini.mjs
+node scripts/check-sanayar-stream.mjs
 ```
 
 The browser test defaults to Windows Edge; set `CHROMIUM_PATH` for another installation. It tests 390px and 1440px layouts and mocks Gemini success and failure.
@@ -26,4 +27,4 @@ Upload `dist/` through the Cloudflare assets API and the bundled `.sanayar-build
 
 Readiness: `GET /api/sanayar/status` returns only a configured boolean and release identifier. A successful live chat must return `mode: "gemini"`; a local guide fallback does not verify the LLM connection. Pricing and clinical questions intentionally use fixed guidance. The frontend states when it falls back to the existing website guide.
 
-No chat history is stored on the server. Upstream error logs contain only status codes, without keys, prompts or responses. Runtime requests expire after 20 seconds, and request bodies are bounded before JSON parsing.
+No chat history is stored on the server. Upstream error logs contain only status codes, without keys, prompts or responses. Runtime requests expire after 45 seconds, and request bodies are bounded before JSON parsing. Reset and stop cancel the active browser request; old replies cannot appear in a new conversation. Scrolling is performed once on submit, never on each streamed delta. Public links close the chat so the destination becomes visible; catalog PDFs open separately.

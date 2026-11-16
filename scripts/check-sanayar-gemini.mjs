@@ -13,6 +13,6 @@ try{await mkdir('test-results',{recursive:true});for(const width of [390,1440]){
  await page.goto('http://127.0.0.1:8791/');const launch=page.getByRole('button',{name:'گفت‌وگو با سانایار'});await launch.waitFor();await launch.hover();assert.equal(await page.getByRole('tooltip').isVisible(),true);assert.equal(await launch.innerText(),'');const box=await launch.boundingBox();assert.ok(box.width<=64);
  await launch.click();const field=page.getByRole('textbox',{name:'پرسش از سانایار'});await field.fill('تفاوت مدل‌ها چیست؟');await field.press('Enter');await page.getByText('پاسخ آزمایشی مستند',{exact:true}).waitFor();assert.equal(calls,1);
  await page.getByRole('button',{name:'گفت‌وگوی جدید'}).click();assert.equal(await page.getByText('پاسخ آزمایشی مستند',{exact:true}).count(),0);
- await page.route('**/api/sanayar/chat',route=>route.fulfill({status:503,json:{error:'not_configured'}}));await field.fill('BHA3000');await field.press('Enter');await page.getByText('در حال حاضر، پاسخ راهنمای سایت نمایش داده می‌شود.',{exact:false}).waitFor();
+ await page.route('**/api/sanayar/chat',route=>route.fulfill({status:503,json:{error:'not_configured'}}));await field.fill('BHA3000');await field.press('Enter');await page.locator('.sanayar-notice').waitFor();
  await field.press('Escape');await launch.hover();await page.screenshot({path:`test-results/sanayar-floating-${width}.png`});console.log(`PASS ${width}: floating avatar, tooltip, Gemini response, reset and local fallback`);await page.close();
  }}finally{await browser.close();server.close()}
