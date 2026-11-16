@@ -85,6 +85,16 @@ test("account dropdown, collapsible customer navigation, kit photos and quantity
   await expect(page.locator(".stock")).toContainText("۲۴");
   await switchToAdmin(page);
   await page.goto("/#/admin/customers");
+  await page
+    .getByRole("row")
+    .filter({
+      has: page.getByRole("rowheader", {
+        name: "آزمایشگاه بقراط",
+        exact: true,
+      }),
+    })
+    .getByRole("button", { name: "مشاهده و ویرایش" })
+    .click();
   const form = page.locator("main form").filter({
     has: page.getByRole("heading", {
       name: "ویرایش آزمایشگاه بقراط",

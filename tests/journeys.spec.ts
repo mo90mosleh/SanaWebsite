@@ -33,7 +33,7 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   const external: string[] = [];
   p.on("request", (r) => {
     if (
-      !r.url().startsWith("http://127.0.0.1:5173") &&
+      !r.url().startsWith(String(test.info().project.use.baseURL)) &&
       !/^https:\/\/cdn\.jsdelivr\.net\/npm\/@avan-persian\/holidays@latest\/data\/\d{4}\.json$/.test(
         r.url(),
       )
@@ -113,15 +113,14 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
   expect((await state(p)).orders[0].payment).toBe("unpaid");
   await nav(p, "/admin/products");
   await p
-    .locator("details")
+    .getByRole("row")
     .filter({
-      has: p.getByRole("heading", {
+      has: p.getByRole("rowheader", {
         name: "کیت پروتئین واکنشی C",
-        exact: true,
-        includeHidden: true,
+        exact: false,
       }),
     })
-    .locator("summary")
+    .getByRole("button", { name: "ویرایش محصول" })
     .click();
   const form = p.locator("main form").filter({
     has: p.getByRole("heading", {
@@ -156,9 +155,7 @@ test("customer/admin order, payment, review, ticket, service retries, persistenc
     .fill("پاسخ نمایشی کارشناس سانا");
   await ticket.getByRole("button", { name: "ثبت پاسخ", exact: true }).click();
   await nav(p, "/admin/forecast");
-  await expect(p.locator("main")).toContainText(
-    "داده کافی برای برآورد وجود ندارد",
-  );
+  await expect(p.locator("main")).toContainText("داده کافی نیست");
   await expect(p.locator("main")).toContainText("نزدیک به موعد");
   await p
     .getByRole("button", { name: "ثبت رویداد یادآور نزدیک به موعد" })
@@ -292,6 +289,7 @@ test("admin creates and disables a customer, assigns a device and initial kits, 
   await p.goto("/#/login");
   await p.getByRole("button", { name: "ورود مدیر", exact: true }).click();
   await nav(p, "/admin/customers");
+  await p.locator(".admin-create summary").click();
   const create = p.locator("main form").filter({
     has: p.getByRole("heading", { name: "ایجاد مرکز", exact: true }),
   });
@@ -300,6 +298,13 @@ test("admin creates and disables a customer, assigns a device and initial kits, 
   await create.getByLabel("موبایل").fill("09000000003");
   await create.getByLabel("نشانی", { exact: true }).fill("نشانی کاملاً فرضی");
   await create.getByRole("button", { name: "ذخیره مرکز", exact: true }).click();
+  await p
+    .getByRole("row")
+    .filter({
+      has: p.getByRole("rowheader", { name: "مرکز آزمایشی سوم", exact: true }),
+    })
+    .getByRole("button", { name: "مشاهده و ویرایش" })
+    .click();
   const d = p.locator("main .card").filter({
     has: p.getByRole("heading", {
       name: "دستگاه‌ها و تحویل اولیه — مرکز آزمایشی سوم",
@@ -330,16 +335,29 @@ test("admin creates and disables a customer, assigns a device and initial kits, 
     (await state(p)).customers.find((c: any) => c.id === third.id).active,
   ).toBe(false);
   await nav(p, "/admin/products");
-  const detail = p.locator("details").filter({
-    has: p.getByRole("heading", {
+  await p.getByRole("tab", { name: "موجودی", exact: true }).click();
+  const stockRow = p.getByRole("row").filter({
+    has: p.getByRole("rowheader", {
       name: "کیت پروتئین واکنشی C",
       exact: true,
-      includeHidden: true,
     }),
   });
-  await detail.locator("summary").click();
-  await detail.getByLabel("موجودی (بسته)").fill("0");
-  await detail.getByRole("button", { name: "ذخیره محصول" }).click();
+  const quantity = (await state(p)).products.find(
+    (x: any) => x.id === "crp",
+  ).stock;
+  for (let i = 0; i < quantity; i++)
+    await stockRow
+      .getByRole("button", {
+        name: "کاهش موجودی کیت پروتئین واکنشی C",
+        exact: true,
+      })
+      .click();
+  await expect(
+    stockRow.getByRole("button", {
+      name: "کاهش موجودی کیت پروتئین واکنشی C",
+      exact: true,
+    }),
+  ).toBeDisabled();
   await p.getByRole("button", { name: "نمای مشتری", exact: true }).click();
   await nav(p, "/customer/supplies");
   await p.getByLabel("جست‌وجوی محصول").fill("W201");

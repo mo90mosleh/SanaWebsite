@@ -75,7 +75,7 @@ test("service rejects missing/past/invalid dates and accepts only the three deli
 test("order snapshots delivery time and retry does not replace schedule or create another order", () => {
   const s = seed(),
     schedule = firstAvailableDelivery();
-  schedule.slot = "15-18";
+  schedule.slot = "12-15";
   const o = createOrder(
     s,
     "c1",
@@ -90,7 +90,7 @@ test("order snapshots delivery time and retry does not replace schedule or creat
   schedule.date = "2000-01-01";
   schedule.slot = "09-12";
   assert.equal(o.deliverySchedule!.date, date);
-  assert.equal(o.deliverySchedule!.slot, "15-18");
+  assert.equal(o.deliverySchedule!.slot, "12-15");
   assert.equal(
     createOrder(
       s,

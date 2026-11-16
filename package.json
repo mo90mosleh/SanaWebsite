@@ -14,6 +14,7 @@
     "publish:pages": "npm run build:pages && node scripts/publish-pages.mjs"
   },
   "dependencies": {
+    "exceljs": "^4.4.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.575.0",
     "react": "^19.2.0",

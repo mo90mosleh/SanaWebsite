@@ -1,3 +1,11 @@
+import {
+  CustomersWorkspace,
+  ProductsWorkspace,
+  ForecastTable,
+} from "./AdminWorkspace";
+import { MoneyInput } from "./MoneyInput";
+import { brands, numeric, recordNearReminders } from "./admin-data";
+import "./admin-workspace.css";
 import { MobileNavigation } from "./MobileNavigation";
 import { TicketsPanel } from "./Tickets";
 import { categories, categoryFor } from "./kitCategories";
@@ -290,48 +298,6 @@ function App() {
         ["tickets", "تیکت‌های پشتیبانی", LifeBuoy],
         ["profile", "اطلاعات مرکز", Settings],
       ];
-  function Forecast({ c, limit = 99 }: { c: D.Customer; limit?: number }) {
-    const relevant = state.products.filter(
-      (p) =>
-        p.verified &&
-        (c.devices.some((d) => d.initial.some((l) => l.product === p.id)) ||
-          state.orders.some(
-            (o) =>
-              o.customer === c.id && o.lines.some((l) => l.product === p.id),
-          )),
-    );
-    if (!relevant.length)
-      return <p className="muted">داده کافی برای برآورد وجود ندارد</p>;
-    return (
-      <>
-        {relevant.slice(0, limit).map((p) => {
-          const f = D.forecast(state, c, p.id);
-          return (
-            <div className="forecast-row" key={p.id}>
-              <div>
-                <strong>{p.name}</strong>
-                <p>{c.name}</p>
-              </div>
-              {f ? (
-                <div>
-                  <Badge value={f.near ? "نزدیک به موعد" : "برآورد موجود"} />
-                  <p>
-                    {D.date(f.due)} · اطمینان {f.confidence}
-                  </p>
-                  <small>
-                    {f.count} تحویل؛ فاصله بعدی {f.days} روز، بر پایه مقدار
-                    تحویل و میانگین فاصله به ازای بسته
-                  </small>
-                </div>
-              ) : (
-                <small>داده کافی برای برآورد وجود ندارد</small>
-              )}
-            </div>
-          );
-        })}
-      </>
-    );
-  }
   function OrderCard({ o }: { o: D.Order }) {
     const detail = selected === o.id;
     const historical = o.shipping === "delivered" || o.status === "cancelled";
@@ -371,50 +337,119 @@ function App() {
         {detail && (
           <div className="order-detail">
             {!historical && <OrderJourney order={o} />}
-            {o.deliverySchedule && (
-              <div className="order-delivery-time">
-                <strong>زمان تحویل</strong>
-                <p>
-                  {formatDeliveryDate(o.deliverySchedule.date)}، ساعت{" "}
-                  {deliverySlotLabel(o.deliverySchedule.slot)} (به وقت تهران)
-                </p>
-              </div>
-            )}
-            {o.deliveryAddress && (
-              <div className="order-address">
-                <strong>نشانی تحویل</strong>
-                <p>
-                  {o.deliveryAddress.label}:{" "}
-                  {D.formatAddress(o.deliveryAddress)}
-                </p>
-                <small>
-                  {o.deliveryAddress.recipient} ·{" "}
-                  <bdi>{o.deliveryAddress.phone}</bdi>
-                </small>
-              </div>
-            )}
-            <div className="row wrap">
-              <span>روش خرید: {labels[o.method]}</span>
-              <span>
-                پرداخت: <Badge value={o.payment} />
-              </span>
-              <span>
-                ارسال: <Badge value={o.shipping} />
-              </span>
+            <div className="admin-table-wrap">
+              <table className="admin-table order-meta-table">
+                <caption>مشخصات سفارش</caption>
+                <tbody>
+                  <tr>
+                    <th scope="row">شماره سفارش</th>
+                    <td>
+                      <bdi>{o.id}</bdi>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">تاریخ ثبت</th>
+                    <td>{D.date(o.created)}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">روش خرید</th>
+                    <td>{labels[o.method]}</td>
+                  </tr>
+                  <tr>
+                    <th scope="row">وضعیت پرداخت</th>
+                    <td>
+                      <Badge value={o.payment} />
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row">وضعیت ارسال</th>
+                    <td>
+                      <Badge value={o.shipping} />
+                    </td>
+                  </tr>
+                  {o.deliverySchedule && (
+                    <tr>
+                      <th scope="row">زمان تحویل</th>
+                      <td>
+                        {formatDeliveryDate(o.deliverySchedule.date)}، ساعت{" "}
+                        {deliverySlotLabel(o.deliverySchedule.slot)} (به وقت
+                        تهران)
+                      </td>
+                    </tr>
+                  )}
+                  {o.deliveryAddress && (
+                    <>
+                      <tr>
+                        <th scope="row">نشانی تحویل</th>
+                        <td>
+                          {o.deliveryAddress.label}:{" "}
+                          {D.formatAddress(o.deliveryAddress)}
+                        </td>
+                      </tr>
+                      <tr>
+                        <th scope="row">گیرنده</th>
+                        <td>
+                          {o.deliveryAddress.recipient} ·{" "}
+                          <bdi>{o.deliveryAddress.phone}</bdi>
+                        </td>
+                      </tr>
+                    </>
+                  )}
+                </tbody>
+              </table>
             </div>
-            {o.lines.map((l) => (
-              <div className="line" key={l.product}>
-                <span>
-                  {l.name} × {l.qty} بسته
-                </span>
-                <span>{D.money(l.price * l.qty)}</span>
-              </div>
-            ))}
-            <p>
-              جمع پایه:{" "}
-              {D.money(o.lines.reduce((a, l) => a + l.price * l.qty, 0))} ·
-              تخفیف آنلاین: {o.method === "online" ? "۲۰٪" : "ندارد"}
-            </p>
+            <div className="admin-table-wrap">
+              <table className="admin-table order-items-table">
+                <caption>اقلام و مبالغ سفارش</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">محصول</th>
+                    <th scope="col">تعداد بسته</th>
+                    <th scope="col">قیمت واحد</th>
+                    <th scope="col">جمع ردیف</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {o.lines.map((l) => (
+                    <tr key={l.product}>
+                      <th scope="row">{l.name}</th>
+                      <td>{l.qty.toLocaleString("fa-IR")}</td>
+                      <td>{D.money(l.price)}</td>
+                      <td>{D.money(l.price * l.qty)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <th scope="row" colSpan={3}>
+                      جمع پایه
+                    </th>
+                    <td>
+                      {D.money(
+                        o.lines.reduce((a, l) => a + l.price * l.qty, 0),
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row" colSpan={3}>
+                      تخفیف آنلاین {o.method === "online" ? "(۲۰٪)" : ""}
+                    </th>
+                    <td>
+                      {D.money(
+                        o.lines.reduce((a, l) => a + l.price * l.qty, 0) -
+                          o.total,
+                      )}
+                    </td>
+                  </tr>
+                  <tr>
+                    <th scope="row" colSpan={3}>
+                      مبلغ نهایی
+                    </th>
+                    <td>{D.money(o.total)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
             {o.note && <p className="notice">توضیح فروش: {o.note}</p>}
             {o.status === "pending" && (
               <button
@@ -733,9 +768,22 @@ function App() {
                 english: String(f.get("english")),
                 brand: String(f.get("brand")),
                 code: String(f.get("code")),
-                price: Number(f.get("price")),
-                stock: Number(f.get("stock")),
+                price: numeric(f.get("price")),
               };
+              if (value.price < 1 || value.price > 1000000000)
+                throw Error("قیمت معتبر نیست");
+              if (!brands(s).includes(value.brand))
+                throw Error("برند معتبر نیست");
+              if (
+                value.code &&
+                s.products.some(
+                  (x) =>
+                    x.id !== p?.id &&
+                    x.brand === value.brand &&
+                    x.code === value.code,
+                )
+              )
+                throw Error("کد محصول و برند تکراری است");
               if (p)
                 Object.assign(
                   s.products.find((x) => x.id === p.id)!,
@@ -744,6 +792,7 @@ function App() {
               else
                 s.products.push({
                   ...value,
+                  stock: 0,
                   id: D.uid(),
                   models: [],
                   tests: null,
@@ -781,12 +830,13 @@ function App() {
           </label>
           <label>
             برند
-            <input
-              required
-              name="brand"
-              defaultValue={p?.brand}
-              maxLength={50}
-            />
+            <select required name="brand" defaultValue={p?.brand || "Wondfo"}>
+              {brands(state).map((brand) => (
+                <option key={brand} value={brand}>
+                  {brand}
+                </option>
+              ))}
+            </select>
           </label>
           <label>
             کد کاتالوگی
@@ -799,28 +849,9 @@ function App() {
           </label>
           <label>
             قیمت پایه (تومان)
-            <input
-              required
-              name="price"
-              type="number"
-              min="1"
-              step="1"
-              max="1000000000"
-              defaultValue={p?.price ?? 2000000}
-            />
+            <MoneyInput name="price" defaultValue={p?.price ?? 2000000} />
           </label>
-          <label>
-            موجودی (بسته)
-            <input
-              required
-              name="stock"
-              type="number"
-              min="0"
-              step="1"
-              max="10000"
-              defaultValue={p?.stock ?? 0}
-            />
-          </label>
+
           {!p && (
             <label>
               نشانی منبع سازنده
@@ -1234,7 +1265,7 @@ function App() {
                   جزئیات <ArrowLeft size={15} />
                 </button>
               </div>
-              {Forecast({ c: customer, limit: 3 })}
+              <ForecastTable state={state} />
               <p className="muted">
                 این برآورد موجودی یا مصرف واقعی مرکز را اندازه‌گیری نمی‌کند.
               </p>
@@ -1656,41 +1687,20 @@ function App() {
       );
     if (tab === "customers" && admin)
       return (
-        <>
-          <h1>مشتریان و دستگاه‌ها</h1>
-
-          {CustomerEditor({})}
-          {state.customers.map((c) => (
-            <section key={c.id}>
-              {CustomerEditor({ c })}
-              {DeviceAdmin({ c })}
-            </section>
-          ))}
-        </>
+        <CustomersWorkspace
+          state={state}
+          mutate={mutate}
+          editor={(c) => CustomerEditor({ c })}
+          devices={(c) => DeviceAdmin({ c })}
+        />
       );
     if (tab === "products" && admin)
       return (
-        <>
-          <h1>محصولات، قیمت و موجودی</h1>
-          <p className="notice">
-            سفارش ثبت‌شده قیمت و نام زمان ثبت را حفظ می‌کند. اقلام جدید ابتدا
-            غیرقابل سفارش هستند؛ تأیید سازگاری و بسته‌بندی پیش از عرضه لازم است.
-          </p>
-          {ProductEditor({})}
-          {state.products.map((p) => (
-            <details className="card product-editor" key={p.id}>
-              <summary>
-                <strong>
-                  {p.name} <bdi>{p.english}</bdi>
-                </strong>
-                <span>
-                  {D.money(p.price)} · {p.stock} بسته
-                </span>
-              </summary>
-              {ProductEditor({ p })}
-            </details>
-          ))}
-        </>
+        <ProductsWorkspace
+          state={state}
+          mutate={mutate}
+          editor={(p) => ProductEditor({ p })}
+        />
       );
     if (tab === "forecast" && admin)
       return (
@@ -1702,33 +1712,16 @@ function App() {
             ناموفق یا تحویل‌نشده محاسبه نمی‌شود. برآورد تأمین است؛ سنجش مصرف
             نیست.
           </div>
-          {state.customers.map((c) => (
-            <section className="card" key={c.id}>
-              <h2>{c.name}</h2>
-              {Forecast({ c })}
-              <button
-                className="secondary"
-                onClick={() => {
-                  mutate((s) => {
-                    for (const p of s.products) {
-                      if (
-                        D.forecast(s, c, p.id)?.near &&
-                        !s.logs.some(
-                          (l) =>
-                            l.type === "replenishment.near" &&
-                            l.related === c.id + ":" + p.id,
-                        )
-                      )
-                        D.event(s, "replenishment.near", c.id + ":" + p.id);
-                    }
-                  });
-                  setToast("یادآورهای نزدیک به موعد، بدون تکرار ثبت شدند");
-                }}
-              >
-                ثبت رویداد یادآور نزدیک به موعد
-              </button>
-            </section>
-          ))}
+          <ForecastTable state={state} />
+          <button
+            className="secondary"
+            onClick={() => {
+              if (mutate(recordNearReminders))
+                setToast("یادآورهای نزدیک به موعد، بدون تکرار ثبت شدند");
+            }}
+          >
+            ثبت رویداد یادآور نزدیک به موعد
+          </button>
         </>
       );
     if (tab === "logs" && admin)
