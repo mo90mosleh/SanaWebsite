@@ -6,12 +6,28 @@ import {answerQuestion,type Answer} from './sanayar-knowledge';
 import {askSanayar} from './sanayar-api';
 import './sanayar.css';
 type Message = Answer & {id:number;user?:boolean;mode?:'gemini'|'guide';notice?:string};
+const callouts = ["سلام، من سانایار هستم؛ دستیار شما برای آشنایی با دستگاه‌ها و مواد مصرفی.", "محصول خاصی مدنظرتان است؟ از من بپرسید.", "برای انتخاب مواد مصرفی سازگار با دستگاهتان راهنمایی می‌خواهید؟", "برای مقایسه دستگاه‌ها می‌توانید از من کمک بگیرید.", "برای سفارش مواد مصرفی آزمایشگاه به راهنمایی نیاز دارید؟", "نام دستگاهتان را بفرمایید تا مواد مصرفی مرتبط را پیدا کنیم.", "درباره مشخصات محصولات سؤالی دارید؟ پاسخ‌گوی شما هستم.", "برای آشنایی با محصولات و بخش‌های سایت، همراه شما هستم.", "محصول موردنیازتان را سریع‌تر پیدا کنید؛ از من بپرسید.", "برای شروع گفت‌وگو، روی آیکون سانایار کلیک کنید."];
 const welcome:Message={id:0,text:'سلام، به سانا خوش آمدید. برای معرفی و مقایسه دستگاه‌ها، انتخاب مصرفی‌های آزمایشگاهی و راهنمای استفاده از سایت، در خدمت شما هستم.',links:[]};
 function Avatar(){return <img className="sanayar-avatar" src={assetPath('/sanayar.png')} alt="" width="78" height="78"/>}
 function Text({text}:{text:string}){return <>{text.split(/\*\*(.*?)\*\*/gs).map((part,i)=>i%2?<strong key={i}>{part}</strong>:part)}</>}
 export function Sanayar({items}:{items:Item[]}){
  const [open,setOpen]=useState(false),[input,setInput]=useState(''),[pending,setPending]=useState(false);
  const [messages,setMessages]=useState<Message[]>([welcome]);
+ const [callout,setCallout]=useState<number|null>(null);
+ const [promptsStopped,setPromptsStopped]=useState(()=>{try{return sessionStorage.getItem('sanayar-prompts-stopped')==='1'}catch{return false}});
+ useEffect(()=>{
+  if(open||promptsStopped)return;
+  let index=0, timer:ReturnType<typeof setTimeout>;
+  function show(){
+   if(document.hidden){timer=setTimeout(show,5000);return}
+   setCallout(index);
+   timer=setTimeout(()=>{setCallout(null);index++;if(index<callouts.length)timer=setTimeout(show,45000)},9000);
+  }
+  timer=setTimeout(show,7000);
+  return ()=>clearTimeout(timer);
+ },[open,promptsStopped]);
+ function stopPrompts(){setCallout(null);setPromptsStopped(true);try{sessionStorage.setItem('sanayar-prompts-stopped','1')}catch{}}
+ function openChat(){stopPrompts();setOpen(true)}
  const [anchor,setAnchor]=useState(0);
  const active=useRef<AbortController|null>(null),sequence=useRef(0),reply=useRef(0);
  const launcher=useRef<HTMLButtonElement>(null),field=useRef<HTMLInputElement>(null),feed=useRef<HTMLDivElement>(null);
@@ -44,7 +60,8 @@ export function Sanayar({items}:{items:Item[]}){
  function submit(e:FormEvent){e.preventDefault();void ask(input)}
  const href=(h:string)=>h.startsWith('/')?assetPath(h):h;
  return <div className="sanayar" dir="rtl">
-  <button ref={launcher} className="sanayar-launcher" aria-label="گفت‌وگو با سانایار" aria-expanded={open} aria-controls="sanayar-panel" aria-describedby="sanayar-description" onClick={()=>open?close():setOpen(true)}><Avatar/></button>
+  <button ref={launcher} className="sanayar-launcher" aria-label="گفت‌وگو با سانایار" aria-expanded={open} aria-controls="sanayar-panel" aria-describedby="sanayar-description" onClick={()=>open?close():openChat()}><Avatar/></button>
+  {callout!==null&&!open&&<div className="sanayar-callout" role="status"><button className="sanayar-callout-dismiss" type="button" aria-label="بستن پیام‌های راهنمای سانایار" onClick={stopPrompts}><X size={16}/></button><button className="sanayar-callout-text" type="button" onClick={openChat}>{callouts[callout]}</button></div>}
   <div className="sanayar-tooltip" id="sanayar-description" role="tooltip"><strong>سانایار؛ راهنمای سانا</strong><span>معرفی دستگاه‌ها و مصرفی‌های آزمایشگاهی و راهنمای استفاده از سایت</span></div>
   {open&&<section id="sanayar-panel" className="sanayar-panel" role="dialog" aria-modal="false" aria-labelledby="sanayar-title" onKeyDown={e=>{if(e.key==='Escape')close()}}>
    <header><Avatar/><div><strong id="sanayar-title">سانایار</strong><small>راهنمای تجهیزات و مصرفی‌های آزمایشگاهی</small></div><button type="button" aria-label="گفت‌وگوی جدید" onClick={resetChat}><RotateCcw size={17}/></button><button type="button" aria-label="بستن سانایار" onClick={close}><X size={20}/></button></header>
