@@ -1803,6 +1803,7 @@ function App() {
                     key={String(key)}
                     aria-label={String(label)}
                     title={String(label)}
+                    onClick={() => {if (!admin && key === "supplies") {setCollapsed(true);localStorage.setItem("sana-sidebar-collapsed", "true")}}}
                     className={tab === key ? "active" : ""}
                     href={"#/" + (admin ? "admin" : "customer") + "/" + key}
                   >
