@@ -17,3 +17,5 @@
 /* Speech tail points directly at the assistant's head. */
 .sanayar-callout::after{content:"";position:absolute;width:16px;height:16px;right:24px;bottom:-9px;transform:rotate(45deg);background:#fff;border-right:1px solid #ccdfec;border-bottom:1px solid #ccdfec;pointer-events:none}.sanayar-callout{border-radius:16px}
 @media(max-width:600px){.sanayar-callout::after{right:20px}}
+/* Keep mobile pages free of automatic assistant callouts. */
+@media(max-width:900px){.sanayar .sanayar-callout{display:none}}
