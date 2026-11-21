@@ -54,8 +54,8 @@ export function AccountMenu({
             "سبد خرید، " + cartCount.toLocaleString("fa-IR") + " بسته"
           }
         >
-          <ShoppingCart size={22} />
-          <span aria-live="polite">{cartCount.toLocaleString("fa-IR")}</span>
+          <ShoppingCart size={25} strokeWidth={1.8} />
+          <span className="header-cart-count" aria-live="polite">{cartCount>99?'۹۹+':cartCount.toLocaleString("fa-IR")}</span>
         </a>
       )}
       <div

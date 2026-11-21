@@ -1,3 +1,4 @@
+import {CheckoutAddresses} from './CheckoutAddresses';
 import {ExtraSupplyFilters,SupplySort,emptySupplyFilters,matchesSupplyFilters,sortedSupplies} from './SupplyFilters';
 import {PublicNavigation} from './PublicNavigation';
 import {SiteSearch} from './SiteSearch';
@@ -188,6 +189,7 @@ function App() {
     else go('/'+r);
   };
   useEffect(()=>{
+    if(role==='customer'&&path.split('?')[0]==='/services'){location.hash='/customer/tickets';return}
     if(role==='customer'&&path.startsWith('/supplies')){
       setFamilyFilter(path.includes('/ortanes')?'ortanes':path.includes('/poct')?'poct':'all');
       setCategoryFilter('');setPoctFilter('');setDeviceFilter('');setSupplyLimit(6);
@@ -1506,39 +1508,7 @@ function App() {
                     </tfoot>
                   </table>
                 </div>
-                <section className="checkout-address">
-                  <h3>نشانی تحویل</h3>
-                  {customer.addresses?.length ? (
-                    <>
-                      <label>
-                        انتخاب از آدرس‌های من
-                        <select
-                          value={delivery?.id || ""}
-                          onChange={(e) => setDeliveryId(e.target.value)}
-                        >
-                          {customer.addresses.map((a) => (
-                            <option key={a.id} value={a.id}>
-                              {a.label} — {a.city}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
-                      <p>
-                        {delivery
-                          ? D.formatAddress(delivery)
-                          : customer.address}
-                      </p>
-                      <small>
-                        {delivery?.recipient} · <bdi>{delivery?.phone}</bdi>
-                      </small>
-                    </>
-                  ) : (
-                    <p>برای ادامه، یک نشانی تحویل ثبت کنید.</p>
-                  )}
-                  <a className="source" href="#/customer/profile">
-                    ویرایش یا افزودن آدرس
-                  </a>
-                </section>
+                <CheckoutAddresses customer={customer} selected={delivery} onSelect={setDeliveryId} onSave={a=>{const ok=mutate(s=>D.saveAddress(s,cid,a));if(ok){setDeliveryId(a.id);setToast('آدرس ذخیره و برای تحویل انتخاب شد')}return ok}}/>
               </div>
               <div className="card">
                 <DeliveryPicker

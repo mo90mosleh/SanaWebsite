@@ -8,7 +8,7 @@ import './sanayar.css';
 type Message = Answer & {id:number;user?:boolean;mode?:'gemini'|'guide';notice?:string};
 const callouts = ["سلام، من سانایار هستم؛ دستیار شما برای آشنایی با دستگاه‌ها و مواد مصرفی.", "محصول خاصی مدنظرتان است؟ از من بپرسید.", "برای انتخاب مواد مصرفی سازگار با دستگاهتان راهنمایی می‌خواهید؟", "برای مقایسه دستگاه‌ها می‌توانید از من کمک بگیرید.", "برای سفارش مواد مصرفی آزمایشگاه به راهنمایی نیاز دارید؟", "نام دستگاهتان را بفرمایید تا مواد مصرفی مرتبط را پیدا کنیم.", "درباره مشخصات محصولات سؤالی دارید؟ پاسخ‌گوی شما هستم.", "برای آشنایی با محصولات و بخش‌های سایت، همراه شما هستم.", "محصول موردنیازتان را سریع‌تر پیدا کنید؛ از من بپرسید.", "برای شروع گفت‌وگو، روی آیکون سانایار کلیک کنید."];
 const welcome:Message={id:0,text:'سلام، به سانا خوش آمدید. برای معرفی و مقایسه دستگاه‌ها، انتخاب مصرفی‌های آزمایشگاهی و راهنمای استفاده از سایت، در خدمت شما هستم.',links:[]};
-function Avatar(){return <img className="sanayar-avatar" src={assetPath('/sanayar.png')} alt="" width="78" height="78"/>}
+function Avatar(){return <img className="sanayar-avatar" src={assetPath('/sanayar-s.webp')} alt="" width="78" height="78"/>}
 function Text({text}:{text:string}){return <>{text.split(/\*\*(.*?)\*\*/gs).map((part,i)=>i%2?<strong key={i}>{part}</strong>:part)}</>}
 export function Sanayar({items}:{items:Item[]}){
  const [open,setOpen]=useState(false),[input,setInput]=useState(''),[pending,setPending]=useState(false);
