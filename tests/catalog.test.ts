@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {seed,compatible,createOrder,pay,migratePresentation} from '../src/domain.ts';
-import {poctList,isCatalogItem} from '../src/catalog-data.ts';
+import {poctList,isCatalogItem,migrateCatalog} from '../src/catalog-data.ts';
 import {categoryFor} from '../src/kitCategories.ts';
 import {firstAvailableDelivery} from '../src/delivery.ts';
 test('current POCT catalogue is exactly the 36 worksheet items; removed items cannot be bought',()=>{
@@ -30,4 +30,13 @@ test('migration preserves orders, stock, edited prices, customers and archived h
  assert.deepEqual(first.orders,orders);assert.deepEqual(first.customers,customers);assert.ok(first.products.find(p=>p.id==='pct')!.archived);
  const snapshot=JSON.stringify(first);assert.equal(JSON.stringify(migratePresentation(first)),snapshot);
  assert.equal(new Set(first.products.map(p=>p.id)).size,first.products.length);
+});
+
+test('pack quantities show only documented values and migrate existing browsers',()=>{
+ const s=seed();
+ assert.equal(s.products.find(p=>p.id==='crp')?.tests,25);
+ assert.equal(s.products.find(p=>p.id==='crp')?.packLabel,'۲۵ تست در بسته');
+ assert.ok(s.products.find(p=>p.id==='tsh')?.packLabel?.includes('—'));
+ s.catalogRevision=1;const p=s.products.find(p=>p.id==='crp')!;p.packLabel='تعداد تست بسته نیازمند تأیید';
+ migrateCatalog(s);assert.equal(p.id,'crp');assert.equal(s.products.find(p=>p.id==='crp')?.packLabel,'۲۵ تست در بسته');
 });

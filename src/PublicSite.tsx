@@ -1,3 +1,4 @@
+import {DeviceCompare} from './DeviceCompare';
 import {OrtanesLogo} from "./OrtanesLogo";
 import {categoryImages} from "./generatedCategoryImages";
 import { HeroSlider } from "./HeroSlider";
@@ -53,6 +54,7 @@ export function PublicSite({ path }: { path: string }) {
             >
               دریافت کاتالوگ <ArrowUpLeft size={18} />
             </a>
+            <DeviceCompare key={model.id} model={model}/>
             <a className="button secondary" href="#/contact">
               گفت‌وگو با سانا
             </a>
@@ -299,7 +301,7 @@ export function PublicSite({ path }: { path: string }) {
           <div className="steps">
             {[
               ["۱", "دستگاه شما", "انتخاب مصرفی مرتبط"],
-              ["۲", "خرید به روش شما", "آنلاین یا چک سه‌ماهه"],
+              ["۲", "پرداخت سفارش", "پرداخت آنلاین"],
               ["۳", "پیگیری تا تحویل", "وضعیت روشن، در هر مرحله"],
             ].map(([n, t, b]) => (
               <div key={n}>

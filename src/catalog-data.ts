@@ -1,5 +1,5 @@
 import type { Item, State } from './domain';
-export const CATALOG_REVISION = 1;
+export const CATALOG_REVISION = 2;
 export const poctList = [["vitd", "ویتامین D", "Vitamin D"], ["crp", "پروتئین واکنشی C", "CRP"], ["ifob", "خون مخفی مدفوع", "FOB"], ["afp", "آلفا فتوپروتئین", "AFP"], ["ca125", "نشانگر توموری CA125", "CA125"], ["ca199", "نشانگر توموری CA19-9", "CA19-9"], ["ca153", "نشانگر توموری CA15-3", "CA15-3"], ["hpylori", "آنتی‌ژن هلیکوباکتر پیلوری", "H. pylori"], ["b12", "ویتامین B12", "Vitamin B12"], ["ferritin", "فریتین", "Ferritin"], ["testosterone", "تستوسترون", "Testosterone"], ["hba1c", "هموگلوبین گلیکوزیله", "HbA1c"], ["cortisol", "کورتیزول", "Cortisol"], ["bhcg", "بتا اچ سی جی", "β-HCG"], ["estradiol", "استرادیول", "Estradiol"], ["amh", "هورمون آنتی مولرین", "AMH"], ["ft4", "تی چهار آزاد", "fT4"], ["ft3", "تی سه آزاد", "fT3"], ["ctni", "تروپونین آی", "cTnI"], ["myo", "میوگلوبین", "Myoglobin"], ["bnp", "نشانگر بی ان پی", "BNP"], ["ntprobnp", "ان تی پرو بی ان پی", "NT-proBNP"], ["ddimer", "دی دایمر", "D-Dimer"], ["ckmb", "سی کی ام بی", "CK-MB"], ["hscrp", "سی آر پی با حساسیت بالا", "hsCRP"], ["cysc", "سیستاتین سی", "CysC"], ["rf", "فاکتور روماتوئید", "RF"], ["calprotectin", "کالپروتکتین", "Calprotectin"], ["ngal", "نشانگر ان گال", "NGAL"], ["prl", "پرولاکتین", "Prolactin"], ["prog", "پروژسترون", "Progesterone"], ["lh", "هورمون ال اچ", "LH"], ["fsh", "هورمون اف اس اچ", "FSH"], ["tsh", "هورمون محرک تیروئید", "TSH"], ["t4", "هورمون تی چهار", "T4"], ["t3", "هورمون تی سه", "T3"]] as const;
 export const ortanesRows = [
   {
@@ -1148,7 +1148,7 @@ export const isCatalogItem = (p: Item) => !p.archived;
 export function buildCatalog(legacy: Item[]): Item[] {
  const approved = poctList.map(([id, name, english], i) => {
   const old=legacy.find(p=>p.id===id);
-  return { ...(old || {id, code:'', models:[], price:3000000, stock:0, verified:false, source:'', tests:null, image:''}), name:'کیت '+name, english, brand:'Wondfo', family:'poct' as const, categoryId:'poct', archived:false, sourceLabel:'فهرست سفارش کیت ارسالی — ردیف '+(i+1), sourceRow:i+1, packLabel:'تعداد تست بسته نیازمند تأیید', unit:'بسته', demoPrice:true };
+  return { ...(old || {id, code:'', models:[], price:3000000, stock:0, verified:false, source:'', tests:null, image:''}), name:'کیت '+name, english, brand:'Wondfo', family:'poct' as const, categoryId:'poct', archived:false, sourceLabel:'فهرست سفارش کیت ارسالی — ردیف '+(i+1), sourceRow:i+1, tests:id==='crp'?25:old?.tests??null, packLabel:id==='crp'?'۲۵ تست در بسته':old?.tests?`${old.tests.toLocaleString('fa-IR')} تست در بسته`:'تعداد تست در بسته: —', unit:'بسته', demoPrice:true };
  });
  const lab=ortanesRows.map((r,i):Item=>({id:'ort-'+String(i+1).padStart(3,'0'),name:r.name, english:'Ortanes', brand:'Ortanes', code:'', models:[],price:100000+(i%7)*25000,stock:24,verified:true,source:'',tests:null,image:'',family:'laboratory', categoryId:r.category, packLabel:r.pack || 'بسته‌بندی نیازمند تأیید',unit:'بسته',demoPrice:true,sourceLabel:'فهرست اورتانیس ۱۴۰۵/۰۸/۰۴ — صفحه '+('sourcePage' in r?r.sourcePage:1)+'، ردیف '+r.sourceRow,sourcePage:'sourcePage' in r?r.sourcePage:1,sourceRow:r.sourceRow}));
  const ordered=[...approved].sort((a,b)=>{const rank=(id:string)=>{const i=legacy.findIndex(p=>p.id===id);return i<0?10000:i};return rank(a.id)-rank(b.id)});
@@ -1158,7 +1158,7 @@ export function buildCatalog(legacy: Item[]): Item[] {
 export function migrateCatalog(s:State):State {
  if ((s.catalogRevision||0)>=CATALOG_REVISION)return s;
  const fresh=buildCatalog(s.products).filter(p=>!p.archived), ids=new Set(fresh.map(p=>p.id));
- s.products=[...fresh.map(p=>{const old=s.products.find(x=>x.id===p.id);return old?{...old, family:p.family,categoryId:p.categoryId,archived:false,sourceLabel:p.sourceLabel,sourceRow:p.sourceRow,packLabel:p.packLabel,unit:p.unit,demoPrice:true}:p}),...s.products.filter(p=>!ids.has(p.id)).map(p=>({...p,archived:true}))];
+ s.products=[...fresh.map(p=>{const old=s.products.find(x=>x.id===p.id);return old?{...old, family:p.family,categoryId:p.categoryId,archived:false,sourceLabel:p.sourceLabel,sourceRow:p.sourceRow,packLabel:p.packLabel,tests:p.tests,unit:p.unit,demoPrice:true}:p}),...s.products.filter(p=>!ids.has(p.id)).map(p=>({...p,archived:true}))];
  s.catalogRevision=CATALOG_REVISION;
  return s;
 }

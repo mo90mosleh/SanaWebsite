@@ -1,3 +1,4 @@
+import {SiteSearch} from './SiteSearch';
 import { CategoryCircles } from "./CategoryCircles";
 import { SupplyCatalog } from "./SupplyCatalog";
 import { isCatalogItem } from "./catalog-data";
@@ -61,6 +62,7 @@ import * as repo from "./repository";
 import "./style.css";
 import "./refinements.css";
 import "./mobile.css";
+import "./feedback-updates.css";
 import { PublicSite } from "./PublicSite";
 import { Logo, DeviceImage, Empty } from "./ui";
 import { Login } from "./Login";
@@ -108,7 +110,7 @@ function App() {
   const [toast, setToast] = useState("");
   const [cart, setCart] = useState<Record<string, number>>({});
   const [checkoutKey, setCheckoutKey] = useState(D.uid());
-  const [method, setMethod] = useState<D.Order["method"]>("online");
+  const method: D.Order["method"] = "online";
   const [selected, setSelected] = useState("");
   const [orderView, setOrderView] = useState("all");
   const [query, setQuery] = useState("");
@@ -120,7 +122,8 @@ function App() {
     const nav = () => {
       setPath(location.hash.slice(1) || "/");
       setSelected("");
-      setQuery("");
+      const search=sessionStorage.getItem('sana-search-product');
+      if(search){setQuery(search);sessionStorage.removeItem('sana-search-product')}else setQuery("");
       window.scrollTo(0, 0);
     };
     window.addEventListener("hashchange", nav);
@@ -180,6 +183,13 @@ function App() {
     if(r==='customer' && chosen && center && D.compatible(chosen,center) && chosen.stock>0){setCart(prev=>({...prev,[chosen.id]:(prev[chosen.id]||0)+1}));go('/customer/cart');}
     else go('/'+r);
   };
+  useEffect(()=>{
+    if(role==='customer'&&path.startsWith('/supplies')){
+      setFamilyFilter(path.includes('/ortanes')?'ortanes':path.includes('/poct')?'poct':'all');
+      setCategoryFilter('');setPoctFilter('');setDeviceFilter('');setSupplyLimit(6);
+      location.hash='/customer/supplies';
+    }
+  },[role,path]);
   const customer =
     state.customers.find((c) => c.id === cid) || state.customers[0];
   const admin = path.startsWith("/admin");
@@ -223,6 +233,15 @@ function App() {
     setCart({ ...cart, [p.id]: (cart[p.id] || 0) + 1 });
     setToast("به سبد خرید اضافه شد");
   };
+  const searchProduct=(p:D.Item)=>{
+    setFamilyFilter(p.family==='laboratory'?'ortanes':'poct');setCategoryFilter('');setPoctFilter('');setDeviceFilter('');setSupplyLimit(6);
+    if(role==='customer'){
+      if(path==='/customer/supplies')setQuery(p.name);
+      else{sessionStorage.setItem('sana-search-product',p.name);go('/customer/supplies')}
+    }else{
+      go('/supplies/'+(p.family==='laboratory'?'ortanes':'poct')+'?q='+encodeURIComponent(p.name));
+    }
+  };
   const delivery =
     customer.addresses?.find((a) => a.id === deliveryId) ||
     customer.addresses?.find((a) => a.isDefault) ||
@@ -234,7 +253,7 @@ function App() {
           s,
           cid,
           cart,
-          method,
+          "online",
           checkoutKey,
           delivery?.id,
           deliverySchedule,
@@ -246,9 +265,7 @@ function App() {
       go("/customer/orders");
       setSelected("");
       setToast(
-        method === "credit"
-          ? "درخواست برای بررسی فروش ثبت شد"
-          : "سفارش ثبت شد؛ نتیجه پرداخت را انتخاب کنید",
+        "سفارش ثبت شد؛ نتیجه پرداخت را انتخاب کنید",
       );
     }
   }
@@ -896,15 +913,7 @@ function App() {
             {p.brand}
             {p.brand === "Wondfo" ? " / Finecare" : p.brand === "Ortanes" ? " / اورتانیس" : " / CBC"}
           </span>
-          <Badge
-            value={
-              p.verified
-                ? "قابل سفارش آزمایشی"
-                : p.models.length
-                  ? "معرفی‌شده سازنده"
-                  : "نیازمند تأیید"
-            }
-          />
+
         </div>
         <div className="kit-photo kit-illustration">
           <KitArtwork product={p} />
@@ -927,27 +936,10 @@ function App() {
                 "سازگاری مستند نشده؛ قابل فروش نیست"
               )}
             </p>
-            <details className="product-evidence">
-              <summary>جزئیات بسته و منبع</summary>{" "}
-              <small>
-                {p.sourceLabel || 'معرفی‌شده در منوی سازنده؛ تأیید عرضه نهایی با فروش'}
-              </small>
-              <small>
-                {p.packLabel || ('تعداد تست در بسته: '+(p.tests ?? 'نیازمند تأیید'))} · واحد سفارش: {p.unit || 'بسته'}
-              </small>
-              {p.source && <a
-                className="source"
-                href={assetPath(p.source)}
-                target="_blank"
-                rel="noreferrer"
-              >
-                منبع: کاتالوگ سازنده، صفحه {p.sourcePage ?? "نامشخص"} ↗
-              </a>}
-            </details>
+
           </>
         )}
-        {p.demoPrice && <small className="catalog-demo-badge">قیمت و موجودی نمایشی</small>}
-        <p className="product-unit-note">{p.packLabel}</p>
+        <p className="product-unit-note">{p.packLabel || (p.tests ? `${p.tests.toLocaleString("fa-IR")} تست در بسته` : "تعداد در بسته: —")}</p>
         <div className="price-block">
           <span>
             قیمت <strong>{D.money(p.price)}</strong>
@@ -1335,6 +1327,7 @@ function App() {
         <>
           <h1>کیت‌ها و مواد مصرفی</h1>
           <p className="muted">کیت‌های دستگاه و مصرفی‌های عمومی آزمایشگاه اورتانیس</p>
+          <div className="catalog-layout"><aside className="catalog-sidebar" aria-label="دسته‌بندی و فیلتر محصولات">
           <div className="catalog-family-tabs" role="group" aria-label="نوع مصرفی">{[['all','همه مصرفی‌ها'],['poct','کیت‌های POCT'],['ortanes','مصرفی آزمایشگاه · اورتانیس']].map(([id,label])=><button key={id} aria-pressed={familyFilter===id} className={familyFilter===id?'selected':''} onClick={()=>{setFamilyFilter(id);setCategoryFilter('');setPoctFilter('');setDeviceFilter('');setSupplyLimit(6)}}>{label}</button>)}</div>
           <CategoryCircles family={familyFilter} value={categoryFilter} onChange={id=>{setCategoryFilter(id);setPoctFilter('');setSupplyLimit(6)}}/>
           {(familyFilter==='poct'||categoryFilter==='poct')&&<div className="catalog-scope"><label>گروه تست<select aria-label="گروه تست POCT" value={poctFilter} onChange={e=>{setPoctFilter(e.target.value);setSupplyLimit(6)}}><option value="">همه گروه‌ها</option>{poctGroups.map(g=><option key={g.id} value={g.id}>{g.label}</option>)}</select></label></div>}
@@ -1397,7 +1390,7 @@ function App() {
             </button>
           </div>
 
-          <p className="muted" aria-live="polite">
+          </aside><div className="catalog-results"><p className="muted" aria-live="polite">
             {filteredProducts.length.toLocaleString("fa-IR")} محصول
           </p>
           <section aria-label="فهرست کیت‌ها">
@@ -1416,6 +1409,7 @@ function App() {
             </button>
           )}
           {!filteredProducts.length && <Empty>محصولی پیدا نشد.</Empty>}
+          </div></div>
         </>
       );
     if (tab === "cart")
@@ -1546,27 +1540,7 @@ function App() {
                   value={deliverySchedule}
                   onChange={setDeliverySchedule}
                 />
-                <h2>روش خرید</h2>
-                <label
-                  className={"method " + (method === "online" ? "chosen" : "")}
-                >
-                  <input
-                    type="radio"
-                    checked={method === "online"}
-                    onChange={() => setMethod("online")}
-                  />
-                  پرداخت آنلاین
-                </label>
-                <label
-                  className={"method " + (method === "credit" ? "chosen" : "")}
-                >
-                  <input
-                    type="radio"
-                    checked={method === "credit"}
-                    onChange={() => setMethod("credit")}
-                  />
-                  چک سه‌ماهه؛ نیازمند تأیید فروش
-                </label>
+                <h2>روش پرداخت</h2><div className="method chosen">پرداخت آنلاین</div>
                 <div className="line">
                   <span>جمع پایه</span>
                   <strong>{D.money(base)}</strong>
@@ -1579,14 +1553,10 @@ function App() {
                   </strong>
                 </div>
                 <p className="muted">
-                  {method === "credit"
-                    ? "ثبت درخواست به معنی پرداخت یا تأیید نهایی نیست."
-                    : "پس از ثبت سفارش، نتیجه پرداخت را انتخاب کنید."}
+                  پس از ثبت سفارش، نتیجه پرداخت را انتخاب کنید.
                 </p>
                 <button className="full" onClick={place} disabled={!delivery}>
-                  {method === "online"
-                    ? "ثبت سفارش و پرداخت"
-                    : "ثبت درخواست خرید شرایطی"}
+                  ثبت سفارش و پرداخت
                   <ArrowLeft size={16} />
                 </button>
               </div>
@@ -1888,6 +1858,7 @@ function App() {
           </aside>
           <div className="workspace">
             <header className="panel-header">
+              <SiteSearch products={state.products} onProduct={searchProduct}/>
               <div>
                 <span className="muted">سانا / </span>
                 {titleMap[tab] || "پنل"}
@@ -1977,6 +1948,7 @@ function App() {
                 );
               })}
             </nav>
+            <SiteSearch products={state.products} onProduct={searchProduct}/>
             <AccountMenu
               role={role}
               cartCount={count}
@@ -1991,7 +1963,7 @@ function App() {
           {panel || path === "/login" ? (
             <Login state={state} login={login} setToast={setToast} />
           ) : (
-            path.startsWith('/supplies') ? <SupplyCatalog key={path} products={state.products} family={path.endsWith('/ortanes')?'ortanes':path.endsWith('/poct')?'poct':'all'} onChoose={p=>{if(role==='customer'){if(D.compatible(p,customer)&&p.stock>0){add(p);go('/customer/cart')}else {setFamilyFilter(p.family==='laboratory'?'ortanes':'poct');go('/customer/supplies')}}else{sessionStorage.setItem('sana-catalog-intent',p.id);go('/login')}}}/> : <PublicSite path={path} />
+            path.startsWith('/supplies') ? <SupplyCatalog key={path} products={state.products} family={path.split('?')[0].endsWith('/ortanes')?'ortanes':path.split('?')[0].endsWith('/poct')?'poct':'all'} onChoose={p=>{if(role==='customer'){if(D.compatible(p,customer)&&p.stock>0){add(p);go('/customer/cart')}else {setFamilyFilter(p.family==='laboratory'?'ortanes':'poct');go('/customer/supplies')}}else{sessionStorage.setItem('sana-catalog-intent',p.id);go('/login')}}}/> : <PublicSite path={path} />
           )}
           <footer className="public-footer">
             <div>
@@ -2021,6 +1993,7 @@ function App() {
         <div role="status" className="toast">
           <Check size={18} />
           {toast}
+          {toast === "به سبد خرید اضافه شد" && <a href="#/customer/cart" className="toast-checkout" onClick={()=>setToast("")}>نهایی کردن سبد خرید</a>}
           <button aria-label="بستن پیام" onClick={() => setToast("")}>
             ×
           </button>
