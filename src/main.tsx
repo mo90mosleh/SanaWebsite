@@ -1,3 +1,4 @@
+import {CatalogFilters} from './CatalogFilters';
 import {CheckoutAddresses} from './CheckoutAddresses';
 import {ExtraSupplyFilters,SupplySort,emptySupplyFilters,matchesSupplyFilters,sortedSupplies} from './SupplyFilters';
 import {PublicNavigation} from './PublicNavigation';
@@ -1334,7 +1335,7 @@ function App() {
         <>
           <h1>کیت‌ها و مواد مصرفی</h1>
           <p className="muted">کیت‌های دستگاه و مصرفی‌های عمومی آزمایشگاه اورتانیس</p>
-          <div className="catalog-layout"><aside className="catalog-sidebar" aria-label="دسته‌بندی و فیلتر محصولات"><h2 className="catalog-menu-title">فیلترها</h2>
+          <div className="catalog-layout"><CatalogFilters activeCount={[query,deviceFilter,categoryFilter,poctFilter,extraFilters.brand,extraFilters.min,extraFilters.max,extraFilters.inStock].filter(Boolean).length}>
           {(familyFilter==='poct'||categoryFilter==='poct')&&<div className="catalog-scope"><label>گروه تست<select aria-label="گروه تست POCT" value={poctFilter} onChange={e=>{setPoctFilter(e.target.value);setSupplyLimit(6)}}><option value="">همه گروه‌ها</option>{poctGroups.map(g=><option key={g.id} value={g.id}>{g.label}</option>)}</select></label></div>}
           <div className="filters supplies-filters">
             <label className="search">
@@ -1397,7 +1398,7 @@ function App() {
             </button>
           </div>
 
-          </aside><div className="catalog-results"><CategoryCircles family="all" value={categoryFilter} onChange={id=>{setCategoryFilter(id);setFamilyFilter('all');setPoctFilter('');setSupplyLimit(6)}}/><div className="supply-results-toolbar"><SupplySort value={supplySort} onChange={setSupplySort}/><p className="muted" aria-live="polite">
+          </CatalogFilters><div className="catalog-results"><CategoryCircles family="all" value={categoryFilter} onChange={id=>{setCategoryFilter(id);setFamilyFilter('all');setPoctFilter('');setSupplyLimit(6)}}/><div className="supply-results-toolbar"><SupplySort value={supplySort} onChange={setSupplySort}/><p className="muted" aria-live="polite">
             {filteredProducts.length.toLocaleString("fa-IR")} محصول
           </p></div>
           <section aria-label="فهرست کیت‌ها">
@@ -1834,7 +1835,7 @@ function App() {
           <div className="workspace">
             <header className="panel-header">
               <SiteSearch products={state.products} onProduct={searchProduct}/>
-              <div>
+              <div className="panel-breadcrumb">
                 <span className="muted">سانا / </span>
                 {titleMap[tab] || "پنل"}
               </div>
