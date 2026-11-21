@@ -256,7 +256,7 @@ export function Feedback() {
       "sana-feedback-" + new Date().toISOString().slice(0, 10) + ".json";
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setMessage("فایل دریافت شد؛ آن را در گفت‌وگوی Codex پیوست کن.");
+    setMessage("");
   }
   const shown = notes.filter((n) => filter === "all" || n.page === page);
   return (
