@@ -46,7 +46,7 @@ export function PublicSite({ path }: { path: string }) {
                 "",
               )}
             </p>
-            <a
+            <div className="device-actions"><a
               className="button"
               href={assetPath(model.catalog)}
               target="_blank"
@@ -54,8 +54,7 @@ export function PublicSite({ path }: { path: string }) {
             >
               دریافت کاتالوگ <ArrowUpLeft size={18} />
             </a>
-            <DeviceCompare key={model.id} model={model}/>
-
+            <DeviceCompare key={model.id} model={model}/></div>
           </div>
           <DeviceImage model={model} priority />
         </section>

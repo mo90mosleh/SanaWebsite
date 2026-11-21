@@ -1279,7 +1279,7 @@ function App() {
     if (tab === "devices")
       return (
         <>
-          <h1>دستگاه‌های من</h1>
+          <div className="customer-devices-heading"><h1>دستگاه‌های من</h1><a className="button secondary" href="#/devices"><Microscope size={18}/>مشاهده همه دستگاه‌ها</a></div>
           <p className="muted">از دستگاه خود به کیت‌های مرتبط برسید.</p>
           <div className="grid cards">
             {customer.devices.map((d) => {
