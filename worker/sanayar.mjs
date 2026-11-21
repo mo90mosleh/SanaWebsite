@@ -58,13 +58,13 @@ async function readBody(request) {
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 export function createHandler(fetcher = fetch) {
-  return async function handle(request, env) {
+  const handle = async function(request, env) {
     const url = new URL(request.url);
     if (url.pathname === '/api/sanayar/status') return json({ configured: Boolean(env.GEMINI_API_KEY), version: 'gemini-stream-v2' });
     if (url.pathname !== '/api/sanayar/chat') return env.ASSETS.fetch(request);
     if (request.method !== 'POST') return json({error:'method_not_allowed'},405);
     const origin = request.headers.get('Origin');
-    if (origin && origin !== url.origin) return json({error:'origin_not_allowed'},403);
+    if (origin && origin !== url.origin && origin !== 'https://mo90mosleh.github.io') return json({error:'origin_not_allowed'},403);
     if (!request.headers.get('Content-Type')?.startsWith('application/json')) return json({error:'json_required'},415);
     let body; try { body = await readBody(request); } catch { return json({error:'invalid_request'},400); }
     if (typeof body?.question !== 'string' || !body.question.trim() || body.question.length > 500) return json({error:'invalid_question'},400);
@@ -96,6 +96,24 @@ export function createHandler(fetcher = fetch) {
       return json({text:text.slice(0,9000),links:context.links,mode:'gemini'});
     } catch { return json({error:'provider_unavailable'},502); }
     finally{if(!streaming)clearTimeout(timer);}
+  };
+  return async function(request,env) {
+    const url=new URL(request.url);
+    if(!url.pathname.startsWith('/api/sanayar/'))return handle(request,env);
+    const origin=request.headers.get('Origin');
+    if(origin&&origin!==url.origin&&origin!=='https://mo90mosleh.github.io')return json({error:'origin_not_allowed'},403);
+    const cors=new Headers({'Vary':'Origin'});
+    if(origin)cors.set('Access-Control-Allow-Origin',origin);
+    if(request.method==='OPTIONS'){
+      if(url.pathname!=='/api/sanayar/chat')return json({error:'not_found'},404);
+      cors.set('Access-Control-Allow-Methods','POST, OPTIONS');
+      cors.set('Access-Control-Allow-Headers','Content-Type');
+      cors.set('Access-Control-Max-Age','600');
+      return new Response(null,{status:204,headers:cors});
+    }
+    const response=await handle(request,env),headers=new Headers(response.headers);
+    for(const [name,value] of cors)headers.set(name,value);
+    return new Response(response.body,{status:response.status,statusText:response.statusText,headers});
   };
 }
 export default { fetch: createHandler() };

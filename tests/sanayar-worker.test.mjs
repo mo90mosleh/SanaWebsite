@@ -17,3 +17,12 @@ test('Gemini SSE forwards deltas before completion and handles split Persian byt
  text+=new TextDecoder().decode((await reader.read()).value);assert.match(text,/سلام آزمایشگاه/);assert.doesNotMatch(text,/"type":"done"/);finish();while(true){const chunk=await reader.read();if(chunk.done)break;text+=new TextDecoder().decode(chunk.value)}assert.match(text,/پاسخ زنده/);assert.match(text,/"type":"done"/);
 });
 test('follow-up device context keeps working model-specific buttons',()=>{const c=contextFor('مشخصاتش چیست؟',[{role:'user',text:'BHA3000'}]);assert.ok(c.links.some(l=>l.href==='#/devices/bha3000'));assert.ok(c.links.some(l=>l.href.endsWith('GETEIN-BHA3000-Catalog.pdf')))});
+test('Pages CORS permits its exact origin, including preflight and errors',async()=>{
+ const handler=createHandler(async()=>Response.json({candidates:[{finishReason:'STOP',content:{parts:[{text:'پاسخ تست'}]}}]}));
+ const origin='https://mo90mosleh.github.io';
+ const preflight=await handler(new Request('https://sanawebsite.mo90mosleh.workers.dev/api/sanayar/chat',{method:'OPTIONS',headers:{Origin:origin,'Access-Control-Request-Method':'POST','Access-Control-Request-Headers':'content-type'}}),env);
+ assert.equal(preflight.status,204);assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),origin);assert.match(preflight.headers.get('Access-Control-Allow-Methods'),/POST/);
+ const response=await handler(request({question:'BHA3000'},{Origin:origin}),env);assert.equal(response.status,200);assert.equal(response.headers.get('Access-Control-Allow-Origin'),origin);
+ const error=await handler(request({question:'BHA3000'},{Origin:origin}),{...env,GEMINI_API_KEY:''});assert.equal(error.status,503);assert.equal(error.headers.get('Access-Control-Allow-Origin'),origin);
+ const denied=await handler(request({question:'BHA3000'},{Origin:'https://unrelated.example'}),env);assert.equal(denied.status,403);assert.equal(denied.headers.get('Access-Control-Allow-Origin'),null);
+});

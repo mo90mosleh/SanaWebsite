@@ -1,5 +1,11 @@
 # Sanayar on Cloudflare
 
+## GitHub Pages parity
+
+Publish the current source with `npm run build:pages`. This preserves the `/SanaWebsite/` asset prefix, robot image and catalogue links. The Pages build sends chat requests to `https://sanawebsite.mo90mosleh.workers.dev/api/sanayar/chat`; the root Cloudflare build continues to use its same-origin API. No API key is bundled in either frontend.
+
+The existing Worker allows CORS only for its own origin and `https://mo90mosleh.github.io`. It answers the JSON POST preflight and retains CORS headers on streaming replies and errors. Keep all existing runtime secrets and static assets when updating this Worker. Updating Pages does not require another key.
+
 The public assistant uses `POST /api/sanayar/chat` with `stream: true`. It sends only the question and recent chat messages, bounded to 7,500 UTF-8 bytes. The Worker supplies its own public device and consumable catalogue; it never sends customer, order, address or account records to Gemini. Gemini output is forwarded incrementally from `streamGenerateContent` as SSE (`meta`, `delta`, `done` or `error` events). Legacy non-streaming requests still return JSON.
 
 Set `GEMINI_API_KEY` as a **Secret** on the `sanawebsite` Worker and deploy the change. Never place this key in a `VITE_` variable, source code or a client request. Optional plain variable `GEMINI_MODEL` selects the model; the default is `gemini-3.1-flash-lite`.

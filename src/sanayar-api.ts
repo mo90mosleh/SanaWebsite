@@ -19,7 +19,11 @@ export function compactHistory(history: ChatTurn[]) {
   return turns;
 }
 export async function askSanayar(question: string, history: ChatTurn[], signal: AbortSignal, onProgress?: (progress: StreamProgress) => void): Promise<LiveAnswer> {
-  const response = await fetch(assetPath('/api/sanayar/chat'), {
+  // Pages is static; use the existing Worker for its server-only assistant API.
+  const endpoint = import.meta.env.BASE_URL === '/SanaWebsite/'
+    ? 'https://sanawebsite.mo90mosleh.workers.dev/api/sanayar/chat'
+    : assetPath('/api/sanayar/chat');
+  const response = await fetch(endpoint, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, signal,
     body: JSON.stringify({ question, history: compactHistory(history), stream: true }),
   });
