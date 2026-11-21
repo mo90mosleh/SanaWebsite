@@ -1,10 +1,11 @@
 import {test,expect} from '@playwright/test';
 test('public laboratory catalogue, circular category filter and login-to-order work',async({page})=>{
  await page.goto('/#/');
+ if(await page.getByRole('button',{name:'نمایش منوی اصلی',exact:true}).isVisible())await page.getByRole('button',{name:'نمایش منوی اصلی',exact:true}).click();
  await expect(page.getByRole('link',{name:'مصرفی آزمایشگاه',exact:true})).toBeVisible();
  await page.getByRole('link',{name:'مصرفی آزمایشگاه',exact:true}).click();
  await expect(page.getByRole('heading',{name:'مصرفی‌های آزمایشگاه اورتانیس'})).toBeVisible();
- await expect(page.locator('.category-circle')).toHaveCount(9);
+ await expect(page.locator('.category-circle')).toHaveCount(8);
  await page.getByRole('button',{name:'سرسمپلر',exact:true}).click();
  await expect(page.locator('.catalog-grid article')).toHaveCount(4);
  expect(await page.locator('.circle-image img').evaluateAll(imgs=>imgs.every(i=>(i as HTMLImageElement).complete && (i as HTMLImageElement).naturalWidth>0))).toBe(true);

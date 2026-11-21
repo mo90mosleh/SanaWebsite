@@ -37,6 +37,8 @@ export function Feedback() {
   const [message, setMessage] = useState("");
   const [marks, setMarks] = useState<{ note: FeedbackNote; rect: Rect }[]>([]);
   const [visibleMarks, setVisibleMarks] = useState(true);
+  const deletedNotes = useRef<FeedbackNote[]>([]);
+  const [canUndoDelete,setCanUndoDelete]=useState(false);
   const launcher = useRef<HTMLButtonElement>(null);
   const panel = useRef<HTMLElement>(null);
   const editor = useRef<HTMLTextAreaElement>(null);
@@ -413,6 +415,7 @@ export function Feedback() {
                     نمایش نشانه‌ها
                   </label>
                 </div>
+                <div className="feedback-bulk-actions"><button type="button" className="secondary" disabled={!notes.length} onClick={()=>{if(!confirm('همه بازخوردهای این مرورگر در تمام صفحه‌ها حذف شوند؟'))return;const backup=[...notes];if(persist([])){deletedNotes.current=backup;setCanUndoDelete(true);setMarks([]);setMessage('همه بازخوردهای این مرورگر حذف شدند.')}}}><Trash2 size={16}/>حذف همه ({notes.length.toLocaleString('fa-IR')})</button>{canUndoDelete&&<button type="button" className="link" onClick={()=>{const currentIds=new Set(notes.map(n=>n.id));if(persist([...deletedNotes.current.filter(n=>!currentIds.has(n.id)),...notes])){deletedNotes.current=[];setCanUndoDelete(false);setMessage('بازخوردها بازگردانده شدند.')}}}>بازگردانی حذف همه</button>}</div>
                 {!shown.length && (
                   <p className="feedback-empty">
                     {notes.length

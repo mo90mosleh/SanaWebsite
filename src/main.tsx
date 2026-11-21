@@ -1,3 +1,4 @@
+import {ExtraSupplyFilters,SupplySort,emptySupplyFilters,matchesSupplyFilters,sortedSupplies} from './SupplyFilters';
 import {PublicNavigation} from './PublicNavigation';
 import {SiteSearch} from './SiteSearch';
 import { CategoryCircles } from "./CategoryCircles";
@@ -119,6 +120,8 @@ function App() {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [familyFilter,setFamilyFilter] = useState("all");
   const [poctFilter,setPoctFilter] = useState("");
+  const [extraFilters,setExtraFilters]=useState(emptySupplyFilters);
+  const [supplySort,setSupplySort]=useState("default");
   useEffect(() => {
     const nav = () => {
       setPath(location.hash.slice(1) || "/");
@@ -209,8 +212,8 @@ function App() {
       else next[id]--;
       return next;
     });
-  const filteredProducts = state.products.filter(
-    (p) => isCatalogItem(p) &&
+  const filteredProducts = sortedSupplies(state.products.filter(
+    (p) => isCatalogItem(p) && matchesSupplyFilters(p,extraFilters) &&
       (familyFilter !== "ortanes" || p.family === "laboratory") &&
       (familyFilter !== "poct" || p.family === "poct") &&
       (!poctFilter || poctGroups.find(g=>g.id===poctFilter)?.products.includes(p.id)) &&
@@ -221,7 +224,7 @@ function App() {
       (!deviceFilter ||
         p.models.includes(deviceFilter) ||
         p.referenceModels?.includes(deviceFilter)),
-  );
+  ),supplySort);
   const add = (p: D.Item) => {
     if (
       !D.compatible(p, customer) ||
@@ -235,6 +238,7 @@ function App() {
     setToast("به سبد خرید اضافه شد");
   };
   const searchProduct=(p:D.Item)=>{
+    setExtraFilters(emptySupplyFilters);
     setFamilyFilter(p.family==='laboratory'?'ortanes':'poct');setCategoryFilter('');setPoctFilter('');setDeviceFilter('');setSupplyLimit(6);
     if(role==='customer'){
       if(path==='/customer/supplies')setQuery(p.name);
@@ -1310,7 +1314,7 @@ function App() {
                     className="secondary"
                     onClick={() => {
                       setDeviceFilter(d.model);
-                      setFamilyFilter('poct');setCategoryFilter('');setPoctFilter('');
+                      setExtraFilters(emptySupplyFilters);setFamilyFilter('poct');setCategoryFilter('');setPoctFilter('');
                       go("/customer/supplies");
                     }}
                   >
@@ -1328,9 +1332,7 @@ function App() {
         <>
           <h1>کیت‌ها و مواد مصرفی</h1>
           <p className="muted">کیت‌های دستگاه و مصرفی‌های عمومی آزمایشگاه اورتانیس</p>
-          <div className="catalog-layout"><aside className="catalog-sidebar" aria-label="دسته‌بندی و فیلتر محصولات"><h2 className="catalog-menu-title">دسته‌بندی محصولات</h2>
-          <div className="catalog-family-tabs" role="group" aria-label="نوع مصرفی">{[['all','همه مصرفی‌ها'],['poct','کیت‌های POCT'],['ortanes','مصرفی آزمایشگاه · اورتانیس']].map(([id,label])=><button key={id} aria-pressed={familyFilter===id} className={familyFilter===id?'selected':''} onClick={()=>{setFamilyFilter(id);setCategoryFilter('');setPoctFilter('');setDeviceFilter('');setSupplyLimit(6)}}>{label}</button>)}</div>
-          <CategoryCircles family={familyFilter} value={categoryFilter} onChange={id=>{setCategoryFilter(id);setPoctFilter('');setSupplyLimit(6)}}/>
+          <div className="catalog-layout"><aside className="catalog-sidebar" aria-label="دسته‌بندی و فیلتر محصولات"><h2 className="catalog-menu-title">فیلترها</h2>
           {(familyFilter==='poct'||categoryFilter==='poct')&&<div className="catalog-scope"><label>گروه تست<select aria-label="گروه تست POCT" value={poctFilter} onChange={e=>{setPoctFilter(e.target.value);setSupplyLimit(6)}}><option value="">همه گروه‌ها</option>{poctGroups.map(g=><option key={g.id} value={g.id}>{g.label}</option>)}</select></label></div>}
           <div className="filters supplies-filters">
             <label className="search">
@@ -1383,6 +1385,8 @@ function App() {
                   ))}
               </select>
             </label>
+            <ExtraSupplyFilters products={state.products.filter(isCatalogItem)} value={extraFilters} onChange={f=>{setExtraFilters(f);setSupplyLimit(6)}}/>
+            <button className="link" type="button" onClick={()=>{setExtraFilters(emptySupplyFilters);setDeviceFilter('');setCategoryFilter('');setFamilyFilter('all');setPoctFilter('');setQuery('');setSupplyLimit(6)}}>حذف فیلترها</button>
             <button
               className="secondary supplies-cart-link"
               onClick={() => go("/customer/cart")}
@@ -1391,9 +1395,9 @@ function App() {
             </button>
           </div>
 
-          </aside><div className="catalog-results"><p className="muted" aria-live="polite">
+          </aside><div className="catalog-results"><CategoryCircles family="all" value={categoryFilter} onChange={id=>{setCategoryFilter(id);setFamilyFilter('all');setPoctFilter('');setSupplyLimit(6)}}/><div className="supply-results-toolbar"><SupplySort value={supplySort} onChange={setSupplySort}/><p className="muted" aria-live="polite">
             {filteredProducts.length.toLocaleString("fa-IR")} محصول
-          </p>
+          </p></div>
           <section aria-label="فهرست کیت‌ها">
             <div className="grid cards">
               {filteredProducts.slice(0, supplyLimit).map((p) => (

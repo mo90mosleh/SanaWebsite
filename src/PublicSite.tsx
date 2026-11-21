@@ -1,3 +1,4 @@
+import {ConsultationRequest} from './ConsultationRequest';
 import {DeviceCompare} from './DeviceCompare';
 import {OrtanesLogo} from "./OrtanesLogo";
 import {categoryImages} from "./generatedCategoryImages";
@@ -54,7 +55,7 @@ export function PublicSite({ path }: { path: string }) {
             >
               دریافت کاتالوگ <ArrowUpLeft size={18} />
             </a>
-            <DeviceCompare key={model.id} model={model}/></div>
+            <DeviceCompare key={model.id} model={model}/><ConsultationRequest key={model.id} product={model}/></div>
           </div>
           <DeviceImage model={model} priority />
         </section>

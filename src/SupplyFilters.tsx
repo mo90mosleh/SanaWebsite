@@ -1,0 +1,11 @@
+import type {Item} from './domain';
+export type SupplyFilters={brand:string;inStock:boolean;min:string;max:string};
+export const emptySupplyFilters:SupplyFilters={brand:'',inStock:false,min:'',max:''};
+export function priceDigits(s:string){return s.replace(/[۰-۹]/g,d=>String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d))).replace(/[٠-٩]/g,d=>String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/\D/g,'')}
+export function matchesSupplyFilters(p:Item,f:SupplyFilters){return (!f.brand||p.brand===f.brand)&&(!f.inStock||p.stock>0)&&p.price>=Number(f.min||0)&&p.price<=Number(f.max||Infinity)}
+export function sortedSupplies(items:Item[],sort:string){return [...items].sort((a,b)=>sort==='price-asc'?a.price-b.price:sort==='price-desc'?b.price-a.price:sort==='name'?a.name.localeCompare(b.name,'fa'):0)}
+export function ExtraSupplyFilters({products,value,onChange}:{products:Item[];value:SupplyFilters;onChange:(f:SupplyFilters)=>void}){
+ const update=(change:Partial<SupplyFilters>)=>onChange({...value,...change});
+ return <><label className="supply-stock-filter"><input type="checkbox" checked={value.inStock} onChange={e=>update({inStock:e.target.checked})}/>فقط کالاهای موجود</label><label>برند<select aria-label="فیلتر برند" value={value.brand} onChange={e=>update({brand:e.target.value})}><option value="">همه برندها</option>{[...new Set(products.map(p=>p.brand))].map(b=><option key={b}>{b}</option>)}</select></label><fieldset className="supply-price-filter"><legend>محدوده قیمت (تومان)</legend><label>از<input aria-label="حداقل قیمت" inputMode="numeric" value={value.min} onChange={e=>update({min:priceDigits(e.target.value)})} placeholder="—"/></label><label>تا<input aria-label="حداکثر قیمت" inputMode="numeric" value={value.max} onChange={e=>update({max:priceDigits(e.target.value)})} placeholder="—"/></label>{value.min&&value.max&&Number(value.min)>Number(value.max)&&<small role="status">حداکثر قیمت باید بیشتر از حداقل باشد.</small>}</fieldset></>;
+}
+export function SupplySort({value,onChange}:{value:string;onChange:(v:string)=>void}){return <label className="supply-sort">مرتب‌سازی<select aria-label="مرتب‌سازی محصولات" value={value} onChange={e=>onChange(e.target.value)}><option value="default">پیش‌فرض</option><option value="price-asc">ارزان‌ترین</option><option value="price-desc">گران‌ترین</option><option value="name">نام محصول</option></select></label>}
