@@ -55,9 +55,7 @@ export function PublicSite({ path }: { path: string }) {
               دریافت کاتالوگ <ArrowUpLeft size={18} />
             </a>
             <DeviceCompare key={model.id} model={model}/>
-            <a className="button secondary" href="#/contact">
-              گفت‌وگو با سانا
-            </a>
+
           </div>
           <DeviceImage model={model} priority />
         </section>

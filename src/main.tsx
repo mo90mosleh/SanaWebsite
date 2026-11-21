@@ -1,3 +1,4 @@
+import {PublicNavigation} from './PublicNavigation';
 import {SiteSearch} from './SiteSearch';
 import { CategoryCircles } from "./CategoryCircles";
 import { SupplyCatalog } from "./SupplyCatalog";
@@ -1327,7 +1328,7 @@ function App() {
         <>
           <h1>کیت‌ها و مواد مصرفی</h1>
           <p className="muted">کیت‌های دستگاه و مصرفی‌های عمومی آزمایشگاه اورتانیس</p>
-          <div className="catalog-layout"><aside className="catalog-sidebar" aria-label="دسته‌بندی و فیلتر محصولات">
+          <div className="catalog-layout"><aside className="catalog-sidebar" aria-label="دسته‌بندی و فیلتر محصولات"><h2 className="catalog-menu-title">دسته‌بندی محصولات</h2>
           <div className="catalog-family-tabs" role="group" aria-label="نوع مصرفی">{[['all','همه مصرفی‌ها'],['poct','کیت‌های POCT'],['ortanes','مصرفی آزمایشگاه · اورتانیس']].map(([id,label])=><button key={id} aria-pressed={familyFilter===id} className={familyFilter===id?'selected':''} onClick={()=>{setFamilyFilter(id);setCategoryFilter('');setPoctFilter('');setDeviceFilter('');setSupplyLimit(6)}}>{label}</button>)}</div>
           <CategoryCircles family={familyFilter} value={categoryFilter} onChange={id=>{setCategoryFilter(id);setPoctFilter('');setSupplyLimit(6)}}/>
           {(familyFilter==='poct'||categoryFilter==='poct')&&<div className="catalog-scope"><label>گروه تست<select aria-label="گروه تست POCT" value={poctFilter} onChange={e=>{setPoctFilter(e.target.value);setSupplyLimit(6)}}><option value="">همه گروه‌ها</option>{poctGroups.map(g=><option key={g.id} value={g.id}>{g.label}</option>)}</select></label></div>}
@@ -1926,28 +1927,7 @@ function App() {
               <Logo />
               <span>تجهیزات آزمایشگاهی</span>
             </a>
-            <nav aria-label="ناوبری اصلی">
-              {[
-                ["/", "خانه"],
-                ["/devices", "دستگاه‌ها"],
-                ["/supplies/ortanes", "مصرفی آزمایشگاه"],
-                ["/supplies/poct", "کیت‌های POCT"],
-                ["/services", "خدمات و پشتیبانی"],
-                ["/contact", "تماس با ما"],
-              ].map(([p, n]) => {
-                const active = p === "/" ? path === "/" : path.split("?")[0] === p || path.startsWith(p + "/");
-                return (
-                  <a
-                    key={p}
-                    className={active ? "current" : ""}
-                    aria-current={active ? "page" : undefined}
-                    href={"#" + p}
-                  >
-                    {n}
-                  </a>
-                );
-              })}
-            </nav>
+            <PublicNavigation path={path}/>
             <SiteSearch products={state.products} onProduct={searchProduct}/>
             <AccountMenu
               role={role}
