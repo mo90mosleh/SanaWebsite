@@ -16,7 +16,7 @@ test('CBC comparison supports three devices and POCT remains in its family',asyn
  await expect(page.locator('.device-compare thead th')).toHaveCount(4);
  await expect(page.locator('.device-compare')).not.toContainText('FS-114');await page.keyboard.press('Escape');
  await expect(page.locator('.device-compare')).not.toBeVisible();
- await page.goto('/#/devices/fs-114');await page.getByRole('button',{name:'مقایسه دستگاه‌های POCT'}).click();await page.getByRole('checkbox',{name:'WONDFO FS-205'}).check();await expect(page.locator('.device-compare thead th')).toHaveCount(3);await expect(page.locator('.device-compare')).not.toContainText('BHA3000');
+ await page.goto('/#/devices/fs-114');await page.getByRole('button',{name:'مقایسه دستگاه‌های POCT'}).click();await page.getByRole('checkbox',{name:'Finecare FS-205'}).check();await expect(page.locator('.device-compare thead th')).toHaveCount(3);await expect(page.locator('.device-compare')).not.toContainText('BHA3000');
 });
 test('signed-in supplies links use customer panel and cart toast offers checkout with online only',async({page})=>{
  await page.addInitScript(()=>{sessionStorage.setItem('sana-role','customer');sessionStorage.setItem('sana-customer','c1')});
