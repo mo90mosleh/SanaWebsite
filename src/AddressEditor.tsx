@@ -1,4 +1,5 @@
-import {useState,lazy,Suspense} from 'react';
+import {useState,useEffect,useId,useRef,lazy,Suspense} from 'react';
+import {ChevronDown,Search,Check} from 'lucide-react';
 import * as D from './domain';
 import {provinces} from './locations';
 const IranMap=lazy(()=>import('./IranMap').then(m=>({default:m.IranMap})));
@@ -149,20 +150,19 @@ export function AddressEditor({value:editing,onChange:setEditing,onSave,onCancel
             </div>
           </form>
 );}
-/** Search filters the authoritative location list; free text never changes a saved address. */
+/** Search is inside the opened picker; only authoritative options can be saved. */
 function LocationPicker({label,value,options,allowOther=false,onChange}:{label:string;value:string;options:string[];allowOther?:boolean;onChange:(value:string)=>void}){
-  const [query,setQuery]=useState('');
-  const normalize=(s:string)=>s.replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\s\u200c]+/g,'').trim();
-  const filtered=options.filter(o=>normalize(o).includes(normalize(query)));
-  const id=allowOther?'address-city':'address-province';
-  return <div className="location-search-field" style={{display:'grid',gap:8,alignContent:'start'}}>
-    <label htmlFor={id}>{label}</label>
-    <input type="search" aria-label={'جست‌وجوی '+label} placeholder={'جست‌وجوی '+label+'…'} value={query} autoComplete="off" onChange={e=>setQuery(e.target.value)}/>
-    <select id={id} aria-label={label} value={value} onChange={e=>{onChange(e.target.value);setQuery('')}}>
-      {!filtered.includes(value)&&value!=='other'&&<option value={value} hidden>{value}</option>}
-      {filtered.map(o=><option key={o} value={o}>{o}</option>)}
-      {allowOther&&<option value="other">شهر دیگر</option>}
-    </select>
-    {query&&!filtered.length&&<small role="status">{label}ی با این نام پیدا نشد.{allowOther?' برای ثبت دستی، «شهر دیگر» را انتخاب کنید.':''}</small>}
-  </div>;
+ const [open,setOpen]=useState(false),[query,setQuery]=useState(''),[active,setActive]=useState(0);
+ const id=useId(),root=useRef<HTMLDivElement>(null),trigger=useRef<HTMLButtonElement>(null),input=useRef<HTMLInputElement>(null);
+ const normalize=(s:string)=>s.replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/[\s\u200c]+/g,'').trim();
+ const filtered=options.filter(o=>normalize(o).includes(normalize(query))),entries=[...filtered.map(o=>({value:o,label:o})),...(allowOther?[{value:'other',label:'شهر دیگر'}]:[])];
+ function close(focus=false){setOpen(false);setQuery('');if(focus)trigger.current?.focus()}
+ function choose(v:string){onChange(v);close(true)}
+ useEffect(()=>{if(!open)return;input.current?.focus();const outside=(e:PointerEvent)=>{if(!root.current?.contains(e.target as Node))close()};document.addEventListener('pointerdown',outside);return()=>document.removeEventListener('pointerdown',outside)},[open]);
+ useEffect(()=>{if(open)root.current?.querySelector('[data-active="true"]')?.scrollIntoView({block:'nearest'})},[active,open]);
+ return <div className="location-search-field" ref={root} onBlur={e=>{if(!e.currentTarget.contains(e.relatedTarget as Node))close()}}>
+ <label htmlFor={id}>{label}</label><button ref={trigger} id={id} type="button" className="location-picker-trigger" aria-label={label} aria-expanded={open} aria-haspopup="listbox" aria-controls={id+'-options'} onClick={()=>{if(open)close();else{setQuery('');setActive(0);setOpen(true)}}} onKeyDown={e=>{if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();setOpen(true);setActive(0)}}}><span>{value==='other'?'شهر دیگر':value||'انتخاب '+label}</span><ChevronDown size={18}/></button>
+ {open&&<div className="location-picker-popup"><div className="location-picker-search"><Search size={17}/><input ref={input} type="search" role="combobox" aria-label={'جست‌وجوی '+label} placeholder={'جست‌وجوی '+label+'…'} aria-autocomplete="list" aria-expanded="true" aria-controls={id+'-options'} aria-activedescendant={entries[active]?id+'-option-'+active:undefined} value={query} autoComplete="off" onChange={e=>{setQuery(e.target.value);setActive(0)}} onKeyDown={e=>{if(e.key==='Escape'){e.preventDefault();e.stopPropagation();close(true)}else if(e.key==='ArrowDown'){e.preventDefault();setActive(n=>Math.min(entries.length-1,n+1))}else if(e.key==='ArrowUp'){e.preventDefault();setActive(n=>Math.max(0,n-1))}else if(e.key==='Enter'){e.preventDefault();if(entries[active])choose(entries[active].value)}}}/></div>
+ {!filtered.length&&<p role="status" className="location-picker-empty">{label}ی با این نام پیدا نشد.</p>}<div role="listbox" id={id+'-options'} aria-label={'فهرست '+label} className="location-picker-options">{entries.map((o,i)=><button key={o.value} id={id+'-option-'+i} type="button" role="option" tabIndex={-1} aria-selected={value===o.value} data-active={active===i} onPointerMove={()=>setActive(i)} onMouseDown={e=>e.preventDefault()} onClick={()=>choose(o.value)}><span>{o.label}</span>{value===o.value&&<Check size={17}/>}</button>)}</div></div>}
+ </div>;
 }
